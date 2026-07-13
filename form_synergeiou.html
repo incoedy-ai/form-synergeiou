@@ -212,6 +212,7 @@
       <div class="info-item" style="grid-column:1;grid-row:7;"><span class="info-label">ΟΡΟΦΟΣ</span><span class="info-val" id="inf-orof">—</span></div>
       <div class="info-item" style="grid-column:2;grid-row:7;"><span class="info-label">ΚΟΥΔΟΥΝΙ</span><span class="info-val" id="inf-koud">—</span></div>
       <div class="info-item" style="grid-column:4;grid-row:7;"><span class="info-label">ΠΛΗΡΩΜΗ</span><span class="info-val" id="inf-plirwmi">—</span></div>
+      <div class="info-item" style="grid-column:5;grid-row:7;"><span class="info-label">ΧΡΕΩΣΗ</span><span class="info-val" id="inf-poso">—</span></div>
     </div>
   </div>
 </div>
@@ -410,6 +411,7 @@
     'orof':    'inf-orof',
     'koud':    'inf-koud',
     'plirwmi': 'inf-plirwmi',
+    'poso':    'inf-poso',
   };
   let hasData = false;
   for (const [key, id] of Object.entries(map)) {
@@ -446,6 +448,7 @@
     document.getElementById('inf-orof').textContent = '2ος';
     document.getElementById('inf-koud').textContent = 'ΠΑΠΑΔΟΠΟΥΛΟΣ';
     document.getElementById('inf-plirwmi').textContent = 'ΜΕΤΡΗΤΑ';
+    document.getElementById('inf-poso').textContent = '45.00 €';
     document.getElementById('inf-egkat').value = 'ΔΣ: 4 τεμ. (Μαγκλ. Plus)\nΣΕ: 2 τεμ.\nΕντομοπαγίδες: 1 τεμ.';
     document.getElementById('inf-aparait').value = 'Ψεκαστήρας πλάτης\nΜάσκα FFP2\nΓάντια νιτριλίου';
   }
