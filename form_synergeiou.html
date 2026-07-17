@@ -152,6 +152,12 @@
   </div>
 </div>
 
+<div id="checkFormsBar" style="display:none; justify-content:center; gap:8px; padding:8px 16px; background:#e8eef5;">
+  <a id="lnkMyoktonia" href="#" target="_blank" style="display:none; text-decoration:none; padding:6px 14px; border-radius:6px; background:#6b6f72; color:white; font-size:12px; font-weight:bold;">Ε-Ε04α</a>
+  <a id="lnkEntomo" href="#" target="_blank" style="display:none; text-decoration:none; padding:6px 14px; border-radius:6px; background:#ffe600; color:#000; font-size:12px; font-weight:bold;">Ε-Ε06</a>
+  <a id="lnkFeromo" href="#" target="_blank" style="display:none; text-decoration:none; padding:6px 14px; border-radius:6px; background:#17a8b8; color:white; font-size:12px; font-weight:bold;">Ε-Ε05</a>
+</div>
+
 <!-- ΣΤΟΙΧΕΙΑ ΡΑΝΤΕΒΟΥ + ΕΞΟΠΛΙΣΜΟΣ -->
 <div style="display:flex; gap:10px; align-items:stretch; margin:10px;">
 
@@ -451,6 +457,34 @@
     document.getElementById('inf-poso').textContent = '45.00 €';
     document.getElementById('inf-egkat').value = 'ΔΣ: 4 τεμ. (Μαγκλ. Plus)\nΣΕ: 2 τεμ.\nΕντομοπαγίδες: 1 τεμ.';
     document.getElementById('inf-aparait').value = 'Ψεκαστήρας πλάτης\nΜάσκα FFP2\nΓάντια νιτριλίου';
+  }
+
+  // ---- Κουμπάκια εντύπων ελέγχου, μόνο για όσα έντυπα ισχύουν για τον πελάτη ----
+  const scriptUrl = p.get('script');
+  if (scriptUrl) {
+    const pelatisName = p.get('pelatis') || '';
+    const qp = new URLSearchParams({ script: scriptUrl, pelatis: pelatisName });
+    let anyVisible = false;
+
+    if (p.get('e04') === '1') {
+      const a = document.getElementById('lnkMyoktonia');
+      a.href = 'form_myoktonia.html?' + qp.toString();
+      a.style.display = 'inline-block';
+      anyVisible = true;
+    }
+    if (p.get('e06') === '1') {
+      const a = document.getElementById('lnkEntomo');
+      a.href = 'form_entomo.html?' + qp.toString();
+      a.style.display = 'inline-block';
+      anyVisible = true;
+    }
+    if (p.get('e05') === '1') {
+      const a = document.getElementById('lnkFeromo');
+      a.href = 'form_feromo.html?' + qp.toString();
+      a.style.display = 'inline-block';
+      anyVisible = true;
+    }
+    if (anyVisible) document.getElementById('checkFormsBar').style.display = 'flex';
   }
 })();
 
