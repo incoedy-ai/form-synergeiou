@@ -156,6 +156,7 @@
   <a id="lnkMyoktonia" href="#" target="_blank" style="display:none; text-decoration:none; padding:6px 14px; border-radius:6px; background:#6b6f72; color:white; font-size:12px; font-weight:bold;">Ε-Ε04α</a>
   <a id="lnkEntomo" href="#" target="_blank" style="display:none; text-decoration:none; padding:6px 14px; border-radius:6px; background:#ffe600; color:#000; font-size:12px; font-weight:bold;">Ε-Ε06</a>
   <a id="lnkFeromo" href="#" target="_blank" style="display:none; text-decoration:none; padding:6px 14px; border-radius:6px; background:#17a8b8; color:white; font-size:12px; font-weight:bold;">Ε-Ε05</a>
+  <button id="btnECert" onclick="openECert()" style="display:none; padding:6px 14px; border-radius:6px; background:#1b96aa; color:white; font-size:12px; font-weight:bold; border:none; cursor:pointer;">eCERT</button>
 </div>
 
 <!-- ΣΤΟΙΧΕΙΑ ΡΑΝΤΕΒΟΥ + ΕΞΟΠΛΙΣΜΟΣ -->
@@ -486,7 +487,35 @@
     }
     if (anyVisible) document.getElementById('checkFormsBar').style.display = 'flex';
   }
+
+  document.getElementById('btnECert').style.display = 'inline-block';
+  if (!document.getElementById('checkFormsBar').style.display || document.getElementById('checkFormsBar').style.display === 'none') {
+    document.getElementById('checkFormsBar').style.display = 'flex';
+  }
 })();
+
+function openECert() {
+  const pelatis = document.getElementById('inf-pelatis').textContent;
+  const diey = document.getElementById('inf-diey').textContent;
+  const til = document.getElementById('inf-til').textContent;
+  const afm = document.getElementById('inf-afm').textContent;
+
+  const skev = [];
+  for (let i = 0; i < ROWS; i++) {
+    const typ = document.getElementById(`sk-typ-${i}`).value;
+    const sel = document.getElementById(`sk-sel-${i}`).value;
+    if (sel) skev.push({ typos: typ || '', skeuasma: sel });
+  }
+
+  const qp = new URLSearchParams({
+    pelatis: pelatis === '—' ? '' : pelatis,
+    diey: diey === '—' ? '' : diey,
+    til: til === '—' ? '' : til,
+    afm: afm === '—' ? '' : afm,
+    skev: JSON.stringify(skev)
+  });
+  window.open('form_ecert.html?' + qp.toString(), '_blank');
+}
 
 // ---- ΛΙΣΤΑ ΣΚΕΥΑΣΜΑΤΩΝ ----
 const skevasmata = [

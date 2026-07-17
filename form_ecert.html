@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eCERT — Πιστοποιητικό Εφαρμογών</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 0 0 24px; background: #f5f7f8; color: #1a1a1a; }
+  .noPrint { }
+  @media print {
+    body { background: white; max-width: none; }
+    .noPrint { display: none !important; }
+    .page { box-shadow: none !important; margin: 0 !important; }
+  }
+  .page { background: white; margin: 16px; padding: 20px; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.15); }
+
+  .headerRow { display: flex; align-items: center; gap: 14px; }
+  .headerRow img.logo { width: 60px; height: 58px; object-fit: contain; }
+  .titleBar { flex: 1; background: #1b96aa; color: white; padding: 10px 14px; border-radius: 4px; }
+  .titleBar h1 { font-size: 18px; margin: 0; }
+  .titleBar p { font-size: 11px; margin: 2px 0 0; opacity: 0.9; }
+  .kodBox { background: #eee; border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 11px; text-align: center; font-weight: bold; }
+
+  .custBar { background: #1b96aa; color: white; font-size: 12px; font-weight: bold; padding: 6px 10px; border-radius: 4px; margin-top: 14px; }
+  .custGrid { display: grid; grid-template-columns: 90px 1fr; gap: 4px 8px; font-size: 13px; margin-top: 8px; }
+  .custGrid b { color: #444; }
+
+  .dateRow { display: flex; justify-content: flex-end; margin-top: 6px; }
+  .dateRow input { padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+
+  .skevHdr { background: #1b96aa; color: white; font-size: 12px; font-weight: bold; padding: 6px 10px; border-radius: 4px; margin-top: 16px; }
+  .skevGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .skevCard { border: 1px solid #ccc; border-radius: 6px; padding: 8px; text-align: center; }
+  .skevCard .typ { font-weight: bold; font-size: 11px; color: #1b96aa; }
+  .skevCard .name { font-weight: bold; font-size: 13px; margin-top: 2px; }
+  .skevCard .drast { font-size: 10px; color: #555; margin-top: 4px; }
+  .skevCard .adeia { font-size: 9px; color: #888; margin-top: 6px; }
+  .skevCard .adeiaVal { font-weight: bold; font-size: 11px; }
+  #noSkev { color: #999; font-size: 12px; margin-top: 10px; text-align: center; }
+
+  .instr { font-size: 10px; color: #333; margin-top: 16px; line-height: 1.4; }
+
+  .sigRow { display: flex; justify-content: flex-end; margin-top: 20px; align-items: flex-start; gap: 10px; }
+  .sigBox { text-align: center; }
+  .sigBox label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 4px; }
+  .sigBox img { width: 220px; border: 1px solid #ccc; border-radius: 4px; }
+  select#scientistPicker { padding: 6px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 6px; }
+
+  .footerBar { text-align: center; font-size: 9px; color: #666; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 8px; }
+
+  .actions { display: flex; gap: 10px; margin: 16px; }
+  .actions button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
+  #btnPrint { background: #1b96aa; color: white; }
+  #loadingMsg { text-align: center; color: #888; padding: 20px; }
+</style>
+</head>
+<body>
+
+<div class="actions noPrint">
+  <button id="btnPrint" onclick="window.print()">🖨️ Αποθήκευση ως PDF / Εκτύπωση</button>
+</div>
+
+<div class="page">
+  <div class="headerRow">
+    <img class="logo" src="inco_logo.jpg" alt="InCo">
+    <div class="titleBar">
+      <h1>eCERT — ΠΙΣΤΟΠΟΙΗΤΙΚΟ ΕΦΑΡΜΟΓΩΝ</h1>
+      <p>ΑΠΕΝΤΟΜΩΣΗΣ - ΜΥΟΚΤΟΝΙΑΣ - ΑΠΩΘΗΣΗΣ</p>
+    </div>
+    <div class="kodBox">ΑΡ. ΑΔΕΙΑΣ<br>Υ.Α.Α.Τ<br>128762/2009</div>
+  </div>
+
+  <div class="custBar">ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</div>
+  <div class="custGrid">
+    <b>Επωνυμία:</b><span id="custEponymia">—</span>
+    <b>Διεύθυνση:</b><span id="custDiey">—</span>
+    <b>Τηλέφωνο:</b><span id="custTil">—</span>
+    <b>ΑΦΜ:</b><span id="custAfm">—</span>
+  </div>
+  <div class="dateRow">
+    <label style="font-size:12px; font-weight:bold; margin-right:8px; align-self:center;">Ημερομηνία:</label>
+    <input type="date" id="custDate">
+  </div>
+
+  <div class="skevHdr">ΕΦΑΡΜΟΓΗ / ΣΚΕΥΑΣΜΑ / ΔΡΑΣΤΙΚΗ ΟΥΣΙΑ / ΑΡ. ΑΔΕΙΑΣ ΕΓΚΡΙΣΗΣ</div>
+  <div class="skevGrid" id="skevGrid"></div>
+  <div id="noSkev" style="display:none;">Δεν βρέθηκαν σκευάσματα στο link.</div>
+
+  <div class="instr">
+    Μην έρχεστε σε επαφή με οποιοδήποτε τρόπο με τις επιφάνειες ή τα σημεία στα οποία έχει πραγματοποιηθεί ψεκασμός ή έχει τοποθετηθεί Gel. Σε περίπτωση επαφής πλυθείτε με άφθονο νερό και σαπούνι.<br>
+    Να εφαρμόσετε επαρκή αερισμό στους χώρους όπου έχει πραγματοποιηθεί ψεκασμός.<br>
+    Κρατήστε μακριά από τους χώρους που πραγματοποιείται ψεκασμός παιδιά, εγκύους και κατοικίδια ζώα μέχρι τον επαρκή αερισμό του χώρου.<br>
+    Μην αγγίζετε Δολωματικούς Σταθμούς - Μην αλλάζετε θέση στα Σημεία Ελέγχου.<br>
+    ΖΗΤΗΣΤΕ ΑΜΕΣΩΣ ΙΑΤΡΙΚΗ ΣΥΜΒΟΥΛΗ σε περίπτωση κατάποσης του μυοκτόνου (ποντικοφάρμακο) έχοντας μαζί σας το Πιστοποιητικό Εφαρμογής. ΑΝΤΙΔΟΤΟ ΜΥΟΚΤΟΝΟΥ: ΒΙΤΑΜΙΝΗ Κ1
+  </div>
+
+  <div class="sigRow">
+    <div class="sigBox">
+      <select id="scientistPicker" class="noPrint" onchange="updateSignature()">
+        <option value="trifonidis">Αρχιμήδης Λ. Τρυφωνίδης</option>
+        <option value="karavasilis">Ευάγγελος Κ. Καραβασόπουλος</option>
+      </select>
+      <img id="sigImg" src="sig_trifonidis.jpg" alt="Υπογραφή">
+    </div>
+  </div>
+
+  <div class="footerBar">
+    ΑΞΙΟΠΙΣΤΕΣ ΛΥΣΕΙΣ ΥΓΕΙΟΝΟΜΙΚΗΣ ΣΗΜΑΣΙΑΣ — Δελφών 140, Γλυφάδα, 16561 — τηλ. 210-96.44.310 — sales in-co.gr
+  </div>
+</div>
+
+<script>
+const SKEVASMATA_DB = {
+"TETRAX (148)": ["TETRAX MICROACTION CS", "Cypermethrin 10% β/ο\nTetramethrin 2% β/ο\nPiperonyl butoxide 10% β/ο", "ΤΠ18-0458 / 19.03.2021"],
+"DELETE (109)": ["DELETE III SC", "Cypermethrin 10.7% β/o\nTetramethrin 2.14% β/ο\nPiperonyl butoxide 5.35% β/ο", "ΤΠ18-0384"],
+"DOBMEM (29)": ["", "", ""],
+"MAGNUM ANT (41)": ["MAGNUM GEL ΜΥΡΜΗΓΚΙΑ", "Imidacloprid 0.01%\nBitrex 0.008%", "ΤΠ18-0318"],
+"MAGNUM GEL (42)": ["MAGNUM GEL", "Imidacloprid 2.15% β/β", "ΤΠ18-0298"],
+"SWIRR (117)": ["SWIRR 2 MG", "Acetamiprid 0.2% β/β", "ΤΠ18-0185/01-02-2016"],
+"CT (52)": ["PESQUARD CT 2.6", "Clothianidin 2.6% β/o", "ΤΠ18-0123/01-07-2014"],
+"ZAGOR (124/175)": ["ZAGOR WAX BLOCK", "Brodifacoum 0.005% β/β\nDenatonium Benzoate 0.01% β/β", "ΤΠ14-0113"],
+"MAST (139)": ["", "", ""],
+"CORAL (70)": ["", "", ""],
+"TBCL (71)": ["", "", ""],
+"SNAPTRAP (125)": ["", "", ""],
+"ITRAP 50 (58)": ["", "", ""],
+"M26 (158)": ["", "", ""],
+"M41 (119)": ["", "", ""],
+"K43 (127)": ["", "", ""],
+"GT200 (60)": ["", "", ""],
+"RT30/36 (64)": ["", "", ""],
+"P3Ct STICKY (167)": ["", "", ""],
+"RTU (68)": ["", "", ""],
+"PROVECTA (53)": ["PROVECTA", "Polyalkyleneoxide modified heptamethyltrisiloxane", ""],
+"Π20 (76)": ["TRAPPER MAX PRO/LTD/MC/Π20", "", ""],
+"MASTER TRAP (153)": ["TRAPPER MASTER TRAP", "", ""],
+"BLATTRAP (176)": ["BLATRAP STICKY PRO", "", ""]
+};
+
+const p = new URLSearchParams(window.location.search);
+document.getElementById('custEponymia').textContent = decodeURIComponent(p.get('pelatis') || '—');
+document.getElementById('custDiey').textContent = decodeURIComponent(p.get('diey') || '—');
+document.getElementById('custTil').textContent = decodeURIComponent(p.get('til') || '—');
+document.getElementById('custAfm').textContent = decodeURIComponent(p.get('afm') || '—');
+document.getElementById('custDate').value = new Date().toISOString().slice(0, 10);
+
+let skevasmata = [];
+try {
+  const raw = p.get('skev');
+  if (raw) skevasmata = JSON.parse(decodeURIComponent(raw));
+} catch (e) {
+  skevasmata = [];
+}
+
+const grid = document.getElementById('skevGrid');
+if (skevasmata.length === 0) {
+  document.getElementById('noSkev').style.display = 'block';
+} else {
+  skevasmata.forEach(function(item) {
+    const info = SKEVASMATA_DB[item.skeuasma] || ['', '', ''];
+    const name = info[0] || item.skeuasma;
+    const drast = info[1] ? '(' + info[1].replace(/\n/g, ' ') + ')' : '';
+    const adeia = info[2] || '';
+
+    const card = document.createElement('div');
+    card.className = 'skevCard';
+    card.innerHTML =
+      '<div class="typ">' + (item.typos || '') + '</div>' +
+      '<div class="name">' + name + '</div>' +
+      (drast ? '<div class="drast">' + drast + '</div>' : '') +
+      (adeia ? '<div class="adeia">Αρ. Άδειας Έγκρισης</div><div class="adeiaVal">' + adeia + '</div>' : '');
+    grid.appendChild(card);
+  });
+}
+
+function updateSignature() {
+  const val = document.getElementById('scientistPicker').value;
+  document.getElementById('sigImg').src = val === 'karavasilis' ? 'sig_karavasilis.jpg' : 'sig_trifonidis.jpg';
+}
+</script>
+</body>
+</html>
