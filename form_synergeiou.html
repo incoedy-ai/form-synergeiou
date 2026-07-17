@@ -494,6 +494,14 @@
   }
 })();
 
+// Κολλητικές επιφάνειες συντήρησης εντομοπαγίδων: εμφανίζονται στην εντολή,
+// ΟΧΙ στο eCert πιστοποιητικό.
+const EXCLUDE_FROM_ECERT = [
+  'M26 (158)', 'M41 (119)', 'K43 (127)', 'RT30/36 (64)', 'P3Ct STICKY (167)',
+  'CHAMELEON (58)', 'STICKY FTP30 (59)', 'STICKY INOXTRAP (61)',
+  'STICKY RT22 (62)', 'STICKY RT24 (63)',
+];
+
 function openECert() {
   const pelatis = document.getElementById('inf-pelatis').textContent;
   const diey = document.getElementById('inf-diey').textContent;
@@ -504,7 +512,7 @@ function openECert() {
   for (let i = 0; i < ROWS; i++) {
     const typ = document.getElementById(`sk-typ-${i}`).value;
     const sel = document.getElementById(`sk-sel-${i}`).value;
-    if (sel) skev.push({ typos: typ || '', skeuasma: sel });
+    if (sel && !EXCLUDE_FROM_ECERT.includes(sel)) skev.push({ typos: typ || '', skeuasma: sel });
   }
 
   const qp = new URLSearchParams({
@@ -525,12 +533,15 @@ const skevasmata = [
   'DOBOL ANT GEL PRO (25)', 'DOBOL ANT BAIT (23)', 'DOBOL ANT FLASK (24)',
   'DOBOL GEL PRO (27)', 'DOBOL MICROCYP (30)', 'DOBOL OMICRON (31)', 'CYTROL FORTE (20)', 'AZAMAT (14)', 'ADVION ANT (13)', 'BEST BOX (16)', 'PROCAPTURA (19)', 'BED BUG TRAP (15)',
   'BIRD NET (17)', 'ECOLOGIC (35)', 'BUGSTER DUST (149)', 'PANKILL DUST (151)', 'MAGNUM ROACHES IGR (136)',
+  'INOXTRAP (38)', 'DIAMOND TRAP (172)',
+  'STICKY FTP30 (59)', 'STICKY INOXTRAP (61)', 'STICKY RT22 (62)', 'STICKY RT24 (63)',
   'MAGNUM ANT (41)', 'MAGNUM GEL (42)', 'PROVECTA (53)', 'SWIRR (117)', 'CT (52)',
   // ΠΟΝΤΙΚΙΑ
   'ZAGOR (124/175)', 'MAST (139)', 'Π20 (76)', 'CORAL (70)',
   'TBCL (71)', 'SNAPTRAP (125)',
   // ΚΟΛΛΕΣ
-  'ITRAP 50 (37)', 'CHAMELEON (58)', 'M26 (158)', 'M41 (119)', 'K43 (127)',
+  'ITRAP 50 (37)', 'CHAMELEON (58)', 'X-LURE (93)', 'ROCK BAIT STATION (186)',
+  'M26 (158)', 'M41 (119)', 'K43 (127)',
   'GT200 (60)', 'RT30/36 (64)', 'P3Ct STICKY (167)',
   'MASTER TRAP (153)', 'BLATTRAP (176)', 'RTU (68)',
 ];
