@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Μυοκτονία - Καταχώρηση Μέτρησης</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px; background: #f5f7f8; }
+  h1 { font-size: 18px; color: #444; }
+  h2 { font-size: 14px; background: #6b6f72; color: white; padding: 8px 10px; border-radius: 4px; margin-top: 24px; }
+  .row { display: flex; align-items: center; justify-content: space-between; padding: 10px 4px; border-bottom: 1px solid #ddd; }
+  .row label { font-weight: bold; font-size: 15px; }
+  input { width: 90px; padding: 8px; font-size: 16px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
+  button { width: 100%; margin-top: 24px; padding: 14px; font-size: 16px; background: #6b6f72; color: white; border: none; border-radius: 6px; }
+  #msg { margin-top: 16px; font-weight: bold; text-align: center; }
+  #loading { text-align: center; color: #888; margin-top: 20px; }
+</style>
+</head>
+<body>
+<h1 id="pageTitle">ΜΥΟΚΤΟΝΙΑ</h1>
+<div id="loading">Φόρτωση σταθμών...</div>
+
+<div id="dsSection" style="display:none">
+  <h2>ΔΟΛΩΜΑΤΙΚΟΙ ΣΤΑΘΜΟΙ — Ποσοστό Κατανάλωσης (%)</h2>
+  <div id="dsList"></div>
+</div>
+
+<div id="seSection" style="display:none">
+  <h2>ΣΗΜΕΙΑ ΕΛΕΓΧΟΥ — Αριθμός Συλλήψεων</h2>
+  <div id="seList"></div>
+</div>
+
+<button id="submitBtn" onclick="submitForm()" style="display:none">Υποβολή</button>
+<div id="msg"></div>
+
+<script>
+const qs = new URLSearchParams(window.location.search);
+const URL = qs.get('script') || "https://script.google.com/macros/s/AKfycby0DVDdrddETKpizq8JQgGQs3SDRyRNhypnFA7--Q2XtsT6qmisLiR93Gc4b2MkuHcG/exec";
+const pelatis = qs.get('pelatis') || '';
+if (pelatis) document.getElementById('pageTitle').textContent = 'ΜΥΟΚΤΟΝΙΑ — ' + decodeURIComponent(pelatis);
+
+let DS_STATIONS = [];
+let SE_STATIONS = [];
+
+function buildList(stations, containerId, prefix) {
+  const container = document.getElementById(containerId);
+  stations.forEach(function(code) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const label = document.createElement('label');
+    label.textContent = code;
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '0';
+    input.id = prefix + '_' + code;
+    row.appendChild(label);
+    row.appendChild(input);
+    container.appendChild(row);
+  });
+}
+
+fetch(URL)
+  .then(r => r.json())
+  .then(stations => {
+    DS_STATIONS = stations.filter(s => s.kodikos && s.typos === 'ΔΣ').map(s => s.kodikos);
+    SE_STATIONS = stations.filter(s => s.kodikos && s.typos === 'ΣΕ').map(s => s.kodikos);
+
+    document.getElementById('loading').style.display = 'none';
+    if (DS_STATIONS.length > 0) {
+      buildList(DS_STATIONS, 'dsList', 'ds');
+      document.getElementById('dsSection').style.display = 'block';
+    }
+    if (SE_STATIONS.length > 0) {
+      buildList(SE_STATIONS, 'seList', 'se');
+      document.getElementById('seSection').style.display = 'block';
+    }
+    document.getElementById('submitBtn').style.display = 'block';
+  })
+  .catch(() => {
+    document.getElementById('loading').textContent = 'Σφάλμα φόρτωσης σταθμών.';
+  });
+
+function submitForm() {
+  const entries = [];
+  DS_STATIONS.forEach(function(code) {
+    const v = document.getElementById('ds_' + code).value;
+    if (v !== '') entries.push({ stathmos: code, typos: 'ΔΣ', timi: v });
+  });
+  SE_STATIONS.forEach(function(code) {
+    const v = document.getElementById('se_' + code).value;
+    if (v !== '') entries.push({ stathmos: code, typos: 'ΣΕ', timi: v });
+  });
+
+  const msg = document.getElementById('msg');
+  if (entries.length === 0) {
+    msg.textContent = 'Συμπλήρωσε τουλάχιστον μία τιμή.';
+    msg.style.color = 'red';
+    return;
+  }
+
+  msg.textContent = 'Αποστολή...';
+  msg.style.color = 'black';
+
+  fetch(URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify({ entries: entries })
+  })
+  .then(() => {
+    msg.textContent = 'Καταχωρήθηκαν ' + entries.length + ' τιμές ✓';
+    msg.style.color = 'green';
+    document.querySelectorAll('input').forEach(i => i.value = '');
+  })
+  .catch(() => {
+    msg.textContent = 'Σφάλμα αποστολής.';
+    msg.style.color = 'red';
+  });
+}
+</script>
+</body>
+</html>

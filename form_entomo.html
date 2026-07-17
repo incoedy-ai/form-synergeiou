@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ηλεκτρικές Εντομοπαγίδες - Καταχώρηση</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px; background: #fffdf3; }
+  h1 { font-size: 17px; color: #000; }
+  h2 { font-size: 14px; background: #ffe600; color: #000; padding: 8px 10px; border-radius: 4px; margin-top: 20px; }
+  label { display: block; margin-top: 14px; font-weight: bold; font-size: 14px; }
+  select, input { width: 100%; padding: 9px; font-size: 15px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
+  .addRow { display: flex; gap: 8px; margin-top: 10px; }
+  .addRow select { flex: 2; margin: 0; }
+  .addRow button { flex: 1; margin: 0; padding: 9px; font-size: 14px; background: #ffe600; color: #000; border: none; border-radius: 6px; font-weight: bold; }
+  .speciesRow { display: flex; align-items: center; justify-content: space-between; padding: 8px 4px; border-bottom: 1px solid #ddd; }
+  .speciesRow span { font-weight: bold; }
+  .speciesRow select { width: 70px; margin: 0 8px; }
+  .speciesRow .del { background: #d9534f; color: white; border: none; border-radius: 4px; width: 28px; height: 28px; font-size: 14px; }
+  .row { display: flex; align-items: center; justify-content: space-between; padding: 8px 4px; border-bottom: 1px solid #ddd; }
+  .row label { margin: 0; font-weight: normal; font-size: 14px; }
+  .row select { width: 90px; margin: 0; }
+  button.submitBtn { width: 100%; margin-top: 24px; padding: 14px; font-size: 16px; background: #ffe600; color: #000; border: none; border-radius: 6px; font-weight: bold; }
+  #msg { margin-top: 16px; font-weight: bold; text-align: center; }
+  #empty { color: #999; font-size: 13px; padding: 8px 4px; }
+  .legend { background: #fff9db; border: 1px solid #e8d872; border-radius: 6px; padding: 8px 12px; margin-top: 10px; font-size: 12px; }
+  .legend b { color: #7a6a00; }
+</style>
+</head>
+<body>
+<h1 id="pageTitle">ΗΛΕΚΤΡΙΚΕΣ ΕΝΤΟΜΟΠΑΓΙΔΕΣ</h1>
+
+<label for="thesi">Θέση Παγίδας</label>
+<select id="thesi"><option>Φόρτωση...</option></select>
+
+<h2>ΕΙΔΗ ΠΟΥ ΒΡΕΘΗΚΑΝ</h2>
+<div class="legend">
+  <b>Βαθμός Συλλήψεων:</b> 0 = 0 &nbsp; 1 = &lt;5 &nbsp; 2 = 5-20 &nbsp; 3 = 20-49 &nbsp; 4 = &gt;50+
+</div>
+<div class="addRow">
+  <select id="speciesPicker"></select>
+  <button type="button" onclick="addSpecies()">+ Προσθήκη</button>
+</div>
+<div id="speciesList"></div>
+<div id="empty">Δεν έχει προστεθεί κανένα είδος ακόμα.</div>
+
+<h2>ΣΥΝΤΗΡΗΣΗ</h2>
+<div class="row">
+  <label>Αλλαγή Κολλητικής Επιφάνειας</label>
+  <select id="kollitiki"><option value="">—</option><option value="ΝΑΙ">✓ ΝΑΙ</option><option value="ΟΧΙ">Χ ΟΧΙ</option></select>
+</div>
+<div class="row">
+  <label>Αλλαγή Λαμπτήρων</label>
+  <select id="lamptires"><option value="">—</option><option value="ΝΑΙ">✓ ΝΑΙ</option><option value="ΟΧΙ">Χ ΟΧΙ</option><option value="ΕΠΙΣΚΕΥΗ">S ΕΠΙΣΚΕΥΗ</option></select>
+</div>
+<div class="row">
+  <label>% Κάλυψης Κολλητικής Επιφάνειας</label>
+  <input type="number" id="kalypsi" min="0" max="100" style="width:90px">
+</div>
+
+<label for="paratiriseis">Παρατηρήσεις</label>
+<textarea id="paratiriseis" rows="3" style="width:100%; padding:9px; font-size:15px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px;"></textarea>
+
+<button class="submitBtn" onclick="submitForm()">Υποβολή</button>
+<div id="msg"></div>
+
+<script>
+const qs = new URLSearchParams(window.location.search);
+const URL = qs.get('script') || "https://script.google.com/macros/s/AKfycby0DVDdrddETKpizq8JQgGQs3SDRyRNhypnFA7--Q2XtsT6qmisLiR93Gc4b2MkuHcG/exec";
+const pelatis = qs.get('pelatis') || '';
+if (pelatis) document.getElementById('pageTitle').textContent = 'ΗΛΕΚΤΡΙΚΕΣ ΕΝΤΟΜΟΠΑΓΙΔΕΣ — ' + decodeURIComponent(pelatis);
+
+const SPECIES = ["Muscidae","Sarcophagidae","Calliphoridae","Psychodidae","Drosophilidae",
+                  "Phoridae","Vespidae","Coleoptera","Lepidoptera","ΛΟΙΠΑ"];
+
+const addedSpecies = [];
+
+function refreshPicker() {
+  const picker = document.getElementById('speciesPicker');
+  picker.innerHTML = '';
+  const available = SPECIES.filter(s => !addedSpecies.includes(s));
+  available.forEach(function(name) {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    picker.appendChild(opt);
+  });
+}
+refreshPicker();
+
+function addSpecies() {
+  const picker = document.getElementById('speciesPicker');
+  const name = picker.value;
+  if (!name) return;
+  addedSpecies.push(name);
+  refreshPicker();
+
+  document.getElementById('empty').style.display = 'none';
+
+  const row = document.createElement('div');
+  row.className = 'speciesRow';
+  row.id = 'row_' + name;
+
+  const span = document.createElement('span');
+  span.textContent = name;
+
+  const select = document.createElement('select');
+  select.id = 'sp_' + name;
+  ['0','1','2','3','4'].forEach(function(v) {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v;
+    select.appendChild(opt);
+  });
+
+  const del = document.createElement('button');
+  del.className = 'del';
+  del.type = 'button';
+  del.textContent = '×';
+  del.onclick = function() {
+    row.remove();
+    const idx = addedSpecies.indexOf(name);
+    if (idx > -1) addedSpecies.splice(idx, 1);
+    refreshPicker();
+    if (addedSpecies.length === 0) document.getElementById('empty').style.display = 'block';
+  };
+
+  row.appendChild(span);
+  row.appendChild(select);
+  row.appendChild(del);
+  document.getElementById('speciesList').appendChild(row);
+}
+
+fetch(URL + "?type=entomo-positions")
+  .then(r => r.json())
+  .then(positions => {
+    const sel = document.getElementById('thesi');
+    sel.innerHTML = '';
+    positions.forEach(function(p) {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p;
+      sel.appendChild(opt);
+    });
+  })
+  .catch(() => {
+    document.getElementById('thesi').innerHTML = '<option>Σφάλμα φόρτωσης</option>';
+  });
+
+function resetForm() {
+  addedSpecies.length = 0;
+  document.getElementById('speciesList').innerHTML = '';
+  document.getElementById('empty').style.display = 'block';
+  document.getElementById('kollitiki').value = '';
+  document.getElementById('lamptires').value = '';
+  document.getElementById('kalypsi').value = '';
+  document.getElementById('paratiriseis').value = '';
+  refreshPicker();
+}
+
+function submitForm() {
+  const thesi = document.getElementById('thesi').value;
+  const species = {};
+  addedSpecies.forEach(function(name) {
+    species[name] = document.getElementById('sp_' + name).value;
+  });
+
+  const kollitiki = document.getElementById('kollitiki').value;
+  const lamptires = document.getElementById('lamptires').value;
+  const kalypsi = document.getElementById('kalypsi').value;
+
+  const msg = document.getElementById('msg');
+  if (addedSpecies.length === 0 && kollitiki === '' && lamptires === '' && kalypsi === '') {
+    msg.textContent = 'Συμπλήρωσε τουλάχιστον ένα στοιχείο.';
+    msg.style.color = 'red';
+    return;
+  }
+
+  msg.textContent = 'Αποστολή...';
+  msg.style.color = 'black';
+
+  fetch(URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify({ form: 'entomo', thesi: thesi, species: species, kollitiki: kollitiki, lamptires: lamptires, kalypsi: kalypsi, paratiriseis: document.getElementById('paratiriseis').value })
+  })
+  .then(() => {
+    msg.textContent = 'Καταχωρήθηκε η θέση ' + thesi + ' ✓ — επίλεξε επόμενη θέση για να συνεχίσεις.';
+    msg.style.color = 'green';
+    resetForm();
+  })
+  .catch(() => {
+    msg.textContent = 'Σφάλμα αποστολής.';
+    msg.style.color = 'red';
+  });
+}
+</script>
+</body>
+</html>
