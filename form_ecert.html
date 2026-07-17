@@ -19,6 +19,7 @@
   .titleBar { flex: 1; background: #1b96aa; color: white; padding: 10px 14px; border-radius: 4px; }
   .titleBar h1 { font-size: 18px; margin: 0; }
   .titleBar p { font-size: 11px; margin: 2px 0 0; opacity: 0.9; }
+  .titleBar p .bigWord { font-size: 15px; font-weight: bold; }
   .kodBox { background: #eee; border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 11px; text-align: center; font-weight: bold; }
 
   .custBar { background: #1b96aa; color: white; font-size: 12px; font-weight: bold; padding: 6px 10px; border-radius: 4px; margin-top: 14px; }
@@ -29,14 +30,14 @@
   .dateRow input { padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
 
   .skevHdr { background: #1b96aa; color: white; font-size: 12px; font-weight: bold; padding: 6px 10px; border-radius: 4px; margin-top: 16px; }
-  .skevGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-  .skevCard { border: 1px solid #ccc; border-radius: 6px; padding: 8px; text-align: center; }
-  .skevCard .typ { font-weight: bold; font-size: 11px; color: #1b96aa; }
-  .skevCard .name { font-weight: bold; font-size: 13px; margin-top: 2px; }
-  .skevCard .drast { font-size: 10px; color: #555; margin-top: 4px; }
-  .skevCard .adeia { font-size: 9px; color: #888; margin-top: 6px; }
-  .skevCard .adeiaVal { font-weight: bold; font-size: 11px; }
-  #noSkev { color: #999; font-size: 12px; margin-top: 10px; text-align: center; }
+  .skevGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+  .skevCard { border: 1px solid #999; border-radius: 4px; padding: 6px 4px; text-align: center; min-height: 140px; font-size: 10px; }
+  .skevCard .typ { font-weight: bold; font-size: 9px; color: #1b96aa; }
+  .skevCard .name { font-weight: bold; font-size: 10px; margin-top: 2px; }
+  .skevCard .drast { font-size: 7px; color: #555; margin-top: 3px; line-height: 1.2; }
+  .skevCard .adeia { font-size: 6.5px; color: #888; margin-top: 4px; }
+  .skevCard .adeiaVal { font-weight: bold; font-size: 8px; }
+  .skevCard.empty { border-style: solid; }
 
   .instr { font-size: 10px; color: #333; margin-top: 16px; line-height: 1.4; }
 
@@ -65,7 +66,7 @@
     <img class="logo" src="inco_logo.jpg" alt="InCo">
     <div class="titleBar">
       <h1>eCERT — ΠΙΣΤΟΠΟΙΗΤΙΚΟ ΕΦΑΡΜΟΓΩΝ</h1>
-      <p>ΑΠΕΝΤΟΜΩΣΗΣ - ΜΥΟΚΤΟΝΙΑΣ - ΑΠΩΘΗΣΗΣ</p>
+      <p><span class="bigWord">ΑΠΕΝΤΟΜΩΣΗΣ</span> - <span class="bigWord">ΜΥΟΚΤΟΝΙΑΣ</span> - ΑΠΩΘΗΣΗΣ</p>
     </div>
     <div class="kodBox">ΑΡ. ΑΔΕΙΑΣ<br>Υ.Α.Α.Τ<br>128762/2009</div>
   </div>
@@ -84,7 +85,6 @@
 
   <div class="skevHdr">ΕΦΑΡΜΟΓΗ / ΣΚΕΥΑΣΜΑ / ΔΡΑΣΤΙΚΗ ΟΥΣΙΑ / ΑΡ. ΑΔΕΙΑΣ ΕΓΚΡΙΣΗΣ</div>
   <div class="skevGrid" id="skevGrid"></div>
-  <div id="noSkev" style="display:none;">Δεν βρέθηκαν σκευάσματα στο link.</div>
 
   <div class="instr">
     Μην έρχεστε σε επαφή με οποιοδήποτε τρόπο με τις επιφάνειες ή τα σημεία στα οποία έχει πραγματοποιηθεί ψεκασμός ή έχει τοποθετηθεί Gel. Σε περίπτωση επαφής πλυθείτε με άφθονο νερό και σαπούνι.<br>
@@ -153,24 +153,23 @@ try {
 }
 
 const grid = document.getElementById('skevGrid');
-if (skevasmata.length === 0) {
-  document.getElementById('noSkev').style.display = 'block';
-} else {
-  skevasmata.forEach(function(item) {
+const slotCount = Math.max(8, Math.ceil(skevasmata.length / 4) * 4);
+for (let i = 0; i < slotCount; i++) {
+  const item = skevasmata[i];
+  const card = document.createElement('div');
+  card.className = 'skevCard' + (item ? '' : ' empty');
+  if (item) {
     const info = SKEVASMATA_DB[item.skeuasma] || ['', '', ''];
     const name = info[0] || item.skeuasma;
-    const drast = info[1] ? '(' + info[1].replace(/\n/g, ' ') + ')' : '';
+    const drast = info[1] ? info[1].split('\n').map(function(l){ return '(' + l + ')'; }).join('<br>') : '';
     const adeia = info[2] || '';
-
-    const card = document.createElement('div');
-    card.className = 'skevCard';
     card.innerHTML =
       '<div class="typ">' + (item.typos || '') + '</div>' +
       '<div class="name">' + name + '</div>' +
       (drast ? '<div class="drast">' + drast + '</div>' : '') +
       (adeia ? '<div class="adeia">Αρ. Άδειας Έγκρισης</div><div class="adeiaVal">' + adeia + '</div>' : '');
-    grid.appendChild(card);
-  });
+  }
+  grid.appendChild(card);
 }
 
 function updateSignature() {
