@@ -14,11 +14,18 @@
   button { width: 100%; margin-top: 24px; padding: 14px; font-size: 16px; background: #6b6f72; color: white; border: none; border-radius: 6px; }
   #msg { margin-top: 16px; font-weight: bold; text-align: center; }
   #loading { text-align: center; color: #888; margin-top: 20px; }
+  .legend { background: #f0f0f0; border: 1px solid #ccc; border-radius: 6px; padding: 8px 12px; margin-top: 16px; font-size: 12px; }
+  .legend b { color: #444; }
 </style>
 </head>
 <body>
 <h1 id="pageTitle">ΜΥΟΚΤΟΝΙΑ</h1>
 <div id="loading">Φόρτωση σταθμών...</div>
+
+<div class="legend">
+  <b>Σύμβολα σταθμού:</b> - = ΑΠΩΝ &nbsp; x = ΚΑΤΕΣΤΡΑΜΜΕΝΟΣ &nbsp; ? = ΜΗ ΠΡΟΣΒΑΣΙΜΟΣ &nbsp; ! = ΝΕΟΣ/ΑΝΤΙΚΑΤΑΣΤΑΣΗ<br>
+  Αλλιώς, γράψε τον αριθμό (ποσοστό/συλλήψεις).
+</div>
 
 <div id="dsSection" style="display:none">
   <h2>ΔΟΛΩΜΑΤΙΚΟΙ ΣΤΑΘΜΟΙ — Ποσοστό Κατανάλωσης (%)</h2>
@@ -50,8 +57,8 @@ function buildList(stations, containerId, prefix) {
     const label = document.createElement('label');
     label.textContent = code;
     const input = document.createElement('input');
-    input.type = 'number';
-    input.min = '0';
+    input.type = 'text';
+    input.placeholder = '# ή - x ? !';
     input.id = prefix + '_' + code;
     row.appendChild(label);
     row.appendChild(input);
@@ -80,18 +87,35 @@ fetch(URL)
     document.getElementById('loading').textContent = 'Σφάλμα φόρτωσης σταθμών.';
   });
 
+const VALID_SYMBOLS = ['-', 'x', 'X', '?', '!'];
+function isValidEntry(v) {
+  return VALID_SYMBOLS.includes(v) || !isNaN(v);
+}
+
 function submitForm() {
   const entries = [];
+  const invalid = [];
   DS_STATIONS.forEach(function(code) {
-    const v = document.getElementById('ds_' + code).value;
-    if (v !== '') entries.push({ stathmos: code, typos: 'ΔΣ', timi: v });
+    const v = document.getElementById('ds_' + code).value.trim();
+    if (v !== '') {
+      if (isValidEntry(v)) entries.push({ stathmos: code, typos: 'ΔΣ', timi: v });
+      else invalid.push(code);
+    }
   });
   SE_STATIONS.forEach(function(code) {
-    const v = document.getElementById('se_' + code).value;
-    if (v !== '') entries.push({ stathmos: code, typos: 'ΣΕ', timi: v });
+    const v = document.getElementById('se_' + code).value.trim();
+    if (v !== '') {
+      if (isValidEntry(v)) entries.push({ stathmos: code, typos: 'ΣΕ', timi: v });
+      else invalid.push(code);
+    }
   });
 
   const msg = document.getElementById('msg');
+  if (invalid.length > 0) {
+    msg.textContent = 'Μη έγκυρη τιμή στο: ' + invalid.join(', ') + ' (μόνο αριθμός ή - x ? !)';
+    msg.style.color = 'red';
+    return;
+  }
   if (entries.length === 0) {
     msg.textContent = 'Συμπλήρωσε τουλάχιστον μία τιμή.';
     msg.style.color = 'red';
