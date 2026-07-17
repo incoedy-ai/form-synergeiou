@@ -46,7 +46,8 @@
   .custGrid b { color: #444; }
 
   .skevGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
-  .skevCard { border: 1px solid #999; border-radius: 4px; padding: 6px 4px; text-align: center; min-height: 70px; font-size: 10px; }
+  .skevCard { border: 1px solid #999; border-radius: 4px; padding: 6px 4px; text-align: center; min-height: 70px; font-size: 10px; position: relative; }
+  .skevCard .eco { display: inline-flex; align-items: center; gap: 2px; margin-top: 4px; padding: 1px 6px; border-radius: 10px; background: #2e8b3d; color: white; font-size: 6px; font-weight: bold; letter-spacing: 0.3px; }
   .skevCard .typ { font-weight: bold; font-size: 9px; color: #087D8E; }
   .skevCard .name { font-weight: bold; font-size: 10px; margin-top: 2px; }
   .skevCard .drast { font-size: 7px; color: #555; margin-top: 3px; line-height: 1.2; }
@@ -120,7 +121,7 @@
     <b>ΑΦΜ:</b><span id="custAfm">—</span>
   </div>
 
-  <div class="sectionBar teal">ΕΦΑΡΜΟΓΗ / ΣΚΕΥΑΣΜΑ / ΔΡΑΣΤΙΚΗ ΟΥΣΙΑ / ΑΡ. ΑΔΕΙΑΣ ΕΓΚΡΙΣΗΣ</div>
+  <div class="sectionBar teal">ΕΦΑΡΜΟΓΗ / ΣΚΕΥΑΣΜΑ - ΔΡΑΣΤΙΚΗ ΟΥΣΙΑ - ΑΡ. ΕΓΚΡΙΣΗΣ / ΥΛΙΚΟ</div>
   <div class="skevGrid" id="skevGrid"></div>
 
   <div class="sectionBar teal">ΟΔΗΓΙΕΣ - ΠΡΟΦΥΛΑΞΗ</div>
@@ -172,30 +173,30 @@
 
 <script>
 const SKEVASMATA_DB = {
-"TETRAX (148)": ["TETRAX MICROACTION CS", "Cypermethrin 10% β/ο\nTetramethrin 2% β/ο\nPiperonyl butoxide 10% β/ο", "ΤΠ18-0458 / 19.03.2021"],
-"DELETE (109)": ["DELETE III SC", "Cypermethrin 10.7% β/o\nTetramethrin 2.14% β/ο\nPiperonyl butoxide 5.35% β/ο", "ΤΠ18-0384"],
-"DOBMEM (29)": ["DOBOL MICROEMULSION (ME) PRO", "Acetamiprid 5% β/ο\nD-Tetramethrin 2.5% β/ο\nPiperonyl butoxide 10% β/ο", "ΤΠ18-0119"],
-"MAGNUM ANT (41)": ["MAGNUM GEL ΜΥΡΜΗΓΚΙΑ", "Imidacloprid 0.01%\nBitrex 0.008%", "ΤΠ18-0318"],
-"MAGNUM GEL (42)": ["MAGNUM GEL", "Imidacloprid 2.15% β/β", "ΤΠ18-0298"],
-"SWIRR (117)": ["SWIRR 2 MG", "Acetamiprid 0.2% β/β", "ΤΠ18-0185/01-02-2016"],
-"CT (52)": ["PESQUARD CT 2.6", "Clothianidin 2.6% β/o", "ΤΠ18-0123/01-07-2014"],
-"ZAGOR (124/175)": ["ZAGOR WAX BLOCK", "Brodifacoum 0.005% β/β\nDenatonium Benzoate 0.01% β/β", "ΤΠ14-0113"],
-"MAST (139)": ["", "", ""],
-"CORAL (70)": ["", "", ""],
-"TBCL (71)": ["", "", ""],
-"SNAPTRAP (125)": ["", "", ""],
-"ITRAP 50 (58)": ["", "", ""],
-"M26 (158)": ["", "", ""],
-"M41 (119)": ["", "", ""],
-"K43 (127)": ["", "", ""],
-"GT200 (60)": ["", "", ""],
-"RT30/36 (64)": ["", "", ""],
-"P3Ct STICKY (167)": ["", "", ""],
-"RTU (68)": ["", "", ""],
-"PROVECTA (53)": ["PROVECTA", "Polyalkyleneoxide modified heptamethyltrisiloxane", ""],
-"Π20 (76)": ["TRAPPER MAX PRO/LTD/MC/Π20", "", ""],
-"MASTER TRAP (153)": ["TRAPPER MASTER TRAP", "", ""],
-"BLATTRAP (176)": ["BLATRAP STICKY PRO", "", ""]
+"TETRAX (148)": ["TETRAX MICROACTION CS", "Cypermethrin 10% β/ο\nTetramethrin 2% β/ο\nPiperonyl butoxide 10% β/ο", "ΤΠ18-0458 / 19.03.2021", "Απεντόμωση"],
+"DELETE (109)": ["DELETE III SC", "Cypermethrin 10.7% β/o\nTetramethrin 2.14% β/ο\nPiperonyl butoxide 5.35% β/ο", "ΤΠ18-0384", "Απεντόμωση"],
+"DOBMEM (29)": ["DOBOL MICROEMULSION (ME) PRO", "Acetamiprid 5% β/ο\nD-Tetramethrin 2.5% β/ο\nPiperonyl butoxide 10% β/ο", "ΤΠ18-0119", "Απεντόμωση"],
+"MAGNUM ANT (41)": ["MAGNUM GEL ΜΥΡΜΗΓΚΙΑ", "Imidacloprid 0.01%\nBitrex 0.008%", "ΤΠ18-0318", "Απεντόμωση"],
+"MAGNUM GEL (42)": ["MAGNUM GEL", "Imidacloprid 2.15% β/β", "ΤΠ18-0298", "Απεντόμωση"],
+"SWIRR (117)": ["SWIRR 2 MG", "Acetamiprid 0.2% β/β", "ΤΠ18-0185/01-02-2016", "Απεντόμωση"],
+"CT (52)": ["PESTCARD CT", "Clothianidin 2.6% β/o", "ΤΠ18-0123/01-07-2014", "Απεντόμωση"],
+"ZAGOR (124/175)": ["ZAGOR WAX BLOCK", "Brodifacoum 0.005% β/β\nDenatonium Benzoate 0.01% β/β", "ΤΠ14-0113", "Μυοκτονία"],
+"MAST (139)": ["ΚΟΛΛΗΤΙΚΗ ΕΠΙΦΑΝΕΙΑ MAST", "", "", "Μυοκτονία"],
+"CORAL (70)": ["ΔΟΛΩΜΑΤΙΚΟΣ ΣΤΑΘΜΟΣ CORAL", "", "", "Μυοκτονία"],
+"TBCL (71)": ["ΔΟΛΩΜΑΤΙΚΟΣ ΣΤΑΘΜΟΣ TBCL", "", "", "Μυοκτονία"],
+"SNAPTRAP (125)": ["", "", "", "Μυοκτονία"],
+"ITRAP 50 (58)": ["ΗΛΕΚΤΡΙΚΗ ΕΝΤΟΜΟΠΑΓΙΔΑ ITRAP 50", "", "", "Απεντόμωση"],
+"M26 (158)": ["ΕΝΤΟΜΟΠΑΓΙΔΑ ΣΥΝΤΗΡΗΣΗ - ΑΛΛΑΓΗ ΚΟΛΛΗΤΙΚΗΣ ΕΠΙΦΑΝΕΙΑΣ", "", "", "Απεντόμωση"],
+"M41 (119)": ["ΕΝΤΟΜΟΠΑΓΙΔΑ ΣΥΝΤΗΡΗΣΗ - ΑΛΛΑΓΗ ΚΟΛΛΗΤΙΚΗΣ ΕΠΙΦΑΝΕΙΑΣ", "", "", "Απεντόμωση"],
+"K43 (127)": ["ΕΝΤΟΜΟΠΑΓΙΔΑ ΣΥΝΤΗΡΗΣΗ - ΑΛΛΑΓΗ ΚΟΛΛΗΤΙΚΗΣ ΕΠΙΦΑΝΕΙΑΣ", "", "", "Απεντόμωση"],
+"GT200 (60)": ["ΗΛΕΚΤΡΙΚΗ ΕΝΤΟΜΟΠΑΓΙΔΑ GT200", "", "", "Απεντόμωση"],
+"RT30/36 (64)": ["ΕΝΤΟΜΟΠΑΓΙΔΑ ΣΥΝΤΗΡΗΣΗ - ΑΛΛΑΓΗ ΚΟΛΛΗΤΙΚΗΣ ΕΠΙΦΑΝΕΙΑΣ", "", "", "Απεντόμωση"],
+"P3Ct STICKY (167)": ["ΕΝΤΟΜΟΠΑΓΙΔΑ ΣΥΝΤΗΡΗΣΗ - ΑΛΛΑΓΗ ΚΟΛΛΗΤΙΚΗΣ ΕΠΙΦΑΝΕΙΑΣ", "", "", "Απεντόμωση"],
+"RTU (68)": ["ΦΕΡΟΜΟΝΙΚΗ ΠΑΓΙΔΑ RTU", "", "", "Απεντόμωση"],
+"PROVECTA (53)": ["PROVECTA", "Polyalkyleneoxide modified heptamethyltrisiloxane", "", "Απεντόμωση"],
+"Π20 (76)": ["TRAPPER MAX PRO/LTD/MC/Π20", "", "", "Μυοκτονία"],
+"MASTER TRAP (153)": ["TRAPPER MASTER TRAP", "", "", "Απεντόμωση"],
+"BLATTRAP (176)": ["BLATRAP STICKY PRO", "", "", "Απεντόμωση"]
 };
 
 const p = new URLSearchParams(window.location.search);
@@ -220,15 +221,20 @@ for (let i = 0; i < slotCount; i++) {
   const card = document.createElement('div');
   card.className = 'skevCard' + (item ? '' : ' empty');
   if (item) {
-    const info = SKEVASMATA_DB[item.skeuasma] || ['', '', ''];
+    const info = SKEVASMATA_DB[item.skeuasma] || ['', '', '', ''];
     const name = info[0] || item.skeuasma.replace(/\s*\([^)]*\)\s*$/, '');
     const drast = info[1] ? info[1].split('\n').map(function(l){ return '(' + l + ')'; }).join('<br>') : '';
     const adeia = info[2] || '';
+    const typos = info[3] || item.typos || '';
+    const isEco = name && !drast;
+    const drastLabel = drast && !adeia ? 'Συστατικά' : '';
     card.innerHTML =
-      '<div class="typ">' + (item.typos || '') + '</div>' +
+      '<div class="typ">' + typos + '</div>' +
       '<div class="name">' + name + '</div>' +
+      (drastLabel ? '<div class="adeia">' + drastLabel + '</div>' : '') +
       (drast ? '<div class="drast">' + drast + '</div>' : '') +
-      (adeia ? '<div class="adeia">Αρ. Άδειας Έγκρισης</div><div class="adeiaVal">' + adeia + '</div>' : '');
+      (adeia ? '<div class="adeia">Αρ. Άδειας Έγκρισης</div><div class="adeiaVal">' + adeia + '</div>' : '') +
+      (isEco ? '<div class="eco">🌿 ECO FRIENDLY</div>' : '');
   }
   grid.appendChild(card);
 }
