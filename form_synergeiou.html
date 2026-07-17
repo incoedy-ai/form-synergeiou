@@ -494,14 +494,6 @@
   }
 })();
 
-// Κολλητικές επιφάνειες συντήρησης εντομοπαγίδων: εμφανίζονται στην εντολή,
-// ΟΧΙ στο eCert πιστοποιητικό.
-const EXCLUDE_FROM_ECERT = [
-  'M26 (158)', 'M41 (119)', 'K43 (127)', 'RT30/36 (64)', 'P3Ct STICKY (167)',
-  'CHAMELEON (58)', 'STICKY FTP30 (59)', 'STICKY INOXTRAP (61)',
-  'STICKY RT22 (62)', 'STICKY RT24 (63)',
-];
-
 function openECert() {
   const pelatis = document.getElementById('inf-pelatis').textContent;
   const diey = document.getElementById('inf-diey').textContent;
@@ -512,7 +504,7 @@ function openECert() {
   for (let i = 0; i < ROWS; i++) {
     const typ = document.getElementById(`sk-typ-${i}`).value;
     const sel = document.getElementById(`sk-sel-${i}`).value;
-    if (sel && !EXCLUDE_FROM_ECERT.includes(sel)) skev.push({ typos: typ || '', skeuasma: sel });
+    if (sel) skev.push({ typos: typ || '', skeuasma: sel });
   }
 
   const qp = new URLSearchParams({
@@ -544,6 +536,10 @@ const skevasmata = [
   'M26 (158)', 'M41 (119)', 'K43 (127)',
   'GT200 (60)', 'RT30/36 (64)', 'P3Ct STICKY (167)',
   'MASTER TRAP (153)', 'BLATTRAP (176)', 'RTU (68)',
+  'LAMP CHAMELEON (40)', 'LAMP INOXTRAP SP (134)', 'LAMP CHAMELEON ATRIUM (138)', 'LAMP INOXTRAP CAPTURE (140)',
+  'Π20 STICKY (150)', 'K22 I-TRAP30 (181)',
+  'TRAPPER MINI REX (65)', 'TRAPPER T-REX (66)', 'RAT SNAP TRAP (156)',
+  'PLAST BETA2 (69)', 'PLAST ROCK (99)', 'EC GEL (142)', 'SERPOL GEL (57)',
 ];
 
 const typoi = [
@@ -571,6 +567,18 @@ const PACKAGING_DB = {
   'PANKILL DUST (151)': [
     ['151', '151'],
     ['154', '154'],
+  ],
+  'DELETE (109)': [
+    ['109', '109'],
+    ['98', '98'],
+  ],
+  'DOBOL ANT GEL PRO (25)': [
+    ['25', '25'],
+    ['129', '129'],
+  ],
+  'DOBOL ANT BAIT (23)': [
+    ['23', '23'],
+    ['137', '137'],
   ],
 };
 
