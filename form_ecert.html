@@ -5,54 +5,81 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>eCERT — Πιστοποιητικό Εφαρμογών</title>
 <style>
-  body { font-family: Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 0 0 24px; background: #f5f7f8; color: #1a1a1a; }
-  .noPrint { }
+  body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 0 0 24px; background: #f5f7f8; color: #1a1a1a; }
+  @page { margin: 8mm; }
   @media print {
     body { background: white; max-width: none; }
     .noPrint { display: none !important; }
-    .page { box-shadow: none !important; margin: 0 !important; }
+    .page { box-shadow: none !important; margin: 0 !important; padding: 12px !important; }
+    .docCtrl { page-break-inside: avoid; }
   }
-  .page { background: white; margin: 16px; padding: 20px; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.15); }
+  .page { background: white; margin: 16px; padding: 20px; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
+  .watermark { position: absolute; z-index: 0; pointer-events: none; }
+  .watermark.wm1 { width: 780px; left: 62%; top: 300px; transform: translateX(-50%); }
+  .page > *:not(.watermark) { position: relative; z-index: 1; }
 
-  .headerRow { display: flex; align-items: center; gap: 14px; }
-  .headerRow img.logo { width: 60px; height: 58px; object-fit: contain; }
-  .titleBar { flex: 1; background: #1b96aa; color: white; padding: 10px 14px; border-radius: 4px; }
-  .titleBar h1 { font-size: 18px; margin: 0; }
-  .titleBar p { font-size: 11px; margin: 2px 0 0; opacity: 0.9; }
-  .titleBar p .bigWord { font-size: 15px; font-weight: bold; }
-  .kodBox { background: #eee; border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 11px; text-align: center; font-weight: bold; }
+  .teal { background: #087D8E; }
+  .navy { background: #303F53; }
 
-  .custBar { background: #1b96aa; color: white; font-size: 12px; font-weight: bold; padding: 6px 10px; border-radius: 4px; margin-top: 14px; }
+  .headerRow { display: flex; align-items: flex-start; gap: 10px; }
+  .headerRow img.logo { width: 195px; flex-shrink: 0; }
+  .headerRight { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+
+  .servicesBar { display: flex; align-items: stretch; }
+  .servicesBar .teal { flex: 1; color: white; font-weight: bold; font-size: 10.5px; padding: 6px 10px; line-height: 1.4; border-radius: 3px 0 0 3px; text-align: center; }
+  .servicesBar .kodBox { background: #eee; border: 1px solid #ccc; padding: 6px 10px; font-size: 12px; text-align: center; font-weight: bold; border-radius: 0 3px 3px 0; white-space: nowrap; }
+
+  .tagline { color: #aeb0b2; font-weight: bold; font-size: 19px; margin-top: 4px; text-align: right; }
+  .tagline .sub { color: #8a8d90; font-size: 13px; font-weight: bold; }
+
+  .titleRow { display: flex; align-items: flex-end; gap: 10px; margin-top: 8px; }
+  .titleBox { flex: 1; color: white; padding: 8px 14px; border-radius: 3px; text-align: center; }
+  .titleBox h1 { font-size: 17px; margin: 0; }
+  .titleBox p { font-size: 12px; margin: 2px 0 0; }
+  .adeiaLine { text-align: right; font-size: 11px; font-weight: bold; margin-top: 4px; }
+  .dateRow { display: flex; justify-content: flex-end; margin-top: 4px; align-items: center; gap: 0; }
+  .dateRow .lbl { color: white; font-weight: bold; font-size: 15px; padding: 10px 12px; border-radius: 3px 0 0 3px; display: flex; align-items: center; }
+  .dateRow input { padding: 8px 10px; border: 1px solid #ccc; border-radius: 0 3px 3px 0; font-size: 17px; font-weight: bold; }
+
+  .sectionBar { color: white; font-weight: bold; font-size: 12px; padding: 6px 10px; border-radius: 3px; margin-top: 10px; text-align: center; }
   .custGrid { display: grid; grid-template-columns: 90px 1fr; gap: 4px 8px; font-size: 13px; margin-top: 8px; }
   .custGrid b { color: #444; }
 
-  .dateRow { display: flex; justify-content: flex-end; margin-top: 6px; }
-  .dateRow input { padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
-
-  .skevHdr { background: #1b96aa; color: white; font-size: 12px; font-weight: bold; padding: 6px 10px; border-radius: 4px; margin-top: 16px; }
   .skevGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
   .skevCard { border: 1px solid #999; border-radius: 4px; padding: 6px 4px; text-align: center; min-height: 70px; font-size: 10px; }
-  .skevCard .typ { font-weight: bold; font-size: 9px; color: #1b96aa; }
+  .skevCard .typ { font-weight: bold; font-size: 9px; color: #087D8E; }
   .skevCard .name { font-weight: bold; font-size: 10px; margin-top: 2px; }
   .skevCard .drast { font-size: 7px; color: #555; margin-top: 3px; line-height: 1.2; }
   .skevCard .adeia { font-size: 6.5px; color: #888; margin-top: 4px; }
   .skevCard .adeiaVal { font-weight: bold; font-size: 8px; }
   .skevCard.empty { border-style: solid; }
 
-  .instr { font-size: 10px; color: #333; margin-top: 16px; line-height: 1.4; }
+  .instr { font-size: 10.5px; color: #111; margin-top: 10px; line-height: 1.35; }
+  .instr b { font-weight: bold; }
 
-  .sigRow { display: flex; justify-content: flex-end; margin-top: 20px; align-items: flex-start; gap: 10px; }
-  .sigBox { text-align: center; }
-  .sigBox label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 4px; }
-  .sigBox img { width: 220px; border: 1px solid #ccc; border-radius: 4px; }
-  select#scientistPicker { padding: 6px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 6px; }
+  .footerRow { display: flex; gap: 10px; margin-top: 12px; align-items: stretch; }
+  .footerLeft { flex: 1.35; display: flex; flex-direction: column; }
+  .footerRight { flex: 1; display: flex; flex-direction: column; }
+  .footerLeft .sectionBar, .footerRight .sectionBar { margin-top: 0; }
+  .footerRight .sectionBar { width: 200px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+  .contactNote { font-size: 11px; font-weight: bold; margin: 8px 0 6px; }
+  .navyBox { background: #303F53; color: white; padding: 16px 14px; border-radius: 4px; font-size: 13px; }
+  .navyBox .row1 { display: flex; justify-content: center; gap: 16px; margin-bottom: 14px; }
+  .navyBox .row1 span { background: white; color: #303F53; border-radius: 3px; padding: 3px 10px; font-weight: bold; font-size: 12px; }
+  .navyBox .row2 { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .navyBox .row2 a { border: 1px solid white; border-radius: 3px; padding: 5px 10px; font-weight: bold; font-size: 11.5px; display: flex; align-items: center; gap: 5px; color: white; text-decoration: none; }
+  .navyBox .row2 svg { width: 13px; height: 13px; fill: white; flex-shrink: 0; }
 
-  .footerBar { text-align: center; font-size: 9px; color: #666; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 8px; }
+  .sigBoxArea { border: 1px solid #ccc; min-height: 110px; width: 200px; box-sizing: border-box; margin: 0 auto; display: flex; align-items: center; justify-content: center; padding: 8px; }
+  .sigBoxArea img { max-width: 100%; max-height: 110px; object-fit: contain; }
+  select#scientistPicker { width: 200px; display: block; margin: 4px auto 0; padding: 6px; font-size: 11px; border-radius: 3px; border: 1px solid #ccc; box-sizing: border-box; }
+
+  .docCtrl { border-top: 1px solid #999; margin-top: 14px; padding: 6px 4px 0; font-size: 10.5px; text-align: center; color: #333; }
+  .docCtrl b { font-weight: bold; }
 
   .actions { display: flex; gap: 10px; margin: 16px; }
   .actions button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
-  #btnPrint { background: #1b96aa; color: white; }
-  #loadingMsg { text-align: center; color: #888; padding: 20px; }
+  #btnPrint { background: #087D8E; color: white; }
 </style>
 </head>
 <body>
@@ -62,50 +89,84 @@
 </div>
 
 <div class="page">
+  <img class="watermark wm1" src="watermark_icon.png" alt="">
   <div class="headerRow">
-    <img class="logo" src="inco_logo.jpg" alt="InCo">
-    <div class="titleBar">
-      <h1>eCERT — ΠΙΣΤΟΠΟΙΗΤΙΚΟ ΕΦΑΡΜΟΓΩΝ</h1>
-      <p><span class="bigWord">ΑΠΕΝΤΟΜΩΣΗΣ</span> - <span class="bigWord">ΜΥΟΚΤΟΝΙΑΣ</span> - ΑΠΩΘΗΣΗΣ</p>
+    <img class="logo" src="inco_logo_new.png" alt="InCo">
+    <div class="headerRight">
+      <div class="servicesBar">
+        <div class="teal">ΑΠΟΛΥΜΑΝΣΕΙΣ - ΑΠΕΝΤΟΜΩΣΕΙΣ - ΜΥΟΚΤΟΝΙΕΣ - ΑΠΩΘΗΣΕΙΣ - ΣΥΜΒΟΥΛΕΥΤΙΚΕΣ ΥΠΗΡΕΣΙΕΣ<br>ΥΓΕΙΟΝΟΜΙΚΕΣ ΜΕΛΕΤΕΣ - ΣΧΕΔΙΟ HACCP - ΠΕΡΙΓΡΑΦΙΚΕΣ ΕΚΘΕΣΕΙΣ - ΔΙΑΓΡΑΜΜΑΤΑ ΡΟΗΣ</div>
+        <div class="kodBox">ΚΩΔ.<br>Ε-Ε01</div>
+      </div>
+      <div class="tagline">ΑΞΙΟΠΙΣΤΕΣ ΛΥΣΕΙΣ ΥΓΕΙΟΝΟΜΙΚΗΣ ΣΗΜΑΣΙΑΣ<br><span class="sub">Προσαρμοσμένες στις δικές σας, ξεχωριστές ανάγκες</span></div>
+      <div class="titleRow">
+        <div class="titleBox navy">
+          <h1>ΠΙΣΤΟΠΟΙΗΤΙΚΟ ΕΦΑΡΜΟΓΩΝ</h1>
+          <p><b>ΑΠΕΝΤΟΜΩΣΗΣ - ΜΥΟΚΤΟΝΙΑΣ - ΑΠΩΘΗΣΗΣ</b></p>
+        </div>
+      </div>
+      <div class="adeiaLine">ΑΡ. ΑΔΕΙΑΣ Υ.Α.Α.Τ 128762/2009</div>
+      <div class="dateRow">
+        <div class="lbl teal">ΗΜΕΡΟΜΗΝΙΑ</div>
+        <input type="date" id="custDate">
+      </div>
     </div>
-    <div class="kodBox">ΑΡ. ΑΔΕΙΑΣ<br>Υ.Α.Α.Τ<br>128762/2009</div>
   </div>
 
-  <div class="custBar">ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</div>
+  <div class="sectionBar teal">ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</div>
   <div class="custGrid">
     <b>Επωνυμία:</b><span id="custEponymia">—</span>
     <b>Διεύθυνση:</b><span id="custDiey">—</span>
     <b>Τηλέφωνο:</b><span id="custTil">—</span>
     <b>ΑΦΜ:</b><span id="custAfm">—</span>
   </div>
-  <div class="dateRow">
-    <label style="font-size:12px; font-weight:bold; margin-right:8px; align-self:center;">Ημερομηνία:</label>
-    <input type="date" id="custDate">
-  </div>
 
-  <div class="skevHdr">ΕΦΑΡΜΟΓΗ / ΣΚΕΥΑΣΜΑ / ΔΡΑΣΤΙΚΗ ΟΥΣΙΑ / ΑΡ. ΑΔΕΙΑΣ ΕΓΚΡΙΣΗΣ</div>
+  <div class="sectionBar teal">ΕΦΑΡΜΟΓΗ / ΣΚΕΥΑΣΜΑ / ΔΡΑΣΤΙΚΗ ΟΥΣΙΑ / ΑΡ. ΑΔΕΙΑΣ ΕΓΚΡΙΣΗΣ</div>
   <div class="skevGrid" id="skevGrid"></div>
 
+  <div class="sectionBar teal">ΟΔΗΓΙΕΣ - ΠΡΟΦΥΛΑΞΗ</div>
   <div class="instr">
-    Μην έρχεστε σε επαφή με οποιοδήποτε τρόπο με τις επιφάνειες ή τα σημεία στα οποία έχει πραγματοποιηθεί ψεκασμός ή έχει τοποθετηθεί Gel. Σε περίπτωση επαφής πλυθείτε με άφθονο νερό και σαπούνι.<br>
-    Να εφαρμόσετε επαρκή αερισμό στους χώρους όπου έχει πραγματοποιηθεί ψεκασμός.<br>
-    Κρατήστε μακριά από τους χώρους που πραγματοποιείται ψεκασμός παιδιά, εγκύους και κατοικίδια ζώα μέχρι τον επαρκή αερισμό του χώρου.<br>
-    Μην αγγίζετε Δολωματικούς Σταθμούς - Μην αλλάζετε θέση στα Σημεία Ελέγχου.<br>
-    ΖΗΤΗΣΤΕ ΑΜΕΣΩΣ ΙΑΤΡΙΚΗ ΣΥΜΒΟΥΛΗ σε περίπτωση κατάποσης του μυοκτόνου (ποντικοφάρμακο) έχοντας μαζί σας το Πιστοποιητικό Εφαρμογής. ΑΝΤΙΔΟΤΟ ΜΥΟΚΤΟΝΟΥ: ΒΙΤΑΜΙΝΗ Κ1
+    <b>Μην έρχεστε σε επαφή</b> με οποιοδήποτε τρόπο με τις επιφάνειες ή τα σημεία στα οποία έχει πραγματοποιηθεί ψεκασμός ή έχει τοποθετηθεί Gel<br>
+    <b>Σε περίπτωση επαφής</b> πλυθείτε με άφθονο νερό και σαπούνι<br>
+    <b>Να εφαρμόσετε επαρκή αερισμό</b> στους χώρους όπου έχει πραγματοποιηθεί ψεκασμός.<br>
+    <b>Κρατήστε μακριά από τους χώρους</b> που πραγματοποιείται ψεκασμός παιδιά, εγκύους και κατοικίδια ζώα μέχρι τον επαρκή αερισμό του χώρου<br>
+    <b>Μην αγγίζετε Δολωματικούς Σταθμούς</b> - <b>Μην αλλάζετε θέση</b> στα Σημεία Ελέγχου<br>
+    <b>ΖΗΤΗΣΤΕ ΑΜΕΣΩΣ ΙΑΤΡΙΚΗ ΣΥΜΒΟΥΛΗ</b> σε περίπτωση κατάποσης του μυοκτόνου (ποντικοφάρμακο) έχοντας μαζί σας το Πιστοποιητικό Εφαρμογής.<br>
+    <b style="white-space: nowrap;">ΑΝΤΙΔΟΤΟ ΜΥΟΚΤΟΝΟΥ: ΒΙΤΑΜΙΝΗ Κ1</b>
   </div>
 
-  <div class="sigRow">
-    <div class="sigBox">
+  <div class="footerRow">
+    <div class="footerLeft">
+      <div class="sectionBar teal">Τηλ. Κέντρου Δηλητηριάσεων : 210.77.93.777</div>
+      <div class="contactNote">Για οποιαδήποτε διευκρίνιση επικοινωνείστε μαζί μας</div>
+      <div class="navyBox">
+        <div class="row1">
+          <span>📍 Δελφών 140 - Γλυφάδα - 165.61</span>
+          <span>☎ 210.96.44.310</span>
+        </div>
+        <div class="row2">
+          <a href="https://in-co.gr" target="_blank">🌐 in-co.gr</a>
+          <a href="mailto:sales@in-co.gr">✉ sales in-co.gr</a>
+          <a href="https://facebook.com/InCo.edy" target="_blank"><svg viewBox="0 0 24 24"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.86c0-2.51 1.49-3.9 3.77-3.9 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.91h-2.34V22c4.78-.76 8.44-4.92 8.44-9.94Z"/></svg> InCo.edy</a>
+          <a href="https://instagram.com/inco.lab" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41 1.27-.06 1.65-.07 4.85-.07M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63c-.79.31-1.46.72-2.13 1.38C1.35 2.68.94 3.35.63 4.14.33 4.9.13 5.78.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.31.79.72 1.46 1.38 2.13.66.66 1.34 1.07 2.13 1.38.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56.79-.31 1.46-.72 2.13-1.38.66-.66 1.07-1.34 1.38-2.13.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91-.31-.79-.72-1.46-1.38-2.13C21.32 1.35 20.65.94 19.86.63c-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0Zm0 5.84A6.16 6.16 0 1 0 18.16 12 6.16 6.16 0 0 0 12 5.84Zm0 10.16A4 4 0 1 1 16 12a4 4 0 0 1-4 4Zm6.41-10.61a1.44 1.44 0 1 1-1.44-1.44 1.44 1.44 0 0 1 1.44 1.44Z"/></svg> inco.lab</a>
+        </div>
+      </div>
+    </div>
+    <div class="footerRight">
+      <div class="sectionBar teal">Ο Υπεύθυνος Επιστήμονας</div>
+      <div class="sigBoxArea">
+        <img id="sigImg" src="sig_trifonidis.png" alt="Υπογραφή">
+      </div>
       <select id="scientistPicker" class="noPrint" onchange="updateSignature()">
         <option value="trifonidis">Αρχιμήδης Λ. Τρυφωνίδης</option>
         <option value="karavasilis">Ευάγγελος Κ. Καραβασόπουλος</option>
       </select>
-      <img id="sigImg" src="sig_trifonidis.jpg" alt="Υπογραφή">
     </div>
   </div>
 
-  <div class="footerBar">
-    ΑΞΙΟΠΙΣΤΕΣ ΛΥΣΕΙΣ ΥΓΕΙΟΝΟΜΙΚΗΣ ΣΗΜΑΣΙΑΣ — Δελφών 140, Γλυφάδα, 16561 — τηλ. 210-96.44.310 — sales in-co.gr
+  <div class="docCtrl">
+    ΣΥΝΤΑΞΗ / ΕΓΚΡΙΣΗ : <b id="ctrlName">ΑΡΧΙΜΗΔΗΣ Λ. ΤΡΥΦΩΝΙΔΗΣ</b> &nbsp;|&nbsp;
+    ΕΚΔ. : <b>digital 01</b> &nbsp;|&nbsp;
+    ΙΣΧΥΕΙ ΑΠΟ : <b>01/09/2026</b>
   </div>
 </div>
 
@@ -174,7 +235,8 @@ for (let i = 0; i < slotCount; i++) {
 
 function updateSignature() {
   const val = document.getElementById('scientistPicker').value;
-  document.getElementById('sigImg').src = val === 'karavasilis' ? 'sig_karavasilis.jpg' : 'sig_trifonidis.jpg';
+  document.getElementById('sigImg').src = val === 'karavasilis' ? 'sig_karavasilis.png' : 'sig_trifonidis.png';
+  document.getElementById('ctrlName').textContent = val === 'karavasilis' ? 'ΕΥΑΓΓΕΛΟΣ Κ. ΚΑΡΑΒΑΣΟΠΟΥΛΟΣ' : 'ΑΡΧΙΜΗΔΗΣ Λ. ΤΡΥΦΩΝΙΔΗΣ';
 }
 </script>
 </body>
