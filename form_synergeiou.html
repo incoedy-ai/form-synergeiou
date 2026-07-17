@@ -61,7 +61,7 @@
   }
 
   .sk-row {
-    display: grid; grid-template-columns: 130px 130px 180px 75px 75px;
+    display: grid; grid-template-columns: 130px 130px 180px 70px 75px 75px;
     gap: 6px; margin-bottom: 7px; align-items: center;
   }
   .sk-select {
@@ -521,8 +521,8 @@ function openECert() {
 const skevasmata = [
   '— Επιλέξτε —',
   // ΕΝΤΟΜΑ
-  'TETRAX (148)', 'DELETE (109)', 'DOBMEM (29)', 'MAGNUM ANT (41)',
-  'MAGNUM GEL (42)', 'PROVECTA (53)', 'SWIRR (117)', 'CT (52)',
+  'TETRAX (148)', 'DELETE (109)', 'DOBMEM (29)', 'DOBOL FUMIGATOR (26)',
+  'MAGNUM ANT (41)', 'MAGNUM GEL (42)', 'PROVECTA (53)', 'SWIRR (117)', 'CT (52)',
   // ΠΟΝΤΙΚΙΑ
   'ZAGOR (124/175)', 'MAST (139)', 'Π20 (76)', 'CORAL (70)',
   'TBCL (71)', 'SNAPTRAP (125)',
@@ -540,6 +540,34 @@ const typoi = [
   'ΕΞΥΓΙΑΝΣΗ ΣΤΡΩΜΑΤΟΣ','ΜΥΟΚΤΟΝΙΑ','ΠΕΡΙΓΡΑΦΙΚΗ ΕΚΘΕΣΗ',
   'ΠΩΛΗΣΗ','ΣΥΜΒΟΥΛΕΥΤΙΚΗ'
 ];
+
+// ---- ΣΥΣΚΕΥΑΣΙΕΣ ΑΠΟΘΕΜΑΤΟΣ ΑΝΑ ΣΚΕΥΑΣΜΑ ----
+const PACKAGING_DB = {
+  'DOBMEM (29)': [
+    ['29', '29'],
+    ['28', '28'],
+  ],
+  'DOBOL FUMIGATOR (26)': [
+    ['26', '26'],
+  ],
+};
+
+function fillPackaging(pakSelect, skeuasma) {
+  pakSelect.innerHTML = '';
+  const opts = PACKAGING_DB[skeuasma];
+  const blank = document.createElement('option');
+  blank.value = '';
+  blank.textContent = opts ? '— Συσκευασία —' : '—';
+  pakSelect.appendChild(blank);
+  if (opts) {
+    opts.forEach(([label, code]) => {
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = label;
+      pakSelect.appendChild(opt);
+    });
+  }
+}
 
 const ROWS = 8;
 for (let i = 0; i < ROWS; i++) {
@@ -587,13 +615,19 @@ for (let i = 0; i < ROWS; i++) {
     opt.textContent = s;
     sel.appendChild(opt);
   });
+  const pak = document.createElement('select');
+  pak.className = 'sk-select';
+  pak.id = `sk-pak-${i}`;
+  fillPackaging(pak, '');
+  sel.addEventListener('change', () => fillPackaging(pak, sel.value));
+
   const q1 = document.createElement('input');
   q1.className = 'sk-qty'; q1.type = 'number'; q1.placeholder = '!'; q1.min = '0';
   q1.id = `sk-q1-${i}`;
   const q2 = document.createElement('input');
   q2.className = 'sk-qty'; q2.type = 'number'; q2.placeholder = '@'; q2.min = '0';
   q2.id = `sk-q2-${i}`;
-  row.appendChild(sel); row.appendChild(q1); row.appendChild(q2);
+  row.appendChild(sel); row.appendChild(pak); row.appendChild(q1); row.appendChild(q2);
   const container = i < 4
     ? document.getElementById('sk-rows-left')
     : document.getElementById('sk-rows-right');
@@ -676,10 +710,11 @@ function submitForm() {
     const typ = document.getElementById(`sk-typ-${i}`).value;
     const met = document.getElementById(`sk-met-${i}`).value;
     const sel = document.getElementById(`sk-sel-${i}`).value;
+    const pak = document.getElementById(`sk-pak-${i}`).value;
     if (typ || met || sel) {
       const q1 = document.getElementById(`sk-q1-${i}`).value || '—';
       const q2 = document.getElementById(`sk-q2-${i}`).value || '—';
-      skLines.push(`  [${typ || '—'}]  [${met || '—'}]  ${sel || '—'}  |  ! ${q1}  |  @ ${q2}`);
+      skLines.push(`  [${typ || '—'}]  [${met || '—'}]  ${sel || '—'}${pak ? ' (' + pak + ')' : ''}  |  ! ${q1}  |  @ ${q2}`);
     }
   }
 
