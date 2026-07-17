@@ -174,7 +174,7 @@
 const SKEVASMATA_DB = {
 "TETRAX (148)": ["TETRAX MICROACTION CS", "Cypermethrin 10% β/ο\nTetramethrin 2% β/ο\nPiperonyl butoxide 10% β/ο", "ΤΠ18-0458 / 19.03.2021"],
 "DELETE (109)": ["DELETE III SC", "Cypermethrin 10.7% β/o\nTetramethrin 2.14% β/ο\nPiperonyl butoxide 5.35% β/ο", "ΤΠ18-0384"],
-"DOBMEM (29)": ["", "", ""],
+"DOBMEM (29)": ["DOBOL MICROEMULSION (ME) PRO", "Acetamiprid 5% β/ο\nD-Tetramethrin 2.5% β/ο\nPiperonyl butoxide 10% β/ο", "ΤΠ18-0119"],
 "MAGNUM ANT (41)": ["MAGNUM GEL ΜΥΡΜΗΓΚΙΑ", "Imidacloprid 0.01%\nBitrex 0.008%", "ΤΠ18-0318"],
 "MAGNUM GEL (42)": ["MAGNUM GEL", "Imidacloprid 2.15% β/β", "ΤΠ18-0298"],
 "SWIRR (117)": ["SWIRR 2 MG", "Acetamiprid 0.2% β/β", "ΤΠ18-0185/01-02-2016"],
@@ -221,7 +221,7 @@ for (let i = 0; i < slotCount; i++) {
   card.className = 'skevCard' + (item ? '' : ' empty');
   if (item) {
     const info = SKEVASMATA_DB[item.skeuasma] || ['', '', ''];
-    const name = info[0] || item.skeuasma;
+    const name = info[0] || item.skeuasma.replace(/\s*\([^)]*\)\s*$/, '');
     const drast = info[1] ? info[1].split('\n').map(function(l){ return '(' + l + ')'; }).join('<br>') : '';
     const adeia = info[2] || '';
     card.innerHTML =
