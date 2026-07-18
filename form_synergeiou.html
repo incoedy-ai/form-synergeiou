@@ -628,9 +628,9 @@ const SKEVASMA_META = {
   'INASTRO (100)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
   'MASTERCID MICRO (43)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
   'BLATA 10SC (97)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
-  'DUOZON (34)': { typ: 'ΑΠΟΛΥΜΑΝΣΗ', meth: ['ΨΥΧΡΗ ΝΕΦΕΛΟΠΟΙΗΣΗ'] },
+  'DUOZON (34)': { typ: 'ΑΠΟΛΥΜΑΝΣΗ', meth: ['ΨΥΧΡΗ ΝΕΦΕΛΟΠΟΙΗΣΗ', 'ΨΥΧΡΟ FOGGING'] },
   'BIG SPRAY (87)': { typ: 'ΑΠΟΛΥΜΑΝΣΗ', meth: [] },
-  'DALCO-100 (88)': { typ: 'ΑΠΟΛΥΜΑΝΣΗ', meth: ['ΨΥΧΡΗ ΝΕΦΕΛΟΠΟΙΗΣΗ'] },
+  'DALCO-100 (88)': { typ: 'ΑΠΟΛΥΜΑΝΣΗ', meth: ['ΨΥΧΡΗ ΝΕΦΕΛΟΠΟΙΗΣΗ', 'ΨΥΧΡΟ FOGGING'] },
   'DUTRION GEL (168)': { typ: 'ΑΠΟΛΥΜΑΝΣΗ', meth: [] },
 };
 
@@ -706,6 +706,39 @@ function fillPackaging(pakSelect, skeuasma) {
   }
 }
 
+const methodoi = [
+  '— Μέθοδος —','ΨΕΚΑΣΜΟΣ','ΨΕΚΑΣΜΟΣ ΧΑΜΗΛΗΣ ΠΙΕΣΗΣ','GEL','ΤΟΠΟΘΕΤΗΣΗ Δ/Σ','ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ',
+  'ΤΟΠΟΘΕΤΗΣΗ Σ/Ε','ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ Σ/Ε','ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ',
+  'ΝΕΦΕΛΟΠΟΙΗΣΗ','ΨΥΧΡΟ FOGGING','ΨΥΧΡΗ ΝΕΦΕΛΟΠΟΙΗΣΗ','ΚΑΠΝΟΓΟΝΟ','ΑΕΡΟΛΥΜΑ','ΕΠΙΧΡΙΣΜΑ','CIMEX - ΞΗΡΟΣ ΑΤΜΟΣ',
+  'STEAM CLEANER SYSTEM','DRY STEAM SYSTEM',
+  'ΑΥΤΟΨΙΑ','ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)',
+  'ΑΛΛΑΓΗ ΛΑΜΠΤΗΡΩΝ','SERVICE ΕΝΤΟΜΟΠΑΓΙΔΩΝ','ΤΟΠΟΘΕΤΗΣΗ ΦΕΡΟΜΟΝΙΚΗΣ ΠΑΓΙΔΑΣ',
+  'ΜΗΧΑΝΗ ΑΠΟΜΑΚΡΥΝΣΗ'
+];
+
+// Ορισμένα Είδη έχουν δικό τους περιορισμένο σύνολο μεθόδων
+const TYPE_METHODS = {
+  'ΑΠΟΛΥΜΑΝΣΗ': ['ΨΕΚΑΣΜΟΣ ΧΑΜΗΛΗΣ ΠΙΕΣΗΣ', 'ΨΥΧΡΗ ΝΕΦΕΛΟΠΟΙΗΣΗ', 'ΨΥΧΡΟ FOGGING', 'STEAM CLEANER SYSTEM', 'DRY STEAM SYSTEM'],
+};
+
+function fillMethods(selectEl, typVal) {
+  const current = selectEl.value;
+  selectEl.innerHTML = '';
+  const blank = document.createElement('option');
+  blank.value = '';
+  blank.textContent = '— Μέθοδος —';
+  selectEl.appendChild(blank);
+  const allowed = TYPE_METHODS[typVal] || methodoi.slice(1);
+  allowed.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = m;
+    selectEl.appendChild(opt);
+  });
+  const stillThere = Array.from(selectEl.options).some(o => o.value === current);
+  selectEl.value = stillThere ? current : '';
+}
+
 const ROWS = 8;
 for (let i = 0; i < ROWS; i++) {
   const row = document.createElement('div');
@@ -724,24 +757,10 @@ for (let i = 0; i < ROWS; i++) {
   row.appendChild(selTyp);
 
   // Dropdown μεθόδου
-  const methodoi = [
-    '— Μέθοδος —','ΨΕΚΑΣΜΟΣ','ΨΕΚΑΣΜΟΣ ΧΑΜΗΛΗΣ ΠΙΕΣΗΣ','GEL','ΤΟΠΟΘΕΤΗΣΗ Δ/Σ','ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ',
-    'ΤΟΠΟΘΕΤΗΣΗ Σ/Ε','ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ Σ/Ε','ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ',
-    'ΝΕΦΕΛΟΠΟΙΗΣΗ','ΨΥΧΡΟ FOGGING','ΨΥΧΡΗ ΝΕΦΕΛΟΠΟΙΗΣΗ','ΚΑΠΝΟΓΟΝΟ','ΑΕΡΟΛΥΜΑ','ΕΠΙΧΡΙΣΜΑ','CIMEX - ΞΗΡΟΣ ΑΤΜΟΣ',
-    'STEAM CLEANER SYSTEM','DRY STEAM SYSTEM',
-    'ΑΥΤΟΨΙΑ','ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)',
-    'ΑΛΛΑΓΗ ΛΑΜΠΤΗΡΩΝ','SERVICE ΕΝΤΟΜΟΠΑΓΙΔΩΝ','ΤΟΠΟΘΕΤΗΣΗ ΦΕΡΟΜΟΝΙΚΗΣ ΠΑΓΙΔΑΣ',
-    'ΜΗΧΑΝΗ ΑΠΟΜΑΚΡΥΝΣΗ'
-  ];
   const selMet = document.createElement('select');
   selMet.className = 'sk-select';
   selMet.id = `sk-met-${i}`;
-  methodoi.forEach(m => {
-    const opt = document.createElement('option');
-    opt.value = m === '— Μέθοδος —' ? '' : m;
-    opt.textContent = m;
-    selMet.appendChild(opt);
-  });
+  fillMethods(selMet, '');
   row.appendChild(selMet);
 
   const sel = document.createElement('select');
@@ -753,7 +772,10 @@ for (let i = 0; i < ROWS; i++) {
   pak.id = `sk-pak-${i}`;
   fillPackaging(pak, '');
   sel.addEventListener('change', () => fillPackaging(pak, sel.value));
-  selTyp.addEventListener('change', () => fillSkevasmata(sel, selTyp.value, selMet.value));
+  selTyp.addEventListener('change', () => {
+    fillMethods(selMet, selTyp.value);
+    fillSkevasmata(sel, selTyp.value, selMet.value);
+  });
   selMet.addEventListener('change', () => fillSkevasmata(sel, selTyp.value, selMet.value));
 
   const q1 = document.createElement('input');
