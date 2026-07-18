@@ -73,6 +73,7 @@
 const qs = new URLSearchParams(window.location.search);
 const URL = qs.get('script') || "https://script.google.com/macros/s/AKfycby0DVDdrddETKpizq8JQgGQs3SDRyRNhypnFA7--Q2XtsT6qmisLiR93Gc4b2MkuHcG/exec";
 const pelatis = qs.get('pelatis') || '';
+const kod = qs.get('kod') || '';
 if (pelatis) document.getElementById('pageTitle').textContent = 'ΦΕΡΟΜΟΝΙΚΕΣ ΕΝΤΟΜΟΠΑΓΙΔΕΣ — ' + decodeURIComponent(pelatis);
 
 const SPECIES = ["P. americana","B. orientalis","B. germanica","S. longipalpa","Μυρμήγκια",
@@ -137,7 +138,7 @@ function addSpecies() {
   document.getElementById('speciesList').appendChild(row);
 }
 
-fetch(URL + "?type=feromo-positions")
+fetch(URL + "?type=feromo-positions&kod=" + encodeURIComponent(kod))
   .then(r => r.json())
   .then(positions => {
     const sel = document.getElementById('thesi');
@@ -188,7 +189,7 @@ function submitForm() {
     method: 'POST',
     mode: 'no-cors',
     body: JSON.stringify({
-      form: 'feromo', thesi: thesi, typosPagidas: typosPagidas, species: species,
+      form: 'feromo', kod: kod, pelatis: pelatis, thesi: thesi, typosPagidas: typosPagidas, species: species,
       kollitiki: kollitiki, antikatastasi: antikatastasi,
       paratiriseis: document.getElementById('paratiriseis').value
     })

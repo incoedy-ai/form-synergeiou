@@ -44,6 +44,7 @@
 const qs = new URLSearchParams(window.location.search);
 const URL = qs.get('script') || "https://script.google.com/macros/s/AKfycby0DVDdrddETKpizq8JQgGQs3SDRyRNhypnFA7--Q2XtsT6qmisLiR93Gc4b2MkuHcG/exec";
 const pelatis = qs.get('pelatis') || '';
+const kod = qs.get('kod') || '';
 if (pelatis) document.getElementById('pageTitle').textContent = 'ΜΥΟΚΤΟΝΙΑ — ' + decodeURIComponent(pelatis);
 
 let DS_STATIONS = [];
@@ -66,7 +67,7 @@ function buildList(stations, containerId, prefix) {
   });
 }
 
-fetch(URL)
+fetch(URL + "?kod=" + encodeURIComponent(kod))
   .then(r => r.json())
   .then(stations => {
     DS_STATIONS = stations.filter(s => s.kodikos && s.typos === 'ΔΣ').map(s => s.kodikos);
@@ -131,7 +132,7 @@ function submitForm() {
   fetch(URL, {
     method: 'POST',
     mode: 'no-cors',
-    body: JSON.stringify({ entries: entries })
+    body: JSON.stringify({ kod: kod, pelatis: pelatis, entries: entries })
   })
   .then(() => {
     msg.textContent = 'Καταχωρήθηκαν ' + entries.length + ' τιμές ✓';

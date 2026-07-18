@@ -469,7 +469,8 @@
   const scriptUrl = p.get('script');
   if (scriptUrl) {
     const pelatisName = p.get('pelatis') || '';
-    const qp = new URLSearchParams({ script: scriptUrl, pelatis: pelatisName });
+    const kodPelati = p.get('kod') || '';
+    const qp = new URLSearchParams({ script: scriptUrl, pelatis: pelatisName, kod: kodPelati });
     let anyVisible = false;
 
     if (p.get('e04') === '1') {
