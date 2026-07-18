@@ -551,6 +551,94 @@ const typoi = [
   'ΠΩΛΗΣΗ','ΣΥΜΒΟΥΛΕΥΤΙΚΗ'
 ];
 
+// ---- ΕΙΔΟΣ / ΜΕΘΟΔΟΣ ΑΝΑ ΣΚΕΥΑΣΜΑ (για φιλτράρισμα dropdown) ----
+const SKEVASMA_META = {
+  'TETRAX (148)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
+  'DELETE (109)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
+  'DOBMEM (29)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
+  'DOBOL FUMIGATOR (26)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΚΑΠΝΟΓΟΝΟ'] },
+  'DOBOL ANT GEL PRO (25)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
+  'DOBOL ANT BAIT (23)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
+  'DOBOL ANT FLASK (24)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
+  'DOBOL GEL PRO (27)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
+  'DOBOL MICROCYP (30)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
+  'DOBOL OMICRON (31)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
+  'CYTROL FORTE (20)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
+  'AZAMAT (14)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
+  'ADVION ANT (13)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
+  'BEST BOX (16)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ', 'ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
+  'PROCAPTURA (19)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)'] },
+  'BED BUG TRAP (15)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
+  'BIRD NET (17)': { typ: 'ΑΠΩΘΗΣΗ ΠΤΗΝΩΝ', meth: [] },
+  'ECOLOGIC (35)': { typ: 'ΑΠΩΘΗΣΗ ΠΤΗΝΩΝ', meth: [] },
+  'BUGSTER DUST (149)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΠΙΧΡΙΣΜΑ'] },
+  'PANKILL DUST (151)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΠΙΧΡΙΣΜΑ'] },
+  'MAGNUM ROACHES IGR (136)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
+  'INOXTRAP (38)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['SERVICE ΕΝΤΟΜΟΠΑΓΙΔΩΝ'] },
+  'DIAMOND TRAP (172)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
+  'STICKY FTP30 (59)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)'] },
+  'STICKY INOXTRAP (61)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)'] },
+  'STICKY RT22 (62)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)'] },
+  'STICKY RT24 (63)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)'] },
+  'MAGNUM ANT (41)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
+  'MAGNUM GEL (42)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
+  'PROVECTA (53)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['CIMEX - ΞΗΡΟΣ ΑΤΜΟΣ'] },
+  'SWIRR (117)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
+  'CT (52)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
+  'ZAGOR (124/175)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ', 'ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
+  'MAST (139)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
+  'Π20 (76)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
+  'CORAL (70)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ', 'ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
+  'TBCL (71)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ', 'ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
+  'SNAPTRAP (125)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
+  'ITRAP 50 (37)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['SERVICE ΕΝΤΟΜΟΠΑΓΙΔΩΝ'] },
+  'CHAMELEON (58)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)'] },
+  'X-LURE (93)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΦΕΡΟΜΟΝΙΚΗΣ ΠΑΓΙΔΑΣ'] },
+  'ROCK BAIT STATION (186)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ', 'ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
+  'M26 (158)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)'] },
+  'M41 (119)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)'] },
+  'K43 (127)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)'] },
+  'GT200 (60)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['SERVICE ΕΝΤΟΜΟΠΑΓΙΔΩΝ'] },
+  'RT30/36 (64)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)'] },
+  'P3Ct STICKY (167)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)'] },
+  'MASTER TRAP (153)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΦΕΡΟΜΟΝΙΚΗΣ ΠΑΓΙΔΑΣ'] },
+  'BLATTRAP (176)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
+  'RTU (68)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΦΕΡΟΜΟΝΙΚΗΣ ΠΑΓΙΔΑΣ'] },
+  'LAMP CHAMELEON (40)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΑΛΛΑΓΗ ΛΑΜΠΤΗΡΩΝ'] },
+  'LAMP INOXTRAP SP (134)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΑΛΛΑΓΗ ΛΑΜΠΤΗΡΩΝ'] },
+  'LAMP CHAMELEON ATRIUM (138)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΑΛΛΑΓΗ ΛΑΜΠΤΗΡΩΝ'] },
+  'LAMP INOXTRAP CAPTURE (140)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΑΛΛΑΓΗ ΛΑΜΠΤΗΡΩΝ'] },
+  'Π20 STICKY (150)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
+  'K22 I-TRAP30 (181)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)'] },
+  'TRAPPER MINI REX (65)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
+  'TRAPPER T-REX (66)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
+  'RAT SNAP TRAP (156)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
+  'PLAST BETA2 (69)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ', 'ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
+  'PLAST ROCK (99)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ', 'ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
+  'EC GEL (142)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
+  'SERPOL GEL (57)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΠΙΧΡΙΣΜΑ'] },
+};
+
+function fillSkevasmata(selectEl, typVal, methVal) {
+  const current = selectEl.value;
+  selectEl.innerHTML = '';
+  const blank = document.createElement('option');
+  blank.value = '';
+  blank.textContent = '— Επιλέξτε —';
+  selectEl.appendChild(blank);
+  skevasmata.slice(1).forEach(s => {
+    const meta = SKEVASMA_META[s];
+    if (typVal && meta && meta.typ !== typVal) return;
+    if (methVal && meta && meta.meth && meta.meth.length && !meta.meth.includes(methVal)) return;
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s;
+    selectEl.appendChild(opt);
+  });
+  const stillThere = Array.from(selectEl.options).some(o => o.value === current);
+  selectEl.value = stillThere ? current : '';
+}
+
 // ---- ΣΥΣΚΕΥΑΣΙΕΣ ΑΠΟΘΕΜΑΤΟΣ ΑΝΑ ΣΚΕΥΑΣΜΑ ----
 const PACKAGING_DB = {
   'DOBMEM (29)': [
@@ -639,17 +727,14 @@ for (let i = 0; i < ROWS; i++) {
   const sel = document.createElement('select');
   sel.className = 'sk-select';
   sel.id = `sk-sel-${i}`;
-  skevasmata.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s === '— Επιλέξτε —' ? '' : s;
-    opt.textContent = s;
-    sel.appendChild(opt);
-  });
+  fillSkevasmata(sel, '', '');
   const pak = document.createElement('select');
   pak.className = 'sk-select';
   pak.id = `sk-pak-${i}`;
   fillPackaging(pak, '');
   sel.addEventListener('change', () => fillPackaging(pak, sel.value));
+  selTyp.addEventListener('change', () => fillSkevasmata(sel, selTyp.value, selMet.value));
+  selMet.addEventListener('change', () => fillSkevasmata(sel, selTyp.value, selMet.value));
 
   const q1 = document.createElement('input');
   q1.className = 'sk-qty'; q1.type = 'number'; q1.placeholder = '!'; q1.min = '0';
