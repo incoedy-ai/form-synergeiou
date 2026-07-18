@@ -539,7 +539,7 @@ const skevasmata = [
   'LAMP CHAMELEON (40)', 'LAMP INOXTRAP SP (134)', 'LAMP CHAMELEON ATRIUM (138)', 'LAMP INOXTRAP CAPTURE (140)',
   'Π20 STICKY (150)', 'K22 I-TRAP30 (181)',
   'TRAPPER MINI REX (65)', 'TRAPPER T-REX (66)', 'RAT SNAP TRAP (156)',
-  'PLAST BETA2 (69)', 'PLAST ROCK (99)', 'EC GEL (142)', 'SERPOL GEL (57)', 'ECOREX GEL (111)',
+  'PLAST BETA2 (69)', 'PLAST ROCK (99)', 'EC GEL (142)', 'SERPOL GEL (57)', 'ECOREX GEL (111)', 'PANKILL FOGGER (174)',
 ];
 
 const typoi = [
@@ -618,6 +618,7 @@ const SKEVASMA_META = {
   'EC GEL (142)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
   'SERPOL GEL (57)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΠΙΧΡΙΣΜΑ'] },
   'ECOREX GEL (111)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
+  'PANKILL FOGGER (174)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΑΕΡΟΛΥΜΑ'] },
 };
 
 function fillSkevasmata(selectEl, typVal, methVal) {
@@ -709,7 +710,7 @@ for (let i = 0; i < ROWS; i++) {
   const methodoi = [
     '— Μέθοδος —','ΨΕΚΑΣΜΟΣ','GEL','ΤΟΠΟΘΕΤΗΣΗ Δ/Σ','ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ',
     'ΤΟΠΟΘΕΤΗΣΗ Σ/Ε','ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ Σ/Ε','ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ',
-    'ΝΕΦΕΛΟΠΟΙΗΣΗ','ΨΥΧΡΟ FOGGING','ΚΑΠΝΟΓΟΝΟ','ΕΠΙΧΡΙΣΜΑ','CIMEX - ΞΗΡΟΣ ΑΤΜΟΣ',
+    'ΝΕΦΕΛΟΠΟΙΗΣΗ','ΨΥΧΡΟ FOGGING','ΚΑΠΝΟΓΟΝΟ','ΑΕΡΟΛΥΜΑ','ΕΠΙΧΡΙΣΜΑ','CIMEX - ΞΗΡΟΣ ΑΤΜΟΣ',
     'ΑΥΤΟΨΙΑ','ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ (ΑΛΛΑΓΗ ΚΟΛΛΑΣ)',
     'ΑΛΛΑΓΗ ΛΑΜΠΤΗΡΩΝ','SERVICE ΕΝΤΟΜΟΠΑΓΙΔΩΝ','ΤΟΠΟΘΕΤΗΣΗ ΦΕΡΟΜΟΝΙΚΗΣ ΠΑΓΙΔΑΣ',
     'ΜΗΧΑΝΗ ΑΠΟΜΑΚΡΥΝΣΗ'
