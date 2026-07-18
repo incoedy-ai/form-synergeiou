@@ -48,11 +48,11 @@
   .skevGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
   .skevCard { border: 1px solid #999; border-radius: 4px; padding: 6px 4px; text-align: center; min-height: 70px; font-size: 10px; position: relative; }
   .skevCard .eco { display: inline-flex; align-items: center; gap: 2px; margin-top: 4px; padding: 1px 6px; border-radius: 10px; background: #2e8b3d; color: white; font-size: 6px; font-weight: bold; letter-spacing: 0.3px; }
-  .skevCard .typ { font-weight: bold; font-size: 9px; color: #087D8E; text-transform: uppercase; }
+  .skevCard .typ { font-weight: bold; font-size: 11px; color: #087D8E; text-transform: uppercase; }
   .skevCard .name { font-weight: bold; font-size: 10px; margin-top: 2px; }
-  .skevCard .drast { font-size: 7px; color: #555; margin-top: 3px; line-height: 1.2; font-weight: bold; }
+  .skevCard .drast { font-size: 8.5px; color: #555; margin-top: 3px; line-height: 1.25; font-weight: bold; }
   .skevCard .adeia { font-size: 6.5px; color: #888; margin-top: 4px; }
-  .skevCard .adeiaVal { font-weight: bold; font-size: 8px; }
+  .skevCard .adeiaVal { font-weight: bold; font-size: 9.5px; }
   .skevCard.empty { border-style: solid; }
 
   .instr { font-size: 10.5px; color: #111; margin-top: 10px; line-height: 1.35; }
@@ -184,9 +184,9 @@ const SKEVASMATA_DB = {
 "CYTROL FORTE (20)": ["CYTROL FORTE WP", "Cypermethrin 40% β/β", "ΤΠ18-0250", "Απεντόμωση"],
 "AZAMAT (14)": ["AZAMAT", "Azamethiphos 10% β/β", "ΤΠ18-0230", "Απεντόμωση"],
 "ADVION ANT (13)": ["ADVION ANT GEL", "Indoxacarb 0.05% β/β", "ΤΠ18-0170", "Απεντόμωση"],
-"BEST BOX (16)": ["ΔΟΛΩΜΑΤΙΚΟΣ ΣΤΑΘΜΟΣ BEST BOX", "", "", "Μυοκτονία"],
-"PROCAPTURA (19)": ["ΚΟΛΛΗΤΙΚΗ ΕΠΙΦΑΝΕΙΑ C17 PROCAPTURA PLUS RM", "", "", "Απεντόμωση"],
-"BED BUG TRAP (15)": ["ΚΟΛΛΗΤΙΚΗ ΕΠΙΦΑΝΕΙΑ BED BUG TRAP", "", "", "Απεντόμωση"],
+"BEST BOX (16)": ["BEST BOX<br><span style=\"font-weight:normal;font-size:8.5px;color:#555;\">ΔΟΛΩΜΑΤΙΚΟΣ ΣΤΑΘΜΟΣ</span>", "", "", "Μυοκτονία", true],
+"PROCAPTURA (19)": ["C17 PROCAPTURA PLUS RM<br><span style=\"font-weight:normal;font-size:8.5px;color:#555;\">ΚΟΛΛΗΤΙΚΗ ΕΠΙΦΑΝΕΙΑ</span>", "", "", "Απεντόμωση"],
+"BED BUG TRAP (15)": ["BED BUG TRAP<br><span style=\"font-weight:normal;font-size:8.5px;color:#555;\">ΚΟΛΛΗΤΙΚΗ ΕΠΙΦΑΝΕΙΑ</span>", "", "", "Απεντόμωση"],
 "BIRD NET (17)": ["ΔΙΧΤΥ ΑΠΩΘΗΣΗΣ ΠΤΗΝΩΝ 50MM", "", "", "Απώθηση"],
 "ECOLOGIC (35)": ["ΣΥΡΜΑ ΑΠΩΘΗΣΗΣ ΠΤΗΝΩΝ ECOLOGIC 308 Τ-30S", "", "", "Απώθηση"],
 "DOBOL GEL PRO (27)": ["DOBOL GEL PRO 30GR", "Acetamiprid 2% β/ο", "ΤΠ18-0200", "Απεντόμωση"],
@@ -194,21 +194,21 @@ const SKEVASMATA_DB = {
 "DOBOL OMICRON (31)": ["DOBOL OMICRON (MG)", "Chrysanthemum cinerariaefolium extract 0.1% β/ο\nPiperonyl butoxide 0.5% β/ο", "ΤΠ18-0212", "Απεντόμωση"],
 "DELETE (109)": ["DELETE III SC", "Cypermethrin 10.7% β/o\nTetramethrin 2.14% β/ο\nPiperonyl butoxide 5.35% β/ο", "ΤΠ18-0384", "Απεντόμωση"],
 "DOBMEM (29)": ["DOBOL MICROEMULSION (ME) PRO", "Acetamiprid 5% β/ο\nD-Tetramethrin 2.5% β/ο\nPiperonyl butoxide 10% β/ο", "ΤΠ18-0119", "Απεντόμωση"],
-"MAGNUM ANT (41)": ["Magnum Gel Ants", "Imidacloprid 0.01%\nBitrex 0.008%", "ΤΠ18-0318", "Απεντόμωση"],
+"MAGNUM ANT (41)": ["MAGNUM GEL ANTS", "Imidacloprid 0.01%\nBitrex 0.008%", "ΤΠ18-0318", "Απεντόμωση"],
 "EC GEL (142)": ["EC GEL 10GR ANT", "Imidacloprid 0.01% β/ο", "ΤΠ18-0318", "Απεντόμωση"],
 "SERPOL GEL (57)": ["SERPOL GEL II (AL)", "Permethrin 0.376% β/ο\nIPBC 0.402% β/ο\nPropiconazole 0.865% β/ο", "ΤΠ8-0153", "Απεντόμωση"],
-"MAGNUM GEL (42)": ["Magnum Gel Roaches", "Imidacloprid 2.15% β/β", "ΤΠ18-0298", "Απεντόμωση"],
+"MAGNUM GEL (42)": ["MAGNUM GEL ROACHES", "Imidacloprid 2.15% β/β", "ΤΠ18-0298", "Απεντόμωση"],
 "SWIRR (117)": ["SWIRR 2 MG", "Acetamiprid 0.2% β/β", "ΤΠ18-0185/01-02-2016", "Απεντόμωση"],
-"CT (52)": ["Pest Guard CT", "Clothianidin 2.6% β/o", "ΤΠ18-0123/01-07-2014", "Απεντόμωση"],
+"CT (52)": ["PESGARD CT", "Clothianidin 2.6% β/o", "ΤΠ18-0123/01-07-2014", "Απεντόμωση"],
 "ZAGOR (124/175)": ["ZAGOR WAX BLOCK", "Brodifacoum 0.005% β/β\nDenatonium Benzoate 0.01% β/β", "ΤΠ14-0113", "Μυοκτονία"],
 "MAST (139)": ["ΚΟΛΛΗΤΙΚΗ ΕΠΙΦΑΝΕΙΑ MAST", "", "", "Μυοκτονία"],
-"CORAL (70)": ["ΔΟΛΩΜΑΤΙΚΟΣ ΣΤΑΘΜΟΣ CORAL", "", "", "Μυοκτονία"],
-"TBCL (71)": ["ΔΟΛΩΜΑΤΙΚΟΣ ΣΤΑΘΜΟΣ TBCL", "", "", "Μυοκτονία"],
-"SNAPTRAP (125)": ["Snap Trap - Μηχανική παγίδα σύλληψης", "", "", "Μυοκτονία"],
+"CORAL (70)": ["CORAL<br><span style=\"font-weight:normal;font-size:8.5px;color:#555;\">ΔΟΛΩΜΑΤΙΚΟΣ ΣΤΑΘΜΟΣ</span>", "", "", "Μυοκτονία"],
+"TBCL (71)": ["TOTAL BOX CLEAR<br><span style=\"font-weight:normal;font-size:8.5px;color:#555;\">ΔΟΛΩΜΑΤΙΚΟΣ ΣΤΑΘΜΟΣ</span>", "", "", "Μυοκτονία"],
+"SNAPTRAP (125)": ["SNAP TRAP<br><span style=\"font-weight:normal;font-size:8.5px;color:#555;\">Μηχανική παγίδα σύλληψης</span>", "", "", "Μυοκτονία"],
 "ITRAP 50 (37)": ["ΗΛΕΚΤΡΙΚΗ ΕΝΤΟΜΟΠΑΓΙΔΑ ITRAP 50", "", "", "Απεντόμωση"],
 "CHAMELEON (58)": ["ΣΥΝΤΗΡΗΣΗ ΕΝΤΟΜΟΠΑΓΙΔΑΣ - ΑΛΛΑΓΗ ΚΟΛΛΗΤΙΚΗΣ ΕΠΙΦΑΝΕΙΑΣ", "", "", ""],
 "X-LURE (93)": ["ΦΕΡΟΜΟΝΙΚΗ ΠΑΓΙΔΑ X-LURE MST TRAP", "", "", "Απεντόμωση"],
-"ROCK BAIT STATION (186)": ["ΔΟΛΩΜΑΤΙΚΟΣ ΣΤΑΘΜΟΣ ROCK", "", "", "Μυοκτονία"],
+"ROCK BAIT STATION (186)": ["ROCK<br><span style=\"font-weight:normal;font-size:8.5px;color:#555;\">ΔΟΛΩΜΑΤΙΚΟΣ ΣΤΑΘΜΟΣ</span>", "", "", "Μυοκτονία", true],
 "STICKY FTP30 (59)": ["ΣΥΝΤΗΡΗΣΗ ΕΝΤΟΜΟΠΑΓΙΔΑΣ - ΑΛΛΑΓΗ ΚΟΛΛΗΤΙΚΗΣ ΕΠΙΦΑΝΕΙΑΣ", "", "", ""],
 "STICKY INOXTRAP (61)": ["ΣΥΝΤΗΡΗΣΗ ΕΝΤΟΜΟΠΑΓΙΔΑΣ - ΑΛΛΑΓΗ ΚΟΛΛΗΤΙΚΗΣ ΕΠΙΦΑΝΕΙΑΣ", "", "", ""],
 "STICKY RT22 (62)": ["ΣΥΝΤΗΡΗΣΗ ΕΝΤΟΜΟΠΑΓΙΔΑΣ - ΑΛΛΑΓΗ ΚΟΛΛΗΤΙΚΗΣ ΕΠΙΦΑΝΕΙΑΣ", "", "", ""],
@@ -266,7 +266,7 @@ for (let i = 0; i < slotCount; i++) {
     const drast = info[1] ? info[1].split('\n').map(function(l){ return '(' + l + ')'; }).join('<br>') : '';
     const adeia = info[2] || '';
     const typos = info[3] || item.typos || '';
-    const isEco = name && !drast;
+    const isEco = name && !drast && !info[4];
     const drastLabel = drast && !adeia ? 'Συστατικά' : '';
     card.innerHTML =
       (typos ? '<div class="typ">' + typos + '</div>' : '') +
