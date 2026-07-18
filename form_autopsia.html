@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Έκθεση Αυτοψίας</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 0 0 24px; background: #f5f7f8; color: #1a1a1a; }
+  @page { margin: 8mm; }
+  @media print {
+    body { background: white; max-width: none; }
+    .noPrint { display: none !important; }
+    .page { box-shadow: none !important; margin: 0 !important; padding: 12px !important; }
+  }
+  .page { background: white; margin: 16px; padding: 20px; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.15); }
+
+  .teal { background: #087D8E; }
+  .navy { background: #303F53; }
+
+  .headerRow { display: flex; align-items: center; gap: 10px; }
+  .headerRow img.logo { width: 90px; flex-shrink: 0; }
+  .titleBar { flex: 1; background: #087D8E; color: white; padding: 10px 16px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
+  .titleBar h1 { font-size: 20px; margin: 0; }
+  .titleBar input[type=date] { padding: 6px 8px; border-radius: 4px; border: none; font-size: 13px; }
+  .kodBox { background: #eee; border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 11px; text-align: center; font-weight: bold; white-space: nowrap; }
+
+  .sectionBar { color: white; font-weight: bold; font-size: 12px; padding: 6px 10px; border-radius: 3px; margin-top: 14px; text-align: center; }
+
+  .custGrid { display: grid; grid-template-columns: 90px 1fr 90px 1fr; gap: 4px 8px; font-size: 12px; margin-top: 8px; }
+  .custGrid b { color: #444; }
+
+  /* ΞΕΝΙΣΤΕΣ */
+  .noFindings { display: flex; align-items: center; gap: 8px; padding: 10px; background: #eef6f7; border: 1px solid #087D8E; border-radius: 4px; margin-top: 8px; font-weight: bold; font-size: 13px; }
+  .noFindings input { width: 18px; height: 18px; }
+  #findingsArea.disabled { opacity: 0.35; pointer-events: none; }
+  .findingRow { display: grid; grid-template-columns: 1fr 90px 1fr 32px; gap: 6px; margin-top: 6px; align-items: center; }
+  .findingRow select, .findingRow input[type=text] { font-size: 11px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+  .findingRow button { background: #c0392b; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; height: 30px; }
+  #addFindingBtn { margin-top: 8px; background: #087D8E; color: white; border: none; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-weight: bold; cursor: pointer; }
+  .legend { font-size: 10px; color: #555; margin-top: 6px; text-align: center; }
+
+  /* ΤΡΩΚΤΙΚΑ */
+  table.rodents { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; }
+  table.rodents th, table.rodents td { border: 1px solid #ccc; padding: 5px; text-align: center; }
+  table.rodents th { background: #303F53; color: white; font-size: 10px; }
+  table.rodents td:first-child { text-align: left; font-style: italic; font-weight: bold; }
+  textarea.notes { width: 100%; margin-top: 6px; min-height: 50px; font-size: 11px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+
+  /* ΕΦΑΡΜΟΓΕΣ */
+  .worksGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .worksCol { border: 1px solid #ccc; border-radius: 4px; padding: 8px; }
+  .worksCol h3 { font-size: 11px; margin: 0 0 6px; color: #087D8E; }
+  .chk { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 3px 0; }
+  .chk input { width: 15px; height: 15px; }
+  .tpq { width: 100%; font-size: 10px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; margin-top: 6px; box-sizing: border-box; min-height: 40px; }
+
+  /* ΜΥΟΚΤΟΝΙΑ */
+  .myokGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+  .myokCol { border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+  .myokCol .hd { padding: 6px 10px; font-weight: bold; font-size: 11px; color: white; }
+  .myokCol .body { padding: 8px; }
+
+  .freeGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .freeBox { border: 1px solid #ccc; border-radius: 4px; }
+  .freeBox .hd { background: #303F53; color: white; font-size: 11px; font-weight: bold; padding: 5px 8px; }
+  .freeBox textarea { width: 100%; border: none; min-height: 90px; font-size: 11px; padding: 8px; box-sizing: border-box; resize: vertical; }
+
+  .actions { display: flex; gap: 10px; margin: 16px; }
+  .actions button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
+  #btnPrint { background: #087D8E; color: white; }
+  #btnSubmit { background: #303F53; color: white; }
+  #msg { text-align: center; font-weight: bold; margin-top: 6px; }
+
+  .docCtrl { border-top: 1px solid #999; margin-top: 14px; padding: 6px 4px 0; font-size: 10.5px; text-align: center; color: #333; }
+  .docCtrl b { font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="actions noPrint">
+  <button id="btnPrint" onclick="window.print()">🖨️ Αποθήκευση ως PDF / Εκτύπωση</button>
+  <button id="btnSubmit" onclick="submitForm()">☁️ Καταχώρηση</button>
+</div>
+<div id="msg" class="noPrint"></div>
+
+<div class="page">
+  <div class="headerRow">
+    <img class="logo" src="inco_logo_new.png" alt="InCo">
+    <div class="titleBar">
+      <h1>ΕΚΘΕΣΗ ΑΥΤΟΨΙΑΣ</h1>
+      <input type="date" id="custDate">
+    </div>
+    <div class="kodBox">ΚΩΔ.<br>Ε-Ε02</div>
+  </div>
+
+  <div class="sectionBar teal">ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</div>
+  <div class="custGrid">
+    <b>Επωνυμία:</b><span id="custEponymia">—</span>
+    <b>Κωδικός:</b><span id="custKod">—</span>
+    <b>Διεύθυνση:</b><span id="custDiey">—</span>
+    <b>Τηλέφωνο:</b><span id="custTil">—</span>
+  </div>
+
+  <div class="sectionBar navy">ΕΥΡΗΜΑΤΑ ΠΑΡΟΥΣΙΑΣ ΞΕΝΙΣΤΩΝ</div>
+  <div class="noFindings noPrint">
+    <input type="checkbox" id="noFindingsChk" checked onchange="toggleNoFindings()">
+    <label for="noFindingsChk">Δεν βρέθηκε κανένα εύρημα (όλα τα έντομα σε επίπεδο 0 - Απουσία)</label>
+  </div>
+  <div id="findingsArea" class="disabled">
+    <div id="findingsList"></div>
+    <button type="button" id="addFindingBtn" class="noPrint" onclick="addFindingRow(true)">+ Προσθήκη Εύρεσης</button>
+  </div>
+  <div class="legend">Επίπεδο Παρουσίας: (0) Απουσία, (1) Τυχαίο, (2) Χαμηλό, (3) Μέσο, (4) Υψηλό</div>
+
+  <div class="sectionBar navy" style="margin-top:16px;">ΤΡΩΚΤΙΚΑ</div>
+  <table class="rodents" id="rodentsTable"></table>
+  <textarea class="notes" id="rodentNotes" placeholder="Σημειώσεις..."></textarea>
+
+  <div class="sectionBar navy" style="margin-top:16px;">ΠΡΑΓΜΑΤΟΠΟΙΗΘΕΙΣΕΣ ΕΦΑΡΜΟΓΕΣ / ΕΡΓΑΣΙΕΣ</div>
+  <div class="worksGrid">
+    <div class="worksCol">
+      <h3>ΑΠΕΝΤΟΜΩΣΗ</h3>
+      <div id="apentomosiChecks"></div>
+    </div>
+    <div class="worksCol">
+      <h3>ΤΟΠΟΘΕΤΗΣΗ ΕΝΤΟΜΟΠΑΓΙΔΩΝ</h3>
+      <div id="topothetisiChecks"></div>
+      <textarea class="tpq" id="topothetisiTypos" placeholder="ΤΥΠΟΣ / ΠΟΣΟΤΗΤΑ..."></textarea>
+    </div>
+    <div class="worksCol">
+      <h3>ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΕΝΤΟΜΟΠΑΓΙΔΩΝ</h3>
+      <div id="elegxosPagidonChecks"></div>
+      <textarea class="tpq" id="elegxosPagidonTypos" placeholder="ΤΥΠΟΣ / ΠΟΣΟΤΗΤΑ..."></textarea>
+    </div>
+  </div>
+  <div class="legend">Η εφαρμογή των εντομοκτόνων που χρησιμοποιήθηκαν έγινε σύμφωνα με την άδεια έγκρισης κυκλοφορίας τους (Δοσολογία, Πεδίο Εφαρμογής, Τρόπος Εφαρμογής). Βλέπε επίσης: Ε-Ε05 Έντυπο Ελέγχου Φερομονικών Εντομοπαγίδων, Ε-Ε06 Έντυπο Ελέγχου Ηλεκτρικών Εντομοπαγίδων</div>
+
+  <div class="sectionBar navy" style="margin-top:16px;">ΜΥΟΚΤΟΝΙΑ</div>
+  <div class="myokGrid">
+    <div class="myokCol">
+      <div class="hd navy">ΣΗΜΕΙΑ ΕΛΕΓΧΟΥ (TOXIC)</div>
+      <div class="body">
+        <div class="chk"><input type="checkbox" id="toxicTopothetisi"><label for="toxicTopothetisi">Τοποθέτηση Δολωματικών Σταθμών</label></div>
+        <textarea class="tpq" id="toxicTypos" placeholder="ΤΥΠΟΣ / ΠΟΣΟΤΗΤΑ..."></textarea>
+        <div class="chk"><input type="checkbox" id="toxicAntikatastasi"><label for="toxicAntikatastasi">Αντικατάσταση Δολωματικών Σταθμών</label></div>
+        <div class="chk"><input type="checkbox" id="toxicElegxosDS"><label for="toxicElegxosDS">Έλεγχος / Συντήρηση Δολωματικών Σταθμών</label></div>
+        <div class="chk"><input type="checkbox" id="toxicElegxosSim"><label for="toxicElegxosSim">Έλεγχος / Συντήρηση Σημάνσεων</label></div>
+      </div>
+    </div>
+    <div class="myokCol">
+      <div class="hd teal">ΣΗΜΕΙΑ ΕΛΕΓΧΟΥ (ECO)</div>
+      <div class="body">
+        <div class="chk"><input type="checkbox" id="ecoTopothetisi"><label for="ecoTopothetisi">Τοποθέτηση Σημείων Ελέγχου</label></div>
+        <div class="chk"><input type="checkbox" id="ecoKolla"><label for="ecoKolla">Κόλλα</label></div>
+        <div class="chk"><input type="checkbox" id="ecoMixaniki"><label for="ecoMixaniki">Μηχανική Παγίδα</label></div>
+        <textarea class="tpq" id="ecoTypos" placeholder="ΤΥΠΟΣ / ΠΟΣΟΤΗΤΑ..."></textarea>
+        <div class="chk"><input type="checkbox" id="ecoAntikatastasi"><label for="ecoAntikatastasi">Αντικατάσταση Σημείων Ελέγχου</label></div>
+        <div class="chk"><input type="checkbox" id="ecoElegxosSE"><label for="ecoElegxosSE">Έλεγχος / Συντήρηση Σημείων Ελέγχου</label></div>
+        <div class="chk"><input type="checkbox" id="ecoElegxosSim"><label for="ecoElegxosSim">Έλεγχος / Συντήρηση Σημάνσεων</label></div>
+      </div>
+    </div>
+  </div>
+  <div class="legend">Εφόσον έχουν χρησιμοποιηθεί μυοκτόνα σκευάσματα κατά τις εφαρμογές αυτό έγινε σύμφωνα με την άδεια έγκρισης κυκλοφορίας τους. Βλέπε επίσης: Ε-Ε04α Έντυπο Ελέγχου Εφαρμογών Μυοκτονίας</div>
+
+  <div class="freeGrid">
+    <div class="freeBox">
+      <div class="hd">ΔΙΟΡΘΩΤΙΚΕΣ ΕΝΕΡΓΕΙΕΣ</div>
+      <textarea id="diorthotikes"></textarea>
+    </div>
+    <div class="freeBox">
+      <div class="hd">ΛΟΙΠΕΣ ΕΡΓΑΣΙΕΣ</div>
+      <textarea id="loipesErgasies"></textarea>
+    </div>
+    <div class="freeBox">
+      <div class="hd">ΓΙΑ ΤΟΝ ΕΛΕΓΧΟ</div>
+      <textarea id="giaTonElegxo"></textarea>
+    </div>
+  </div>
+
+  <div class="docCtrl">
+    ΣΥΝΤΑΞΗ / ΕΓΚΡΙΣΗ : <b>ΑΡΧΙΜΗΔΗΣ Λ. ΤΡΥΦΩΝΙΔΗΣ</b> &nbsp;|&nbsp;
+    ΕΚΔ. : <b>digital 01</b> &nbsp;|&nbsp;
+    ΙΣΧΥΕΙ ΑΠΟ : <b id="ctrlDate">01/09/2026</b>
+  </div>
+</div>
+
+<script>
+const p = new URLSearchParams(window.location.search);
+document.getElementById('custEponymia').textContent = decodeURIComponent(p.get('pelatis') || '—');
+document.getElementById('custKod').textContent = decodeURIComponent(p.get('kod') || '—');
+document.getElementById('custDiey').textContent = decodeURIComponent(p.get('diey') || '—');
+document.getElementById('custTil').textContent = decodeURIComponent(p.get('til') || '—');
+document.getElementById('custDate').value = new Date().toISOString().slice(0, 10);
+
+// ---- ΞΕΝΙΣΤΕΣ ----
+const HOSTS = {
+  'ΒΑΔΙΣΤΙΚΑ ΕΝΤΟΜΑ': ['Periplanetta americana', 'Blatta orientalis', 'Blattella germanica', 'Supella longipalpa', 'Μυρμήγκια'],
+  'ΙΠΤΑΜΕΝΑ ΕΝΤΟΜΑ': ['Muscidae', 'Sarcophoridae', 'Calliphoridae', 'Psychodidae', 'Drosophilidae', 'Phoridae', 'Vespidae'],
+  'ΕΝΤΟΜΑ ΑΠΟΘΗΚΩΝ': ['Coleoptera', 'Lepidoptera'],
+};
+
+function toggleNoFindings() {
+  const chk = document.getElementById('noFindingsChk');
+  document.getElementById('findingsArea').classList.toggle('disabled', chk.checked);
+}
+
+function speciesOptionsHtml() {
+  let html = '<option value="">— Έντομο / Οικογένεια —</option>';
+  Object.keys(HOSTS).forEach(function(group) {
+    html += '<optgroup label="' + group + '">';
+    HOSTS[group].forEach(function(sp) {
+      html += '<option value="' + sp + '">' + sp + '</option>';
+    });
+    html += '</optgroup>';
+  });
+  return html;
+}
+
+let findingIdx = 0;
+function addFindingRow(uncheckNoFindings) {
+  if (uncheckNoFindings) {
+    document.getElementById('noFindingsChk').checked = false;
+    toggleNoFindings();
+  }
+  const row = document.createElement('div');
+  row.className = 'findingRow';
+  const id = 'finding_' + (findingIdx++);
+  row.dataset.id = id;
+  row.innerHTML =
+    '<select id="' + id + '_species">' + speciesOptionsHtml() + '</select>' +
+    '<select id="' + id + '_level">' +
+      [0,1,2,3,4].map(lv => '<option value="' + lv + '">' + lv + '</option>').join('') +
+    '</select>' +
+    '<input type="text" id="' + id + '_where" placeholder="Πού βρέθηκε...">' +
+    '<button type="button" class="noPrint" onclick="this.closest(\'.findingRow\').remove()">✕</button>';
+  document.getElementById('findingsList').appendChild(row);
+}
+addFindingRow();
+
+// ---- ΤΡΩΚΤΙΚΑ ----
+const RODENT_COLS = ['ΑΠΟΥΣΙΑ', 'ΙΧΝΗ', 'ΦΘΟΡΕΣ', 'ΤΡΙΧΕΣ', 'ΚΟΠΡΑΝΑ', 'ΠΛΗΘΥΣΜΟΣ'];
+const RODENTS = ['Rattus norvegicus', 'Rattus rattus', 'Mus musculus'];
+const rt = document.getElementById('rodentsTable');
+let thead = '<tr><th></th>';
+RODENT_COLS.forEach(c => thead += '<th>' + c + '</th>');
+thead += '</tr>';
+let tbody = '';
+RODENTS.forEach(function(r, i) {
+  tbody += '<tr><td>' + r + '</td>';
+  RODENT_COLS.forEach(function(c, j) {
+    tbody += '<td><input type="checkbox" id="rod_' + i + '_' + j + '"></td>';
+  });
+  tbody += '</tr>';
+});
+rt.innerHTML = thead + tbody;
+
+// ---- ΕΦΑΡΜΟΓΕΣ ----
+function buildChecks(containerId, items, prefix) {
+  const c = document.getElementById(containerId);
+  items.forEach(function(label, i) {
+    const div = document.createElement('div');
+    div.className = 'chk';
+    const id = prefix + '_' + i;
+    div.innerHTML = '<input type="checkbox" id="' + id + '"><label for="' + id + '">' + label + '</label>';
+    c.appendChild(div);
+  });
+}
+buildChecks('apentomosiChecks', ['Ψεκασμός', 'Gel', 'Επίχρισμα', 'Αερόλυμα', 'Καπνογόνο', 'Νεφελοποίηση', 'Τοποθέτηση Παγίδων'], 'apen');
+buildChecks('topothetisiChecks', ['Κόλλα', 'Φερομόνη / Τροφοελκυστικό', 'Σύλληψης / Εγκλωβισμού', 'Ηλεκτρική'], 'topo');
+buildChecks('elegxosPagidonChecks', ['Κόλλα', 'Φερομόνη / Τροφοελκυστικό', 'Σύλληψης / Εγκλωβισμού', 'Ηλεκτρική'], 'eleg');
+
+function submitForm() {
+  const msg = document.getElementById('msg');
+  msg.style.color = 'black';
+  msg.textContent = 'Αποστολή...';
+
+  const hosts = [];
+  const noFindings = document.getElementById('noFindingsChk').checked;
+  if (!noFindings) {
+    document.querySelectorAll('.findingRow').forEach(function(row) {
+      const id = row.dataset.id;
+      const species = document.getElementById(id + '_species').value;
+      const level = document.getElementById(id + '_level').value;
+      const where = document.getElementById(id + '_where').value.trim();
+      if (species) hosts.push({ species: species, level: level, where: where });
+    });
+  }
+
+  const rodents = [];
+  RODENTS.forEach(function(r, i) {
+    const cols = [];
+    RODENT_COLS.forEach(function(c, j) {
+      if (document.getElementById('rod_' + i + '_' + j).checked) cols.push(c);
+    });
+    if (cols.length) rodents.push({ species: r, marks: cols.join(',') });
+  });
+
+  function checkedLabels(prefix, items) {
+    return items.filter((_, i) => document.getElementById(prefix + '_' + i).checked);
+  }
+  const apentomosi = checkedLabels('apen', ['Ψεκασμός', 'Gel', 'Επίχρισμα', 'Αερόλυμα', 'Καπνογόνο', 'Νεφελοποίηση', 'Τοποθέτηση Παγίδων']);
+  const topothetisi = checkedLabels('topo', ['Κόλλα', 'Φερομόνη/Τροφοελκυστικό', 'Σύλληψης/Εγκλωβισμού', 'Ηλεκτρική']);
+  const elegxosPagidon = checkedLabels('eleg', ['Κόλλα', 'Φερομόνη/Τροφοελκυστικό', 'Σύλληψης/Εγκλωβισμού', 'Ηλεκτρική']);
+
+  const payload = {
+    form: 'autopsia',
+    kod: p.get('kod') || '',
+    pelatis: decodeURIComponent(p.get('pelatis') || ''),
+    date: document.getElementById('custDate').value,
+    noFindings: noFindings,
+    hosts: hosts,
+    rodents: rodents,
+    rodentNotes: document.getElementById('rodentNotes').value,
+    apentomosi: apentomosi.join(', '),
+    topothetisiMethods: topothetisi.join(', '),
+    topothetisiTypos: document.getElementById('topothetisiTypos').value,
+    elegxosPagidonMethods: elegxosPagidon.join(', '),
+    elegxosPagidonTypos: document.getElementById('elegxosPagidonTypos').value,
+    toxicTopothetisi: document.getElementById('toxicTopothetisi').checked,
+    toxicTypos: document.getElementById('toxicTypos').value,
+    toxicAntikatastasi: document.getElementById('toxicAntikatastasi').checked,
+    toxicElegxosDS: document.getElementById('toxicElegxosDS').checked,
+    toxicElegxosSim: document.getElementById('toxicElegxosSim').checked,
+    ecoTopothetisi: document.getElementById('ecoTopothetisi').checked,
+    ecoKolla: document.getElementById('ecoKolla').checked,
+    ecoMixaniki: document.getElementById('ecoMixaniki').checked,
+    ecoTypos: document.getElementById('ecoTypos').value,
+    ecoAntikatastasi: document.getElementById('ecoAntikatastasi').checked,
+    ecoElegxosSE: document.getElementById('ecoElegxosSE').checked,
+    ecoElegxosSim: document.getElementById('ecoElegxosSim').checked,
+    diorthotikes: document.getElementById('diorthotikes').value,
+    loipesErgasies: document.getElementById('loipesErgasies').value,
+    giaTonElegxo: document.getElementById('giaTonElegxo').value,
+  };
+
+  const scriptUrl = p.get('script');
+  if (!scriptUrl) {
+    msg.style.color = 'red';
+    msg.textContent = 'Δεν βρέθηκε script URL για τον πελάτη.';
+    return;
+  }
+
+  fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
+    .then(function() {
+      msg.style.color = 'green';
+      msg.textContent = 'Η έκθεση αυτοψίας καταχωρήθηκε ✓';
+    })
+    .catch(function() {
+      msg.style.color = 'red';
+      msg.textContent = 'Σφάλμα αποστολής.';
+    });
+}
+</script>
+</body>
+</html>
