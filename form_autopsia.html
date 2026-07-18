@@ -6,64 +6,64 @@
 <title>Έκθεση Αυτοψίας</title>
 <style>
   body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 0 0 24px; background: #f5f7f8; color: #1a1a1a; }
-  @page { margin: 8mm; }
+  @page { margin: 5mm; }
   @media print {
-    body { background: white; max-width: none; }
+    body { background: white; max-width: none; padding: 0 !important; }
     .noPrint { display: none !important; }
-    .page { box-shadow: none !important; margin: 0 !important; padding: 12px !important; }
+    .page { box-shadow: none !important; margin: 0 !important; padding: 8px !important; }
   }
-  .page { background: white; margin: 16px; padding: 20px; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.15); }
+  .page { background: white; margin: 16px; padding: 16px; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.15); }
 
   .teal { background: #087D8E; }
   .navy { background: #303F53; }
 
   .headerRow { display: flex; align-items: center; gap: 10px; }
   .headerRow img.logo { width: 90px; flex-shrink: 0; }
-  .titleBar { flex: 1; background: #087D8E; color: white; padding: 10px 16px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
+  .titleBar { flex: 1; background: #087D8E; color: white; padding: 8px 16px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
   .titleBar h1 { font-size: 20px; margin: 0; }
   .titleBar input[type=date] { padding: 6px 8px; border-radius: 4px; border: none; font-size: 13px; }
   .kodBox { background: #eee; border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 11px; text-align: center; font-weight: bold; white-space: nowrap; }
 
-  .sectionBar { color: white; font-weight: bold; font-size: 12px; padding: 6px 10px; border-radius: 3px; margin-top: 14px; text-align: center; }
+  .sectionBar { color: white; font-weight: bold; font-size: 12px; padding: 4px 10px; border-radius: 3px; margin-top: 4px; text-align: center; }
 
-  .custGrid { display: grid; grid-template-columns: 90px 1fr 90px 1fr; gap: 4px 8px; font-size: 12px; margin-top: 8px; }
+  .custGrid { display: grid; grid-template-columns: 90px 1fr 90px 1fr; gap: 4px 8px; font-size: 12px; margin-top: 5px; }
   .custGrid b { color: #444; }
 
   /* ΞΕΝΙΣΤΕΣ */
-  .noFindings { display: flex; align-items: center; gap: 8px; padding: 10px; background: #eef6f7; border: 1px solid #087D8E; border-radius: 4px; margin-top: 8px; font-weight: bold; font-size: 13px; }
+  .noFindings { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #eef6f7; border: 1px solid #087D8E; border-radius: 4px; margin-top: 5px; font-weight: bold; font-size: 13px; }
   .noFindings input { width: 18px; height: 18px; }
   #findingsArea.disabled { opacity: 0.35; pointer-events: none; }
-  .findingRow { display: grid; grid-template-columns: 1fr 90px 1fr 32px; gap: 6px; margin-top: 6px; align-items: center; }
+  .findingRow { display: grid; grid-template-columns: 1fr 90px 1fr 32px; gap: 6px; margin-top: 4px; align-items: center; }
   .findingRow select, .findingRow input[type=text] { font-size: 11px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
   .findingRow button { background: #c0392b; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; height: 30px; }
-  #addFindingBtn { margin-top: 8px; background: #087D8E; color: white; border: none; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-weight: bold; cursor: pointer; }
-  .legend { font-size: 10px; color: #555; margin-top: 6px; text-align: center; }
+  #addFindingBtn { margin-top: 5px; background: #087D8E; color: white; border: none; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-weight: bold; cursor: pointer; }
+  .legend { font-size: 10px; color: #555; margin-top: 4px; text-align: center; }
 
   /* ΤΡΩΚΤΙΚΑ */
-  table.rodents { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; }
-  table.rodents th, table.rodents td { border: 1px solid #ccc; padding: 5px; text-align: center; }
+  table.rodents { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 11px; }
+  table.rodents th, table.rodents td { border: 1px solid #ccc; padding: 4px; text-align: center; }
   table.rodents th { background: #303F53; color: white; font-size: 10px; }
   table.rodents td:first-child { text-align: left; font-style: italic; font-weight: bold; }
-  textarea.notes { width: 100%; margin-top: 6px; min-height: 50px; font-size: 11px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+  textarea.notes { width: 100%; margin-top: 4px; min-height: 32px; font-size: 11px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
 
   /* ΕΦΑΡΜΟΓΕΣ */
-  .worksGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
-  .worksCol { border: 1px solid #ccc; border-radius: 4px; padding: 8px; }
-  .worksCol h3 { font-size: 11px; margin: 0 0 6px; color: #087D8E; }
-  .chk { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 3px 0; }
+  .worksGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 4px; }
+  .worksCol { border: 1px solid #ccc; border-radius: 4px; padding: 6px; }
+  .worksCol h3 { font-size: 11px; margin: 0 0 4px; color: #087D8E; }
+  .chk { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 2px 0; }
   .chk input { width: 15px; height: 15px; }
-  .tpq { width: 100%; font-size: 10px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; margin-top: 6px; box-sizing: border-box; min-height: 40px; }
+  .tpq { width: 100%; font-size: 10px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; margin-top: 3px; box-sizing: border-box; min-height: 22px; }
 
   /* ΜΥΟΚΤΟΝΙΑ */
-  .myokGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+  .myokGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
   .myokCol { border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
   .myokCol .hd { padding: 6px 10px; font-weight: bold; font-size: 11px; color: white; }
-  .myokCol .body { padding: 8px; }
+  .myokCol .body { padding: 6px; }
 
-  .freeGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .freeGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 4px; }
   .freeBox { border: 1px solid #ccc; border-radius: 4px; }
   .freeBox .hd { background: #303F53; color: white; font-size: 11px; font-weight: bold; padding: 5px 8px; }
-  .freeBox textarea { width: 100%; border: none; min-height: 90px; font-size: 11px; padding: 8px; box-sizing: border-box; resize: vertical; }
+  .freeBox textarea { width: 100%; border: none; min-height: 36px; font-size: 11px; padding: 6px; box-sizing: border-box; resize: vertical; }
 
   .actions { display: flex; gap: 10px; margin: 16px; }
   .actions button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
@@ -71,7 +71,7 @@
   #btnSubmit { background: #303F53; color: white; }
   #msg { text-align: center; font-weight: bold; margin-top: 6px; }
 
-  .docCtrl { border-top: 1px solid #999; margin-top: 14px; padding: 6px 4px 0; font-size: 10.5px; text-align: center; color: #333; }
+  .docCtrl { border-top: 1px solid #999; margin-top: 8px; padding: 4px 4px 0; font-size: 10.5px; text-align: center; color: #333; }
   .docCtrl b { font-weight: bold; }
 </style>
 </head>
@@ -112,11 +112,11 @@
   </div>
   <div class="legend">Επίπεδο Παρουσίας: (0) Απουσία, (1) Τυχαίο, (2) Χαμηλό, (3) Μέσο, (4) Υψηλό</div>
 
-  <div class="sectionBar navy" style="margin-top:16px;">ΤΡΩΚΤΙΚΑ</div>
+  <div class="sectionBar navy" style="margin-top:6px;">ΤΡΩΚΤΙΚΑ</div>
   <table class="rodents" id="rodentsTable"></table>
   <textarea class="notes" id="rodentNotes" placeholder="Σημειώσεις..."></textarea>
 
-  <div class="sectionBar navy" style="margin-top:16px;">ΠΡΑΓΜΑΤΟΠΟΙΗΘΕΙΣΕΣ ΕΦΑΡΜΟΓΕΣ / ΕΡΓΑΣΙΕΣ</div>
+  <div class="sectionBar navy" style="margin-top:6px;">ΠΡΑΓΜΑΤΟΠΟΙΗΘΕΙΣΕΣ ΕΦΑΡΜΟΓΕΣ / ΕΡΓΑΣΙΕΣ</div>
   <div class="worksGrid">
     <div class="worksCol">
       <h3>ΑΠΕΝΤΟΜΩΣΗ</h3>
@@ -135,7 +135,7 @@
   </div>
   <div class="legend">Η εφαρμογή των εντομοκτόνων που χρησιμοποιήθηκαν έγινε σύμφωνα με την άδεια έγκρισης κυκλοφορίας τους (Δοσολογία, Πεδίο Εφαρμογής, Τρόπος Εφαρμογής). Βλέπε επίσης: Ε-Ε05 Έντυπο Ελέγχου Φερομονικών Εντομοπαγίδων, Ε-Ε06 Έντυπο Ελέγχου Ηλεκτρικών Εντομοπαγίδων</div>
 
-  <div class="sectionBar navy" style="margin-top:16px;">ΜΥΟΚΤΟΝΙΑ</div>
+  <div class="sectionBar navy" style="margin-top:6px;">ΜΥΟΚΤΟΝΙΑ</div>
   <div class="myokGrid">
     <div class="myokCol">
       <div class="hd navy">ΣΗΜΕΙΑ ΕΛΕΓΧΟΥ (TOXIC)</div>
