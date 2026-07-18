@@ -157,6 +157,7 @@
   <a id="lnkEntomo" href="#" target="_blank" style="display:none; text-decoration:none; padding:6px 14px; border-radius:6px; background:#ffe600; color:#000; font-size:12px; font-weight:bold;">Ε-Ε06</a>
   <a id="lnkFeromo" href="#" target="_blank" style="display:none; text-decoration:none; padding:6px 14px; border-radius:6px; background:#17a8b8; color:white; font-size:12px; font-weight:bold;">Ε-Ε05</a>
   <button id="btnECert" onclick="openECert()" style="display:none; padding:6px 14px; border-radius:6px; background:#1b96aa; color:white; font-size:12px; font-weight:bold; border:none; cursor:pointer;">eCERT</button>
+  <button id="btnAutopsia" onclick="openAutopsia()" style="display:none; padding:6px 14px; border-radius:6px; background:#303F53; color:white; font-size:12px; font-weight:bold; border:none; cursor:pointer;">ΑΥΤΟΨΙΑ</button>
 </div>
 
 <!-- ΣΤΟΙΧΕΙΑ ΡΑΝΤΕΒΟΥ + ΕΞΟΠΛΙΣΜΟΣ -->
@@ -489,6 +490,7 @@
   }
 
   document.getElementById('btnECert').style.display = 'inline-block';
+  document.getElementById('btnAutopsia').style.display = 'inline-block';
   if (!document.getElementById('checkFormsBar').style.display || document.getElementById('checkFormsBar').style.display === 'none') {
     document.getElementById('checkFormsBar').style.display = 'flex';
   }
@@ -516,6 +518,51 @@ function openECert() {
     skev: JSON.stringify(skev)
   });
   window.open('form_ecert.html?' + qp.toString(), '_blank');
+}
+
+// ---- Χαρτογράφηση Είδος/Μέθοδος εντολής -> checkboxes Έκθεσης Αυτοψίας ----
+const AUTOPSIA_APEN_MAP = {
+  'ΨΕΚΑΣΜΟΣ': 'Ψεκασμός', 'GEL': 'Gel', 'ΕΠΙΧΡΙΣΜΑ': 'Επίχρισμα',
+  'ΑΕΡΟΛΥΜΑ': 'Αερόλυμα', 'ΚΑΠΝΟΓΟΝΟ': 'Καπνογόνο', 'ΝΕΦΕΛΟΠΟΙΗΣΗ': 'Νεφελοποίηση',
+  'ΤΟΠΟΘΕΤΗΣΗ ΠΑΓΙΔΩΝ': 'Τοποθέτηση Παγίδων',
+};
+const AUTOPSIA_MYOK_MAP = {
+  'ΤΟΠΟΘΕΤΗΣΗ Δ/Σ': 'toxicTopothetisi', 'ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ': 'toxicElegxosDS',
+  'ΤΟΠΟΘΕΤΗΣΗ Σ/Ε': 'ecoTopothetisi', 'ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ Σ/Ε': 'ecoElegxosSE',
+  'ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ': 'ecoMixaniki', 'ΤΟΠΟΘΕΤΗΣΗ ΠΑΓΙΔΑΣ ΜΕ ΚΟΛΛΑ': 'ecoKolla',
+};
+
+function openAutopsia() {
+  const pelatis = document.getElementById('inf-pelatis').textContent;
+  const kod = document.getElementById('inf-kod').textContent;
+  const diey = document.getElementById('inf-diey').textContent;
+  const til = document.getElementById('inf-til').textContent;
+  const sim = document.getElementById('inf-sim').textContent;
+
+  const apen = new Set();
+  const eleg = new Set();
+  const myok = new Set();
+
+  for (let i = 0; i < ROWS; i++) {
+    const typ = document.getElementById(`sk-typ-${i}`).value;
+    const met = document.getElementById(`sk-met-${i}`).value;
+    if (!typ || !met) continue;
+    if (typ === 'ΑΠΕΝΤΟΜΩΣΗ' && AUTOPSIA_APEN_MAP[met]) apen.add(AUTOPSIA_APEN_MAP[met]);
+    if (typ === 'ΗΛΕΚΤΡΙΚΗ ΕΝΤΟΜΟΠΑΓΙΔΑ') eleg.add('Ηλεκτρική');
+    if (typ === 'ΜΥΟΚΤΟΝΙΑ' && AUTOPSIA_MYOK_MAP[met]) myok.add(AUTOPSIA_MYOK_MAP[met]);
+  }
+
+  const qp = new URLSearchParams({
+    pelatis: pelatis === '—' ? '' : pelatis,
+    kod: kod === '—' ? '' : kod,
+    diey: diey === '—' ? '' : diey,
+    til: til === '—' ? '' : til,
+    apen: [...apen].join(','),
+    eleg: [...eleg].join(','),
+    myok: [...myok].join(','),
+    notes: sim === '—' ? '' : sim,
+  });
+  window.open('form_autopsia.html?' + qp.toString(), '_blank');
 }
 
 // ---- ΛΙΣΤΑ ΣΚΕΥΑΣΜΑΤΩΝ ----
