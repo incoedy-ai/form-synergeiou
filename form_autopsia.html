@@ -23,9 +23,9 @@
 
   .headerRow { display: flex; align-items: stretch; gap: 0; }
   .headerRow img.logo { width: 78px; flex-shrink: 0; margin-right: 10px; }
-  .titleBar { flex: 1; background: #087D8E; color: white; padding: 3px 16px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
-  .titleBar h1 { font-size: 17px; margin: 0; }
-  .titleBar input[type=date] { padding: 8px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 17px; font-weight: bold; }
+  .titleBar { flex: 1; background: #087D8E; color: white; padding: 3px 16px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; position: relative; }
+  .titleBar h1 { position: absolute; left: 50%; transform: translateX(-50%); font-size: 17px; margin: 0; white-space: nowrap; }
+  .titleBar input[type=date] { padding: 8px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 17px; font-weight: bold; margin-left: auto; }
   .kodBox { background: #eee; border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 11px; text-align: center; font-weight: bold; white-space: nowrap; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
   .sectionBar { color: white; font-weight: bold; font-size: 12px; padding: 4px 10px; border-radius: 3px; margin-top: 4px; text-align: center; }
@@ -78,13 +78,13 @@
   .myokCol { border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
   .myokCol .hd { padding: 6px 10px; font-weight: bold; font-size: 9.5px; color: white; white-space: nowrap; text-align: center; }
   .myokCol .body { padding: 6px; }
-  .myokCol .body .tpq { margin-top: 4px; margin-left: -4px; margin-right: -4px; width: calc(100% + 8px); min-height: 85px; }
+  .myokCol .body .tpq { margin-top: 4px; margin-left: -4px; margin-right: -4px; width: calc(100% + 8px); min-height: 65px; }
 
   .freeGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 4px; }
-  .freeGridStack { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+  .freeGridStack { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
   .freeBox { border: 1px solid #ccc; border-radius: 4px; }
   .freeBox .hd { background: #303F53; color: white; font-size: 11px; font-weight: bold; padding: 5px 8px; text-align: center; }
-  .freeBox textarea { width: 100%; height: 70px; border: none; font-size: 11px; padding: 6px; box-sizing: border-box; resize: vertical; }
+  .freeBox textarea { width: 100%; height: 55px; border: none; font-size: 11px; padding: 6px; box-sizing: border-box; resize: vertical; }
   .sigBoxArea { border: 1px solid #ccc; min-height: 110px; width: 200px; box-sizing: border-box; margin: 6px auto; display: flex; align-items: center; justify-content: center; padding: 8px; }
   .sigBoxArea img { max-width: 100%; max-height: 110px; object-fit: contain; }
   #scientistPicker { display: block; margin: 0 auto 6px; font-size: 10px; }
@@ -95,7 +95,7 @@
   #btnSubmit { background: #303F53; color: white; }
   #msg { text-align: center; font-weight: bold; margin-top: 6px; }
 
-  .docCtrl { border-top: 1px solid #999; margin-top: 8px; padding: 4px 4px 0; font-size: 10.5px; text-align: center; color: #333; }
+  .docCtrl { border-top: 1px solid #999; margin-top: 4px; padding: 2px 4px 0; font-size: 10.5px; text-align: center; color: #333; }
   .docCtrl b { font-weight: bold; }
 </style>
 </head>
@@ -131,7 +131,7 @@
     <div class="twoCol">
       <div class="sectionBar navy">ΕΥΡΗΜΑΤΑ ΠΑΡΟΥΣΙΑΣ ΕΝΤΟΜΩΝ</div>
       <div class="hostGrid" id="hostGrid"></div>
-      <div class="legend" style="font-weight:bold;">Επίπεδο Παρουσίας: (1) Τυχαίο, (2) Χαμηλό, (3) Μέσο, (4) Υψηλό</div>
+      <div class="legend" style="font-weight:bold; color:black;">Επίπεδο Παρουσίας: (1) Τυχαίο, (2) Χαμηλό, (3) Μέσο, (4) Υψηλό</div>
 
       <div class="sectionBar navy" style="margin-top:6px;">ΕΦΑΡΜΟΓΕΣ / ΕΡΓΑΣΙΕΣ ΑΠΕΝΤΟΜΩΣΗΣ</div>
       <div class="worksGrid">
