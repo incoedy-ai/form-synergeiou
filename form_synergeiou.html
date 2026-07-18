@@ -192,6 +192,8 @@
       <!-- Row 3 -->
       <div class="info-item" style="grid-column:1;grid-row:3;"><span class="info-label">ΕΠΩΝΥΜΙΑ</span><span class="info-val" id="inf-pelatis">—</span></div>
       <div class="info-item" style="grid-column:2;grid-row:3;"><span class="info-label">ΚΑΤΗΓΟΡΙΑ ΠΕΛΑΤΗ</span><span class="info-val" id="inf-katpel">—</span></div>
+      <span id="inf-limani" style="display:none;"></span>
+      <span id="inf-onomaskaf" style="display:none;"></span>
       <div class="info-item" style="grid-column:4;grid-row:3;"><span class="info-label">ΠΡΟΒΛΗΜΑ</span><span class="info-val" id="inf-prob">—</span></div>
       <div class="info-item" style="grid-column:5;grid-row:3/6;display:flex;flex-direction:column;align-self:stretch;">
         <span class="info-label">ΕΙΔΟΣ ΕΦΑΡΜΟΓΗΣ</span>
@@ -405,6 +407,8 @@
     'afm':     'inf-afm',
     'yp':      'inf-yp',
     'katpel':  'inf-katpel',
+    'limani':  'inf-limani',
+    'onomaskaf': 'inf-onomaskaf',
     'email':   'inf-email',
     'etim':    'inf-etim',
     'imer':    'inf-imer',
@@ -501,6 +505,9 @@ function openECert() {
   const diey = document.getElementById('inf-diey').textContent;
   const til = document.getElementById('inf-til').textContent;
   const afm = document.getElementById('inf-afm').textContent;
+  const katpel = document.getElementById('inf-katpel').textContent;
+  const limani = document.getElementById('inf-limani').textContent;
+  const onomaskaf = document.getElementById('inf-onomaskaf').textContent;
 
   const skev = [];
   for (let i = 0; i < ROWS; i++) {
@@ -515,6 +522,9 @@ function openECert() {
     diey: diey === '—' ? '' : diey,
     til: til === '—' ? '' : til,
     afm: afm === '—' ? '' : afm,
+    katpel: katpel === '—' ? '' : katpel,
+    limani: limani || '',
+    onomaskaf: onomaskaf || '',
     skev: JSON.stringify(skev)
   });
   window.open('form_ecert.html?' + qp.toString(), '_blank');
@@ -538,6 +548,9 @@ function openAutopsia() {
   const diey = document.getElementById('inf-diey').textContent;
   const til = document.getElementById('inf-til').textContent;
   const sim = document.getElementById('inf-sim').textContent;
+  const katpel = document.getElementById('inf-katpel').textContent;
+  const limani = document.getElementById('inf-limani').textContent;
+  const onomaskaf = document.getElementById('inf-onomaskaf').textContent;
 
   const apen = new Set();
   const eleg = new Set();
@@ -557,6 +570,9 @@ function openAutopsia() {
     kod: kod === '—' ? '' : kod,
     diey: diey === '—' ? '' : diey,
     til: til === '—' ? '' : til,
+    katpel: katpel === '—' ? '' : katpel,
+    limani: limani || '',
+    onomaskaf: onomaskaf || '',
     apen: [...apen].join(','),
     eleg: [...eleg].join(','),
     myok: [...myok].join(','),

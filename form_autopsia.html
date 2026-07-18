@@ -17,26 +17,32 @@
   .teal { background: #087D8E; }
   .navy { background: #303F53; }
 
-  .headerRow { display: flex; align-items: center; gap: 10px; }
-  .headerRow img.logo { width: 90px; flex-shrink: 0; }
-  .titleBar { flex: 1; background: #087D8E; color: white; padding: 8px 16px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
-  .titleBar h1 { font-size: 20px; margin: 0; }
-  .titleBar input[type=date] { padding: 6px 8px; border-radius: 4px; border: none; font-size: 13px; }
-  .kodBox { background: #eee; border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 11px; text-align: center; font-weight: bold; white-space: nowrap; }
+  .headerRow { display: flex; align-items: stretch; gap: 0; }
+  .headerRow img.logo { width: 78px; flex-shrink: 0; margin-right: 10px; }
+  .titleBar { flex: 1; background: #087D8E; color: white; padding: 3px 16px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
+  .titleBar h1 { font-size: 17px; margin: 0; }
+  .titleBar input[type=date] { padding: 8px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 17px; font-weight: bold; }
+  .kodBox { background: #eee; border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 11px; text-align: center; font-weight: bold; white-space: nowrap; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
   .sectionBar { color: white; font-weight: bold; font-size: 12px; padding: 4px 10px; border-radius: 3px; margin-top: 4px; text-align: center; }
 
-  .custGrid { display: grid; grid-template-columns: 90px 1fr 90px 1fr; gap: 4px 8px; font-size: 12px; margin-top: 5px; }
-  .custGrid b { color: #444; }
+  .custGrid { display: grid; grid-template-columns: 120px 1fr 120px 1fr; gap: 4px 8px; font-size: 12px; margin-top: 5px; }
+  .custGrid b { white-space: nowrap; color: #444; }
 
   /* ΞΕΝΙΣΤΕΣ */
-  .noFindings { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #eef6f7; border: 1px solid #087D8E; border-radius: 4px; margin-top: 5px; font-weight: bold; font-size: 13px; }
-  .noFindings input { width: 18px; height: 18px; }
-  #findingsArea.disabled { opacity: 0.35; pointer-events: none; }
-  .findingRow { display: grid; grid-template-columns: 1fr 90px 1fr 32px; gap: 6px; margin-top: 4px; align-items: center; }
-  .findingRow select, .findingRow input[type=text] { font-size: 11px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
-  .findingRow button { background: #c0392b; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; height: 30px; }
-  #addFindingBtn { margin-top: 5px; background: #087D8E; color: white; border: none; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-weight: bold; cursor: pointer; }
+  .hostGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 5px; }
+  .hostCol { border: 2px solid #303F53; background: #e7eaef; border-radius: 4px; padding: 6px; }
+  .hostCol h3 { color: white; background: #303F53; font-weight: bold; font-size: 11px; padding: 4px 6px; border-radius: 3px; margin: -6px -6px 6px -6px; text-align: center; }
+  .hostNoFind { display: flex; align-items: center; gap: 6px; padding: 4px 6px; background: #eef6f7; border: 1px solid #087D8E; border-radius: 4px; font-weight: bold; font-size: 10px; }
+  .hostNoFind input { width: 15px; height: 15px; flex-shrink: 0; }
+  .findingsAreaCat { margin-top: 6px; }
+  .findingsAreaCat.disabled { opacity: 0.35; pointer-events: none; }
+  .findingsListCat { max-height: 150px; overflow-y: auto; overflow-x: hidden; }
+  .hostFindingRow { display: grid; grid-template-columns: 1fr 40px 1fr 22px; gap: 4px; margin-top: 4px; align-items: center; }
+  .hostFindingRow select, .hostFindingRow input[type=text] { font-size: 10px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; min-width: 0; width: 100%; box-sizing: border-box; }
+  .hostFindingRow .customSpeciesInput { grid-column: 1 / -1; }
+  .hostFindingRow button { background: #c0392b; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; height: 24px; }
+  .addFindBtn { margin-top: 4px; width: 100%; background: #087D8E; color: white; border: none; border-radius: 4px; padding: 5px; font-size: 10px; font-weight: bold; cursor: pointer; }
   .legend { font-size: 10px; color: #555; margin-top: 4px; text-align: center; }
 
   /* ΤΡΩΚΤΙΚΑ */
@@ -47,7 +53,7 @@
   textarea.notes { width: 100%; margin-top: 4px; min-height: 32px; font-size: 11px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
 
   /* ΕΦΑΡΜΟΓΕΣ */
-  .worksGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 4px; }
+  .worksGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 4px; }
   .worksCol { border: 1px solid #ccc; border-radius: 4px; padding: 6px; }
   .worksCol h3 { font-size: 11px; margin: 0 0 4px; color: #087D8E; }
   .chk { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 2px 0; }
@@ -55,12 +61,12 @@
   .tpq { width: 100%; font-size: 10px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; margin-top: 3px; box-sizing: border-box; min-height: 22px; }
 
   /* ΜΥΟΚΤΟΝΙΑ */
-  .myokGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+  .myokGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 4px; }
   .myokCol { border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
   .myokCol .hd { padding: 6px 10px; font-weight: bold; font-size: 11px; color: white; }
   .myokCol .body { padding: 6px; }
 
-  .freeGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 4px; }
+  .freeGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 4px; }
   .freeBox { border: 1px solid #ccc; border-radius: 4px; }
   .freeBox .hd { background: #303F53; color: white; font-size: 11px; font-weight: bold; padding: 5px 8px; }
   .freeBox textarea { width: 100%; border: none; min-height: 36px; font-size: 11px; padding: 6px; box-sizing: border-box; resize: vertical; }
@@ -93,24 +99,18 @@
     <div class="kodBox">ΚΩΔ.<br>Ε-Ε02</div>
   </div>
 
-  <div class="sectionBar teal">ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</div>
+  <div class="sectionBar navy">ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</div>
   <div class="custGrid">
     <b>Επωνυμία:</b><span id="custEponymia">—</span>
-    <b>Κωδικός:</b><span id="custKod">—</span>
-    <b>Διεύθυνση:</b><span id="custDiey">—</span>
+    <b>Διακριτικός Τίτλος:</b><span id="custDiakr">—</span>
+    <b id="custDieyLabel">Διεύθυνση:</b><span id="custDiey">—</span>
     <b>Τηλέφωνο:</b><span id="custTil">—</span>
+    <b id="custBoatLabel" style="display:none;">Όνομα Σκάφους:</b><span id="custOnomaSkaf" style="display:none;">—</span>
   </div>
 
   <div class="sectionBar navy">ΕΥΡΗΜΑΤΑ ΠΑΡΟΥΣΙΑΣ ΞΕΝΙΣΤΩΝ</div>
-  <div class="noFindings noPrint">
-    <input type="checkbox" id="noFindingsChk" checked onchange="toggleNoFindings()">
-    <label for="noFindingsChk">Δεν βρέθηκε κανένα εύρημα (όλα τα έντομα σε επίπεδο 0 - Απουσία)</label>
-  </div>
-  <div id="findingsArea" class="disabled">
-    <div id="findingsList"></div>
-    <button type="button" id="addFindingBtn" class="noPrint" onclick="addFindingRow(true)">+ Προσθήκη Εύρεσης</button>
-  </div>
-  <div class="legend">Επίπεδο Παρουσίας: (0) Απουσία, (1) Τυχαίο, (2) Χαμηλό, (3) Μέσο, (4) Υψηλό</div>
+  <div class="hostGrid" id="hostGrid"></div>
+  <div class="legend">Επίπεδο Παρουσίας: (1) Τυχαίο, (2) Χαμηλό, (3) Μέσο, (4) Υψηλό</div>
 
   <div class="sectionBar navy" style="margin-top:6px;">ΤΡΩΚΤΙΚΑ</div>
   <table class="rodents" id="rodentsTable"></table>
@@ -187,55 +187,97 @@
 <script>
 const p = new URLSearchParams(window.location.search);
 document.getElementById('custEponymia').textContent = decodeURIComponent(p.get('pelatis') || '—');
-document.getElementById('custKod').textContent = decodeURIComponent(p.get('kod') || '—');
-document.getElementById('custDiey').textContent = decodeURIComponent(p.get('diey') || '—');
+document.getElementById('custDiakr').textContent = decodeURIComponent(p.get('diakr') || '—');
 document.getElementById('custTil').textContent = decodeURIComponent(p.get('til') || '—');
 document.getElementById('custDate').value = new Date().toISOString().slice(0, 10);
 
-// ---- ΞΕΝΙΣΤΕΣ ----
+// ---- Πελάτης κατηγορίας ΣΚΑΦΟΣ: Λιμάνι Ελλιμενισμού / Όνομα Σκάφους αντί για Διεύθυνση ----
+if (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ') {
+  document.getElementById('custDieyLabel').textContent = 'Λιμάνι Ελλιμενισμού:';
+  document.getElementById('custDiey').textContent = decodeURIComponent(p.get('limani') || '—');
+  document.getElementById('custBoatLabel').style.display = '';
+  document.getElementById('custOnomaSkaf').style.display = '';
+  document.getElementById('custOnomaSkaf').textContent = decodeURIComponent(p.get('onomaskaf') || '—');
+} else {
+  document.getElementById('custDiey').textContent = decodeURIComponent(p.get('diey') || '—');
+}
+
+// ---- ΞΕΝΙΣΤΕΣ (ανά κατηγορία) ----
 const HOSTS = {
   'ΒΑΔΙΣΤΙΚΑ ΕΝΤΟΜΑ': ['Periplanetta americana', 'Blatta orientalis', 'Blattella germanica', 'Supella longipalpa', 'Μυρμήγκια'],
   'ΙΠΤΑΜΕΝΑ ΕΝΤΟΜΑ': ['Muscidae', 'Sarcophoridae', 'Calliphoridae', 'Psychodidae', 'Drosophilidae', 'Phoridae', 'Vespidae'],
   'ΕΝΤΟΜΑ ΑΠΟΘΗΚΩΝ': ['Coleoptera', 'Lepidoptera'],
 };
+const CAT_SLUGS = {
+  'ΒΑΔΙΣΤΙΚΑ ΕΝΤΟΜΑ': 'walking',
+  'ΙΠΤΑΜΕΝΑ ΕΝΤΟΜΑ': 'flying',
+  'ΕΝΤΟΜΑ ΑΠΟΘΗΚΩΝ': 'warehouse',
+};
 
-function toggleNoFindings() {
-  const chk = document.getElementById('noFindingsChk');
-  document.getElementById('findingsArea').classList.toggle('disabled', chk.checked);
+function buildHostGrid() {
+  const grid = document.getElementById('hostGrid');
+  Object.keys(HOSTS).forEach(function(cat) {
+    const slug = CAT_SLUGS[cat];
+    const col = document.createElement('div');
+    col.className = 'hostCol';
+    col.innerHTML =
+      '<h3>' + cat + '</h3>' +
+      '<div class="hostNoFind noPrint">' +
+        '<input type="checkbox" id="noFind_' + slug + '" checked onchange="toggleNoFindings(\'' + slug + '\')">' +
+        '<label for="noFind_' + slug + '">ΔΕΝ εντοπίστηκαν ευρήματα<br>Μηδενική Παρουσία Εντόμων</label>' +
+      '</div>' +
+      '<div id="findingsArea_' + slug + '" class="findingsAreaCat disabled">' +
+        '<button type="button" class="addFindBtn noPrint" onclick="addFindingRow(\'' + slug + '\', true)">+ Προσθήκη Εύρεσης</button>' +
+        '<div id="findingsList_' + slug + '" class="findingsListCat"></div>' +
+      '</div>';
+    grid.appendChild(col);
+  });
+}
+buildHostGrid();
+
+function toggleNoFindings(slug) {
+  const chk = document.getElementById('noFind_' + slug);
+  document.getElementById('findingsArea_' + slug).classList.toggle('disabled', chk.checked);
 }
 
-function speciesOptionsHtml() {
-  let html = '<option value="">— Έντομο / Οικογένεια —</option>';
-  Object.keys(HOSTS).forEach(function(group) {
-    html += '<optgroup label="' + group + '">';
-    HOSTS[group].forEach(function(sp) {
-      html += '<option value="' + sp + '">' + sp + '</option>';
-    });
-    html += '</optgroup>';
+function speciesOptionsHtml(cat) {
+  let html = '<option value="">— Είδος —</option>';
+  HOSTS[cat].forEach(function(sp) {
+    html += '<option value="' + sp + '">' + sp + '</option>';
   });
   return html;
 }
 
 let findingIdx = 0;
-function addFindingRow(uncheckNoFindings) {
+function addFindingRow(slug, uncheckNoFindings) {
+  const cat = Object.keys(CAT_SLUGS).find(function(k) { return CAT_SLUGS[k] === slug; });
   if (uncheckNoFindings) {
-    document.getElementById('noFindingsChk').checked = false;
-    toggleNoFindings();
+    document.getElementById('noFind_' + slug).checked = false;
+    toggleNoFindings(slug);
   }
   const row = document.createElement('div');
-  row.className = 'findingRow';
+  row.className = 'hostFindingRow';
   const id = 'finding_' + (findingIdx++);
   row.dataset.id = id;
+  row.dataset.cat = slug;
   row.innerHTML =
-    '<select id="' + id + '_species">' + speciesOptionsHtml() + '</select>' +
+    '<select id="' + id + '_species" onchange="toggleCustomSpecies(\'' + id + '\')">' +
+      speciesOptionsHtml(cat) + '<option value="__other__">Άλλο (γράψτε)…</option>' +
+    '</select>' +
     '<select id="' + id + '_level">' +
-      [0,1,2,3,4].map(lv => '<option value="' + lv + '">' + lv + '</option>').join('') +
+      [1,2,3,4].map(lv => '<option value="' + lv + '">' + lv + '</option>').join('') +
     '</select>' +
     '<input type="text" id="' + id + '_where" placeholder="Πού βρέθηκε...">' +
-    '<button type="button" class="noPrint" onclick="this.closest(\'.findingRow\').remove()">✕</button>';
-  document.getElementById('findingsList').appendChild(row);
+    '<button type="button" class="noPrint" onclick="this.closest(\'.hostFindingRow\').remove()">✕</button>' +
+    '<input type="text" id="' + id + '_custom" class="customSpeciesInput" style="display:none;" placeholder="Γράψτε είδος/οικογένεια...">';
+  document.getElementById('findingsList_' + slug).appendChild(row);
 }
-addFindingRow();
+
+function toggleCustomSpecies(id) {
+  const sel = document.getElementById(id + '_species');
+  const custom = document.getElementById(id + '_custom');
+  custom.style.display = sel.value === '__other__' ? 'block' : 'none';
+}
 
 // ---- ΤΡΩΚΤΙΚΑ ----
 const RODENT_COLS = ['ΑΠΟΥΣΙΑ', 'ΙΧΝΗ', 'ΦΘΟΡΕΣ', 'ΤΡΙΧΕΣ', 'ΚΟΠΡΑΝΑ', 'ΠΛΗΘΥΣΜΟΣ'];
@@ -301,16 +343,25 @@ function submitForm() {
   msg.textContent = 'Αποστολή...';
 
   const hosts = [];
-  const noFindings = document.getElementById('noFindingsChk').checked;
-  if (!noFindings) {
-    document.querySelectorAll('.findingRow').forEach(function(row) {
-      const id = row.dataset.id;
-      const species = document.getElementById(id + '_species').value;
-      const level = document.getElementById(id + '_level').value;
-      const where = document.getElementById(id + '_where').value.trim();
-      if (species) hosts.push({ species: species, level: level, where: where });
-    });
-  }
+  const noFindingsByCategory = {};
+  Object.keys(CAT_SLUGS).forEach(function(cat) {
+    const slug = CAT_SLUGS[cat];
+    const catNoFindings = document.getElementById('noFind_' + slug).checked;
+    noFindingsByCategory[cat] = catNoFindings;
+    if (!catNoFindings) {
+      document.querySelectorAll('.hostFindingRow[data-cat="' + slug + '"]').forEach(function(row) {
+        const id = row.dataset.id;
+        let species = document.getElementById(id + '_species').value;
+        if (species === '__other__') {
+          species = document.getElementById(id + '_custom').value.trim();
+        }
+        const level = document.getElementById(id + '_level').value;
+        const where = document.getElementById(id + '_where').value.trim();
+        if (species) hosts.push({ category: cat, species: species, level: level, where: where });
+      });
+    }
+  });
+  const noFindings = Object.values(noFindingsByCategory).every(Boolean);
 
   const rodents = [];
   RODENTS.forEach(function(r, i) {
@@ -334,6 +385,7 @@ function submitForm() {
     pelatis: decodeURIComponent(p.get('pelatis') || ''),
     date: document.getElementById('custDate').value,
     noFindings: noFindings,
+    noFindingsByCategory: noFindingsByCategory,
     hosts: hosts,
     rodents: rodents,
     rodentNotes: document.getElementById('rodentNotes').value,

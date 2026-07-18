@@ -42,8 +42,8 @@
   .dateRow input { padding: 8px 10px; border: 1px solid #ccc; border-radius: 0 3px 3px 0; font-size: 17px; font-weight: bold; }
 
   .sectionBar { color: white; font-weight: bold; font-size: 12px; padding: 6px 10px; border-radius: 3px; margin-top: 10px; text-align: center; }
-  .custGrid { display: grid; grid-template-columns: 90px 1fr; gap: 4px 8px; font-size: 13px; margin-top: 8px; }
-  .custGrid b { color: #444; }
+  .custGrid { display: grid; grid-template-columns: 150px 1fr; gap: 4px 8px; font-size: 13px; margin-top: 8px; }
+  .custGrid b { white-space: nowrap; color: #444; }
 
   .skevGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
   .skevCard { border: 1px solid #999; border-radius: 4px; padding: 6px 4px; text-align: center; height: 98px; font-size: 10px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -118,9 +118,10 @@
   <div class="sectionBar teal">ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</div>
   <div class="custGrid">
     <b>Επωνυμία:</b><span id="custEponymia">—</span>
-    <b>Διεύθυνση:</b><span id="custDiey">—</span>
+    <b id="custDieyLabel">Διεύθυνση:</b><span id="custDiey">—</span>
     <b>Τηλέφωνο:</b><span id="custTil">—</span>
     <b>ΑΦΜ:</b><span id="custAfm">—</span>
+    <b id="custBoatLabel" style="display:none;">Όνομα Σκάφους:</b><span id="custOnomaSkaf" style="display:none;">—</span>
   </div>
 
   <div class="sectionBar teal">ΕΦΑΡΜΟΓΗ / ΣΚΕΥΑΣΜΑ - ΔΡΑΣΤΙΚΗ ΟΥΣΙΑ - ΑΡ. ΕΓΚΡΙΣΗΣ / ΥΛΙΚΟ</div>
@@ -250,9 +251,18 @@ const SKEVASMATA_DB = {
 
 const p = new URLSearchParams(window.location.search);
 document.getElementById('custEponymia').textContent = decodeURIComponent(p.get('pelatis') || '—');
-document.getElementById('custDiey').textContent = decodeURIComponent(p.get('diey') || '—');
 document.getElementById('custTil').textContent = decodeURIComponent(p.get('til') || '—');
 document.getElementById('custAfm').textContent = decodeURIComponent(p.get('afm') || '—');
+
+if (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ') {
+  document.getElementById('custDieyLabel').textContent = 'Λιμάνι Ελλιμενισμού:';
+  document.getElementById('custDiey').textContent = decodeURIComponent(p.get('limani') || '—');
+  document.getElementById('custBoatLabel').style.display = '';
+  document.getElementById('custOnomaSkaf').style.display = '';
+  document.getElementById('custOnomaSkaf').textContent = decodeURIComponent(p.get('onomaskaf') || '—');
+} else {
+  document.getElementById('custDiey').textContent = decodeURIComponent(p.get('diey') || '—');
+}
 document.getElementById('custDate').value = new Date().toISOString().slice(0, 10);
 
 let skevasmata = [];
