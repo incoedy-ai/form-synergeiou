@@ -12,7 +12,11 @@
     .noPrint { display: none !important; }
     .page { box-shadow: none !important; margin: 0 !important; padding: 8px !important; }
   }
-  .page { background: white; margin: 16px; padding: 16px; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.15); }
+  .page { background: white; margin: 16px; padding: 16px; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
+  .watermark { position: absolute; z-index: 0; pointer-events: none; }
+  .watermark.wm1 { width: 1000px; left: 50%; top: 283px; transform: translateX(-50%); }
+  .page > *:not(.watermark) { position: relative; z-index: 1; }
+  textarea, input[type=text], select, table.rodents td, table.entompag td { background: rgba(255,255,255,0.6); }
 
   .teal { background: #087D8E; }
   .navy { background: #303F53; }
@@ -26,12 +30,15 @@
 
   .sectionBar { color: white; font-weight: bold; font-size: 12px; padding: 4px 10px; border-radius: 3px; margin-top: 4px; text-align: center; }
 
+  .twoColGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+  .twoCol { min-width: 0; }
+
   .custGrid { display: grid; grid-template-columns: 120px 1fr 120px 1fr; gap: 4px 8px; font-size: 12px; margin-top: 5px; }
   .custGrid b { white-space: nowrap; color: #444; }
 
   /* ΞΕΝΙΣΤΕΣ */
-  .hostGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 5px; }
-  .hostCol { border: 2px solid #303F53; background: #e7eaef; border-radius: 4px; padding: 6px; }
+  .hostGrid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-top: 5px; }
+  .hostCol { border: 2px solid #303F53; background: rgba(231,234,239,0.55); border-radius: 4px; padding: 6px; }
   .hostCol h3 { color: white; background: #303F53; font-weight: bold; font-size: 11px; padding: 4px 6px; border-radius: 3px; margin: -6px -6px 6px -6px; text-align: center; }
   .hostNoFind { display: flex; align-items: center; gap: 6px; padding: 4px 6px; background: #eef6f7; border: 1px solid #087D8E; border-radius: 4px; font-weight: bold; font-size: 10px; }
   .hostNoFind input { width: 15px; height: 15px; flex-shrink: 0; }
@@ -50,26 +57,37 @@
   table.rodents th, table.rodents td { border: 1px solid #ccc; padding: 4px; text-align: center; }
   table.rodents th { background: #303F53; color: white; font-size: 10px; }
   table.rodents td:first-child { text-align: left; font-style: italic; font-weight: bold; }
+
+  table.entompag { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 11px; }
+  table.entompag th, table.entompag td { border: 1px solid #ccc; padding: 3px; text-align: center; }
+  table.entompag th { background: #303F53; color: white; font-size: 10px; }
+  table.entompag td:first-child { text-align: left; }
   textarea.notes { width: 100%; margin-top: 4px; min-height: 32px; font-size: 11px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
 
   /* ΕΦΑΡΜΟΓΕΣ */
   .worksGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 4px; }
   .worksCol { border: 1px solid #ccc; border-radius: 4px; padding: 6px; }
+  .apenWrapChecks { display: grid; grid-template-columns: auto auto 1fr; gap: 2px 16px; }
   .worksCol h3 { font-size: 11px; margin: 0 0 4px; color: #087D8E; }
   .chk { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 2px 0; }
   .chk input { width: 15px; height: 15px; }
-  .tpq { width: 100%; font-size: 10px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; margin-top: 3px; box-sizing: border-box; min-height: 22px; }
+  .tpq { width: 100%; font-size: 10px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; margin-top: 3px; box-sizing: border-box; min-height: 50px; }
 
   /* ΜΥΟΚΤΟΝΙΑ */
-  .myokGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 4px; }
+  .myokGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 4px; align-items: start; }
   .myokCol { border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
-  .myokCol .hd { padding: 6px 10px; font-weight: bold; font-size: 11px; color: white; }
+  .myokCol .hd { padding: 6px 10px; font-weight: bold; font-size: 9.5px; color: white; white-space: nowrap; text-align: center; }
   .myokCol .body { padding: 6px; }
+  .myokCol .body .tpq { margin-top: 4px; margin-left: -4px; margin-right: -4px; width: calc(100% + 8px); min-height: 85px; }
 
   .freeGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 4px; }
+  .freeGridStack { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
   .freeBox { border: 1px solid #ccc; border-radius: 4px; }
-  .freeBox .hd { background: #303F53; color: white; font-size: 11px; font-weight: bold; padding: 5px 8px; }
-  .freeBox textarea { width: 100%; border: none; min-height: 36px; font-size: 11px; padding: 6px; box-sizing: border-box; resize: vertical; }
+  .freeBox .hd { background: #303F53; color: white; font-size: 11px; font-weight: bold; padding: 5px 8px; text-align: center; }
+  .freeBox textarea { width: 100%; height: 70px; border: none; font-size: 11px; padding: 6px; box-sizing: border-box; resize: vertical; }
+  .sigBoxArea { border: 1px solid #ccc; min-height: 110px; width: 200px; box-sizing: border-box; margin: 6px auto; display: flex; align-items: center; justify-content: center; padding: 8px; }
+  .sigBoxArea img { max-width: 100%; max-height: 110px; object-fit: contain; }
+  #scientistPicker { display: block; margin: 0 auto 6px; font-size: 10px; }
 
   .actions { display: flex; gap: 10px; margin: 16px; }
   .actions button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
@@ -90,6 +108,7 @@
 <div id="msg" class="noPrint"></div>
 
 <div class="page">
+  <img class="watermark wm1" src="watermark_icon.png" alt="">
   <div class="headerRow">
     <img class="logo" src="inco_logo_new.png" alt="InCo">
     <div class="titleBar">
@@ -108,72 +127,80 @@
     <b id="custBoatLabel" style="display:none;">Όνομα Σκάφους:</b><span id="custOnomaSkaf" style="display:none;">—</span>
   </div>
 
-  <div class="sectionBar navy">ΕΥΡΗΜΑΤΑ ΠΑΡΟΥΣΙΑΣ ΞΕΝΙΣΤΩΝ</div>
-  <div class="hostGrid" id="hostGrid"></div>
-  <div class="legend">Επίπεδο Παρουσίας: (1) Τυχαίο, (2) Χαμηλό, (3) Μέσο, (4) Υψηλό</div>
+  <div class="twoColGrid">
+    <div class="twoCol">
+      <div class="sectionBar navy">ΕΥΡΗΜΑΤΑ ΠΑΡΟΥΣΙΑΣ ΕΝΤΟΜΩΝ</div>
+      <div class="hostGrid" id="hostGrid"></div>
+      <div class="legend" style="font-weight:bold;">Επίπεδο Παρουσίας: (1) Τυχαίο, (2) Χαμηλό, (3) Μέσο, (4) Υψηλό</div>
 
-  <div class="sectionBar navy" style="margin-top:6px;">ΤΡΩΚΤΙΚΑ</div>
-  <table class="rodents" id="rodentsTable"></table>
-  <textarea class="notes" id="rodentNotes" placeholder="Σημειώσεις..."></textarea>
-
-  <div class="sectionBar navy" style="margin-top:6px;">ΠΡΑΓΜΑΤΟΠΟΙΗΘΕΙΣΕΣ ΕΦΑΡΜΟΓΕΣ / ΕΡΓΑΣΙΕΣ</div>
-  <div class="worksGrid">
-    <div class="worksCol">
-      <h3>ΑΠΕΝΤΟΜΩΣΗ</h3>
-      <div id="apentomosiChecks"></div>
-    </div>
-    <div class="worksCol">
-      <h3>ΤΟΠΟΘΕΤΗΣΗ ΕΝΤΟΜΟΠΑΓΙΔΩΝ</h3>
-      <div id="topothetisiChecks"></div>
-      <textarea class="tpq" id="topothetisiTypos" placeholder="ΤΥΠΟΣ / ΠΟΣΟΤΗΤΑ..."></textarea>
-    </div>
-    <div class="worksCol">
-      <h3>ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ ΕΝΤΟΜΟΠΑΓΙΔΩΝ</h3>
-      <div id="elegxosPagidonChecks"></div>
-      <textarea class="tpq" id="elegxosPagidonTypos" placeholder="ΤΥΠΟΣ / ΠΟΣΟΤΗΤΑ..."></textarea>
-    </div>
-  </div>
-  <div class="legend">Η εφαρμογή των εντομοκτόνων που χρησιμοποιήθηκαν έγινε σύμφωνα με την άδεια έγκρισης κυκλοφορίας τους (Δοσολογία, Πεδίο Εφαρμογής, Τρόπος Εφαρμογής). Βλέπε επίσης: Ε-Ε05 Έντυπο Ελέγχου Φερομονικών Εντομοπαγίδων, Ε-Ε06 Έντυπο Ελέγχου Ηλεκτρικών Εντομοπαγίδων</div>
-
-  <div class="sectionBar navy" style="margin-top:6px;">ΜΥΟΚΤΟΝΙΑ</div>
-  <div class="myokGrid">
-    <div class="myokCol">
-      <div class="hd navy">ΣΗΜΕΙΑ ΕΛΕΓΧΟΥ (TOXIC)</div>
-      <div class="body">
-        <div class="chk"><input type="checkbox" id="toxicTopothetisi"><label for="toxicTopothetisi">Τοποθέτηση Δολωματικών Σταθμών</label></div>
-        <textarea class="tpq" id="toxicTypos" placeholder="ΤΥΠΟΣ / ΠΟΣΟΤΗΤΑ..."></textarea>
-        <div class="chk"><input type="checkbox" id="toxicAntikatastasi"><label for="toxicAntikatastasi">Αντικατάσταση Δολωματικών Σταθμών</label></div>
-        <div class="chk"><input type="checkbox" id="toxicElegxosDS"><label for="toxicElegxosDS">Έλεγχος / Συντήρηση Δολωματικών Σταθμών</label></div>
-        <div class="chk"><input type="checkbox" id="toxicElegxosSim"><label for="toxicElegxosSim">Έλεγχος / Συντήρηση Σημάνσεων</label></div>
+      <div class="sectionBar navy" style="margin-top:6px;">ΕΦΑΡΜΟΓΕΣ / ΕΡΓΑΣΙΕΣ ΑΠΕΝΤΟΜΩΣΗΣ</div>
+      <div class="worksGrid">
+        <div class="worksCol" style="grid-column: 1 / -1; background:rgba(231,234,239,0.55);">
+          <h3 style="background:#c0392b; color:white; padding:7px 6px; margin:-6px -6px 6px -6px; border-radius:3px 3px 0 0; text-align:center;">ΑΠΕΝΤΟΜΩΣΗ</h3>
+          <div id="apentomosiChecks" class="apenWrapChecks"></div>
+        </div>
+        <div class="legend" style="grid-column: 1 / -1; background:#c0392b; color:white; text-align:justify; padding:4px 6px; border-radius:3px;">Η εφαρμογή των εντομοκτόνων που χρησιμοποιήθηκαν έγινε σύμφωνα με την άδεια έγκρισης κυκλοφορίας τους (Δοσολογία, Πεδίο Εφαρμογής, Τρόπος Εφαρμογής).</div>
+        <div class="worksCol" style="grid-column: 1 / -1; background:rgba(231,234,239,0.55);">
+          <h3 style="background:#087D8E; color:white; padding:7px 6px; margin:-6px -6px 6px -6px; border-radius:3px 3px 0 0; text-align:center;">ΕΝΤΟΜΟΠΑΓΙΔΕΣ</h3>
+          <table class="entompag" id="entompagTable"></table>
+          <textarea class="tpq" id="entompagTypos" placeholder="ΤΥΠΟΣ / ΠΟΣΟΤΗΤΑ..."></textarea>
+        </div>
       </div>
+      <div class="legend" style="background:#c0392b; color:white; text-align:justify; padding:4px 6px; border-radius:3px;">Βλέπε επίσης: Ε-Ε05 Έντυπο Ελέγχου Φερομονικών Εντομοπαγίδων<br>Ε-Ε06 Έντυπο Ελέγχου Ηλεκτρικών Εντομοπαγίδων</div>
     </div>
-    <div class="myokCol">
-      <div class="hd teal">ΣΗΜΕΙΑ ΕΛΕΓΧΟΥ (ECO)</div>
-      <div class="body">
-        <div class="chk"><input type="checkbox" id="ecoTopothetisi"><label for="ecoTopothetisi">Τοποθέτηση Σημείων Ελέγχου</label></div>
-        <div class="chk"><input type="checkbox" id="ecoKolla"><label for="ecoKolla">Κόλλα</label></div>
-        <div class="chk"><input type="checkbox" id="ecoMixaniki"><label for="ecoMixaniki">Μηχανική Παγίδα</label></div>
-        <textarea class="tpq" id="ecoTypos" placeholder="ΤΥΠΟΣ / ΠΟΣΟΤΗΤΑ..."></textarea>
-        <div class="chk"><input type="checkbox" id="ecoAntikatastasi"><label for="ecoAntikatastasi">Αντικατάσταση Σημείων Ελέγχου</label></div>
-        <div class="chk"><input type="checkbox" id="ecoElegxosSE"><label for="ecoElegxosSE">Έλεγχος / Συντήρηση Σημείων Ελέγχου</label></div>
-        <div class="chk"><input type="checkbox" id="ecoElegxosSim"><label for="ecoElegxosSim">Έλεγχος / Συντήρηση Σημάνσεων</label></div>
-      </div>
-    </div>
-  </div>
-  <div class="legend">Εφόσον έχουν χρησιμοποιηθεί μυοκτόνα σκευάσματα κατά τις εφαρμογές αυτό έγινε σύμφωνα με την άδεια έγκρισης κυκλοφορίας τους. Βλέπε επίσης: Ε-Ε04α Έντυπο Ελέγχου Εφαρμογών Μυοκτονίας</div>
 
-  <div class="freeGrid">
-    <div class="freeBox">
-      <div class="hd">ΔΙΟΡΘΩΤΙΚΕΣ ΕΝΕΡΓΕΙΕΣ</div>
-      <textarea id="diorthotikes"></textarea>
-    </div>
-    <div class="freeBox">
-      <div class="hd">ΛΟΙΠΕΣ ΕΡΓΑΣΙΕΣ</div>
-      <textarea id="loipesErgasies"></textarea>
-    </div>
-    <div class="freeBox">
-      <div class="hd">ΓΙΑ ΤΟΝ ΕΛΕΓΧΟ</div>
-      <textarea id="giaTonElegxo"></textarea>
+    <div class="twoCol">
+      <div class="sectionBar navy">ΕΥΡΗΜΑΤΑ ΠΑΡΟΥΣΙΑΣ ΤΡΩΚΤΙΚΩΝ</div>
+      <table class="rodents" id="rodentsTable"></table>
+      <textarea class="notes" id="rodentNotes" placeholder="Σημειώσεις..."></textarea>
+
+      <div class="sectionBar navy" style="margin-top:6px;">ΕΦΑΡΜΟΓΕΣ / ΕΡΓΑΣΙΕΣ ΜΥΟΚΤΟΝΙΑΣ</div>
+      <div class="myokGrid">
+        <div class="myokCol">
+          <div class="hd" style="background:#c0392b;">ΔΟΛΩΜΑΤΙΚΟΙ ΣΤΑΘΜΟΙ (TOXIC)</div>
+          <div class="body">
+            <div class="chk"><input type="checkbox" id="toxicTopothetisi"><label for="toxicTopothetisi">Τοποθέτηση</label></div>
+            <div class="chk"><input type="checkbox" id="toxicAntikatastasi"><label for="toxicAntikatastasi">Αντικατάσταση</label></div>
+            <div class="chk"><input type="checkbox" id="toxicElegxosDS"><label for="toxicElegxosDS">Έλεγχος / Συντήρηση</label></div>
+            <div class="chk"><input type="checkbox" id="toxicElegxosSim"><label for="toxicElegxosSim">Σημάνσεις</label></div>
+            <textarea class="tpq" id="toxicTypos" style="margin-top:54px;" placeholder="ΤΥΠΟΣ / ΠΟΣΟΤΗΤΑ..."></textarea>
+          </div>
+        </div>
+        <div class="myokCol">
+          <div class="hd teal">ΣΗΜΕΙΑ ΕΛΕΓΧΟΥ / ΠΑΓΙΔΕΣ (ECO)</div>
+          <div class="body">
+            <div class="chk"><input type="checkbox" id="ecoTopothetisi"><label for="ecoTopothetisi">Τοποθέτηση</label></div>
+            <div class="chk"><input type="checkbox" id="ecoAntikatastasi"><label for="ecoAntikatastasi">Αντικατάσταση</label></div>
+            <div class="chk"><input type="checkbox" id="ecoElegxosSE"><label for="ecoElegxosSE">Έλεγχος / Συντήρηση</label></div>
+            <div class="chk"><input type="checkbox" id="ecoElegxosSim"><label for="ecoElegxosSim">Σημάνσεις</label></div>
+            <div class="chk"><input type="checkbox" id="ecoKolla"><label for="ecoKolla">Παγίδα με Κόλλα</label></div>
+            <div class="chk"><input type="checkbox" id="ecoMixaniki"><label for="ecoMixaniki">Μηχανική Παγίδα Σύλληψης</label></div>
+            <textarea class="tpq" id="ecoTypos" placeholder="ΤΥΠΟΣ / ΠΟΣΟΤΗΤΑ..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="legend" style="background:#c0392b; color:white; text-align:justify; padding:4px 6px; border-radius:3px;">Εφόσον έχουν χρησιμοποιηθεί μυοκτόνα σκευάσματα κατά τις εφαρμογές αυτό έγινε σύμφωνα με την άδεια έγκρισης κυκλοφορίας τους.<br>Βλέπε επίσης: Ε-Ε04α Έντυπο Ελέγχου Εφαρμογών Μυοκτονίας</div>
+
+      <div class="freeGridStack">
+        <div class="freeBox">
+          <div class="hd">ΛΟΙΠΕΣ ΕΡΓΑΣΙΕΣ</div>
+          <textarea id="loipesErgasies"></textarea>
+        </div>
+        <div class="freeBox">
+          <div class="hd">ΔΙΟΡΘΩΤΙΚΕΣ ΕΝΕΡΓΕΙΕΣ</div>
+          <textarea id="diorthotikes"></textarea>
+        </div>
+        <div class="freeBox" style="width: 216px; margin: 0 auto;">
+          <div class="hd" style="background:#087D8E; color:white;">ΓΙΑ ΤΟΝ ΕΛΕΓΧΟ</div>
+          <div class="sigBoxArea">
+            <img id="sigImg" src="sig_trifonidis.png" alt="Υπογραφή">
+          </div>
+          <select id="scientistPicker" class="noPrint" onchange="updateSignature()">
+            <option value="trifonidis">Αρχιμήδης Λ. Τρυφωνίδης</option>
+            <option value="karavasilis">Ευάγγελος Κ. Καραβασόπουλος</option>
+          </select>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -207,11 +234,13 @@ const HOSTS = {
   'ΒΑΔΙΣΤΙΚΑ ΕΝΤΟΜΑ': ['Periplanetta americana', 'Blatta orientalis', 'Blattella germanica', 'Supella longipalpa', 'Μυρμήγκια'],
   'ΙΠΤΑΜΕΝΑ ΕΝΤΟΜΑ': ['Muscidae', 'Sarcophoridae', 'Calliphoridae', 'Psychodidae', 'Drosophilidae', 'Phoridae', 'Vespidae'],
   'ΕΝΤΟΜΑ ΑΠΟΘΗΚΩΝ': ['Coleoptera', 'Lepidoptera'],
+  'ΛΟΙΠΑ ΑΡΘΡΟΠΟΔΑ': ['Araneae', 'Acari', 'Scorpiones', 'Chilopoda', 'Diplopoda', 'Isopoda'],
 };
 const CAT_SLUGS = {
   'ΒΑΔΙΣΤΙΚΑ ΕΝΤΟΜΑ': 'walking',
   'ΙΠΤΑΜΕΝΑ ΕΝΤΟΜΑ': 'flying',
   'ΕΝΤΟΜΑ ΑΠΟΘΗΚΩΝ': 'warehouse',
+  'ΛΟΙΠΑ ΑΡΘΡΟΠΟΔΑ': 'other',
 };
 
 function buildHostGrid() {
@@ -224,7 +253,7 @@ function buildHostGrid() {
       '<h3>' + cat + '</h3>' +
       '<div class="hostNoFind noPrint">' +
         '<input type="checkbox" id="noFind_' + slug + '" checked onchange="toggleNoFindings(\'' + slug + '\')">' +
-        '<label for="noFind_' + slug + '">ΔΕΝ εντοπίστηκαν ευρήματα<br>Μηδενική Παρουσία Εντόμων</label>' +
+        '<label for="noFind_' + slug + '">ΔΕΝ εντοπίστηκαν ευρήματα / ΜΗΔΕΝΙΚΗ Παρουσία Εντόμων</label>' +
       '</div>' +
       '<div id="findingsArea_' + slug + '" class="findingsAreaCat disabled">' +
         '<button type="button" class="addFindBtn noPrint" onclick="addFindingRow(\'' + slug + '\', true)">+ Προσθήκη Εύρεσης</button>' +
@@ -281,7 +310,7 @@ function toggleCustomSpecies(id) {
 
 // ---- ΤΡΩΚΤΙΚΑ ----
 const RODENT_COLS = ['ΑΠΟΥΣΙΑ', 'ΙΧΝΗ', 'ΦΘΟΡΕΣ', 'ΤΡΙΧΕΣ', 'ΚΟΠΡΑΝΑ', 'ΠΛΗΘΥΣΜΟΣ'];
-const RODENTS = ['Rattus norvegicus', 'Rattus rattus', 'Mus musculus'];
+const RODENTS = ['R. norvegicus', 'R. rattus', 'M. musculus'];
 const rt = document.getElementById('rodentsTable');
 let thead = '<tr><th></th>';
 RODENT_COLS.forEach(c => thead += '<th>' + c + '</th>');
@@ -290,10 +319,26 @@ let tbody = '';
 RODENTS.forEach(function(r, i) {
   tbody += '<tr><td>' + r + '</td>';
   RODENT_COLS.forEach(function(c, j) {
-    tbody += '<td><input type="checkbox" id="rod_' + i + '_' + j + '"></td>';
+    if (j === 0) {
+      tbody += '<td><input type="checkbox" id="rod_' + i + '_' + j + '" onchange="toggleApousiaRow(' + i + ')"></td>';
+    } else {
+      tbody += '<td><input type="checkbox" id="rod_' + i + '_' + j + '"><span id="rodX_' + i + '_' + j + '" class="rodX" style="display:none;">Χ</span></td>';
+    }
   });
   tbody += '</tr>';
 });
+
+function toggleApousiaRow(i) {
+  const checked = document.getElementById('rod_' + i + '_0').checked;
+  for (let j = 1; j < RODENT_COLS.length; j++) {
+    const chk = document.getElementById('rod_' + i + '_' + j);
+    const x = document.getElementById('rodX_' + i + '_' + j);
+    chk.checked = false;
+    chk.disabled = checked;
+    chk.style.display = checked ? 'none' : '';
+    x.style.display = checked ? 'inline' : 'none';
+  }
+}
 rt.innerHTML = thead + tbody;
 
 // ---- ΕΦΑΡΜΟΓΕΣ ----
@@ -307,9 +352,56 @@ function buildChecks(containerId, items, prefix) {
     c.appendChild(div);
   });
 }
-buildChecks('apentomosiChecks', ['Ψεκασμός', 'Gel', 'Επίχρισμα', 'Αερόλυμα', 'Καπνογόνο', 'Νεφελοποίηση', 'Τοποθέτηση Παγίδων'], 'apen');
-buildChecks('topothetisiChecks', ['Κόλλα', 'Φερομόνη / Τροφοελκυστικό', 'Σύλληψης / Εγκλωβισμού', 'Ηλεκτρική'], 'topo');
-buildChecks('elegxosPagidonChecks', ['Κόλλα', 'Φερομόνη / Τροφοελκυστικό', 'Σύλληψης / Εγκλωβισμού', 'Ηλεκτρική'], 'eleg');
+(function() {
+  const items = ['Ψεκασμός', 'Gel', 'Επίχρισμα', 'Αερόλυμα', 'Καπνογόνο', 'Νεφελοποίηση'];
+  const c = document.getElementById('apentomosiChecks');
+  const positions = [
+    [1, 1], [2, 1],
+    [1, 2], [2, 2],
+    [1, 3], [2, 3],
+  ];
+  items.forEach(function(label, i) {
+    const div = document.createElement('div');
+    div.className = 'chk';
+    const id = 'apen_' + i;
+    div.innerHTML = '<input type="checkbox" id="' + id + '"><label for="' + id + '">' + label + '</label>';
+    div.style.gridColumn = positions[i][0];
+    div.style.gridRow = positions[i][1];
+    c.appendChild(div);
+  });
+
+  const alloChk = document.createElement('div');
+  alloChk.className = 'chk';
+  alloChk.style.gridColumn = '3';
+  alloChk.style.gridRow = '1';
+  alloChk.innerHTML = '<input type="checkbox" id="apenAlloChk"><label for="apenAlloChk">Άλλο</label>';
+  c.appendChild(alloChk);
+
+  const alloText = document.createElement('textarea');
+  alloText.className = 'tpq';
+  alloText.id = 'apentomosiAllo';
+  alloText.style.display = 'none';
+  alloText.style.gridColumn = '3';
+  alloText.style.gridRow = '2 / 4';
+  alloText.placeholder = 'ΑΛΛΟ (γράψτε αν χρειαστεί)...';
+  c.appendChild(alloText);
+
+  document.getElementById('apenAlloChk').addEventListener('change', function() {
+    alloText.style.display = this.checked ? 'block' : 'none';
+  });
+})();
+// ---- ΕΝΤΟΜΟΠΑΓΙΔΕΣ: πίνακας Μέθοδος | Τοποθέτηση | Έλεγχος/Συντήρηση ----
+const ENTOMPAG_METHODS = ['Ηλεκτρική', 'Σύλληψης / Εγκλωβισμού', 'Φερομόνη / Τροφοελκυστικό', 'Με Κόλλα'];
+(function() {
+  const t = document.getElementById('entompagTable');
+  let html = '<tr><th>Είδος</th><th>Τοποθέτηση</th><th>Έλεγχος / Συντήρηση</th></tr>';
+  ENTOMPAG_METHODS.forEach(function(label, i) {
+    html += '<tr><td>' + label + '</td>' +
+      '<td><input type="checkbox" id="topo_' + i + '"></td>' +
+      '<td><input type="checkbox" id="eleg_' + i + '"></td></tr>';
+  });
+  t.innerHTML = html;
+})();
 
 // ---- Auto-πλήρωση από την Εντολή (μέσω κουμπιού ΑΥΤΟΨΙΑ στο form_synergeiou.html) ----
 (function() {
@@ -320,7 +412,7 @@ buildChecks('elegxosPagidonChecks', ['Κόλλα', 'Φερομόνη / Τροφ�
       if (el) el.checked = true;
     }
   }
-  const apenItems = ['Ψεκασμός', 'Gel', 'Επίχρισμα', 'Αερόλυμα', 'Καπνογόνο', 'Νεφελοποίηση', 'Τοποθέτηση Παγίδων'];
+  const apenItems = ['Ψεκασμός', 'Gel', 'Επίχρισμα', 'Αερόλυμα', 'Καπνογόνο', 'Νεφελοποίηση'];
   const elegItems = ['Κόλλα', 'Φερομόνη / Τροφοελκυστικό', 'Σύλληψης / Εγκλωβισμού', 'Ηλεκτρική'];
 
   (p.get('apen') || '').split(',').filter(Boolean).forEach(function(label) {
@@ -336,6 +428,11 @@ buildChecks('elegxosPagidonChecks', ['Κόλλα', 'Φερομόνη / Τροφ�
   const notes = p.get('notes');
   if (notes) document.getElementById('loipesErgasies').value = decodeURIComponent(notes);
 })();
+
+function updateSignature() {
+  const val = document.getElementById('scientistPicker').value;
+  document.getElementById('sigImg').src = val === 'karavasilis' ? 'sig_karavasilis.png' : 'sig_trifonidis.png';
+}
 
 function submitForm() {
   const msg = document.getElementById('msg');
@@ -375,9 +472,9 @@ function submitForm() {
   function checkedLabels(prefix, items) {
     return items.filter((_, i) => document.getElementById(prefix + '_' + i).checked);
   }
-  const apentomosi = checkedLabels('apen', ['Ψεκασμός', 'Gel', 'Επίχρισμα', 'Αερόλυμα', 'Καπνογόνο', 'Νεφελοποίηση', 'Τοποθέτηση Παγίδων']);
-  const topothetisi = checkedLabels('topo', ['Κόλλα', 'Φερομόνη/Τροφοελκυστικό', 'Σύλληψης/Εγκλωβισμού', 'Ηλεκτρική']);
-  const elegxosPagidon = checkedLabels('eleg', ['Κόλλα', 'Φερομόνη/Τροφοελκυστικό', 'Σύλληψης/Εγκλωβισμού', 'Ηλεκτρική']);
+  const apentomosi = checkedLabels('apen', ['Ψεκασμός', 'Gel', 'Επίχρισμα', 'Αερόλυμα', 'Καπνογόνο', 'Νεφελοποίηση']);
+  const topothetisi = checkedLabels('topo', ENTOMPAG_METHODS);
+  const elegxosPagidon = checkedLabels('eleg', ENTOMPAG_METHODS);
 
   const payload = {
     form: 'autopsia',
@@ -390,10 +487,11 @@ function submitForm() {
     rodents: rodents,
     rodentNotes: document.getElementById('rodentNotes').value,
     apentomosi: apentomosi.join(', '),
+    apentomosiAllo: document.getElementById('apenAlloChk').checked ? document.getElementById('apentomosiAllo').value : '',
     topothetisiMethods: topothetisi.join(', '),
-    topothetisiTypos: document.getElementById('topothetisiTypos').value,
+    topothetisiTypos: document.getElementById('entompagTypos').value,
     elegxosPagidonMethods: elegxosPagidon.join(', '),
-    elegxosPagidonTypos: document.getElementById('elegxosPagidonTypos').value,
+    elegxosPagidonTypos: document.getElementById('entompagTypos').value,
     toxicTopothetisi: document.getElementById('toxicTopothetisi').checked,
     toxicTypos: document.getElementById('toxicTypos').value,
     toxicAntikatastasi: document.getElementById('toxicAntikatastasi').checked,
@@ -408,7 +506,7 @@ function submitForm() {
     ecoElegxosSim: document.getElementById('ecoElegxosSim').checked,
     diorthotikes: document.getElementById('diorthotikes').value,
     loipesErgasies: document.getElementById('loipesErgasies').value,
-    giaTonElegxo: document.getElementById('giaTonElegxo').value,
+    giaTonElegxo: document.getElementById('scientistPicker').selectedOptions[0].textContent,
   };
 
   const scriptUrl = p.get('script');
