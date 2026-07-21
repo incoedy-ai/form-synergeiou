@@ -6,6 +6,7 @@
 <title>Έκθεση Αυτοψίας</title>
 <style>
   body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 0 0 24px; background: #f5f7f8; color: #1a1a1a; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
   @page { margin: 5mm; }
   @media print {
     body { background: white; max-width: none; padding: 0 !important; }
@@ -89,11 +90,15 @@
   .sigBoxArea img { max-width: 100%; max-height: 100%; object-fit: contain; }
   #scientistPicker { display: block; margin: 0 auto 6px; font-size: 10px; }
 
-  .actions { display: flex; gap: 10px; margin: 16px; }
-  .actions button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
+  .actions { display: flex; gap: 10px; margin: 16px; flex-wrap: wrap; }
+  .actions button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; min-width: 200px; }
   #btnPrint { background: #087D8E; color: white; }
   #btnSubmit { background: #303F53; color: white; }
+  #btnEmail { background: #c0392b; color: white; }
+  #btnEmail:disabled { opacity: 0.6; cursor: default; }
   #msg { text-align: center; font-weight: bold; margin-top: 6px; }
+  .emailRow { display: flex; gap: 8px; margin: 0 16px 16px; align-items: center; }
+  .emailRow input { flex: 1; padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
 
   .docCtrl { border-top: 1px solid #999; margin-top: 4px; padding: 2px 4px 0; font-size: 10.5px; text-align: center; color: #333; }
   .docCtrl b { font-weight: bold; }
@@ -101,9 +106,14 @@
 </head>
 <body>
 
+<div class="emailRow noPrint">
+  <label for="custEmail" style="font-size:13px;font-weight:bold;white-space:nowrap;">Email παραλήπτη:</label>
+  <input type="email" id="custEmail" placeholder="email@paradeigma.gr">
+</div>
 <div class="actions noPrint">
   <button id="btnPrint" onclick="window.print()">🖨️ Αποθήκευση ως PDF / Εκτύπωση</button>
   <button id="btnSubmit" onclick="submitForm()">☁️ Καταχώρηση</button>
+  <button id="btnEmail" onclick="sendPdfEmail()">✉️ Αποστολή στον Πελάτη</button>
 </div>
 <div id="msg" class="noPrint"></div>
 
@@ -217,6 +227,9 @@ document.getElementById('custEponymia').textContent = decodeURIComponent(p.get('
 document.getElementById('custDiakr').textContent = decodeURIComponent(p.get('diakr') || '—');
 document.getElementById('custTil').textContent = decodeURIComponent(p.get('til') || '—');
 document.getElementById('custDate').value = new Date().toISOString().slice(0, 10);
+document.getElementById('custEmail').value = decodeURIComponent(p.get('email') || '');
+const scriptUrl = p.get('script') || '';
+if (!scriptUrl) document.getElementById('btnEmail').title = 'Λείπει ο σύνδεσμος server — άνοιξε τη φόρμα μέσα από τη σελίδα του συνεργείου';
 
 // ---- Πελάτης κατηγορίας ΣΚΑΦΟΣ: Λιμάνι Ελλιμενισμού / Όνομα Σκάφους αντί για Διεύθυνση ----
 if (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ') {
@@ -509,7 +522,6 @@ function submitForm() {
     giaTonElegxo: document.getElementById('scientistPicker').selectedOptions[0].textContent,
   };
 
-  const scriptUrl = p.get('script');
   if (!scriptUrl) {
     msg.style.color = 'red';
     msg.textContent = 'Δεν βρέθηκε script URL για τον πελάτη.';
@@ -525,6 +537,42 @@ function submitForm() {
       msg.style.color = 'red';
       msg.textContent = 'Σφάλμα αποστολής.';
     });
+}
+
+function buildStandaloneHtml() {
+  const styleText = document.querySelector('style').textContent;
+  const pageClone = document.querySelector('.page').cloneNode(true);
+  const base = location.href.replace(/[^\/]*$/, '');
+  pageClone.querySelectorAll('img').forEach(function(img) {
+    const src = img.getAttribute('src');
+    if (src && !/^https?:\/\//.test(src)) img.setAttribute('src', base + src);
+  });
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + styleText + '</style></head><body>' + pageClone.outerHTML + '</body></html>';
+}
+
+async function sendPdfEmail() {
+  const btn = document.getElementById('btnEmail');
+  const emailVal = document.getElementById('custEmail').value.trim();
+  if (!scriptUrl) { alert('Δεν βρέθηκε σύνδεσμος server (script). Άνοιξε τη φόρμα μέσα από τη σελίδα του συνεργείου.'); return; }
+  if (!emailVal) { alert('Συμπλήρωσε email παραλήπτη.'); return; }
+  const prevText = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Αποστολή...';
+  try {
+    const html = buildStandaloneHtml();
+    const pelatisName = document.getElementById('custEponymia').textContent;
+    const res = await fetch(scriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ form: 'sendPdf', doc: 'autopsia', email: emailVal, pelatis: pelatisName, html: html })
+    });
+    const data = await res.json();
+    if (data.status === 'ok') alert('Η έκθεση αυτοψίας στάλθηκε στο ' + emailVal);
+    else alert('Σφάλμα: ' + (data.error || 'άγνωστο'));
+  } catch (e) {
+    alert('Σφάλμα αποστολής: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = prevText;
+  }
 }
 </script>
 </body>

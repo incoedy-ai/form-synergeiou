@@ -518,6 +518,8 @@ function openECert() {
     if (sel && (!meta || meta.typ !== 'ΑΠΟΛΥΜΑΝΣΗ')) skev.push({ typos: typ || '', skeuasma: sel });
   }
 
+  const email = document.getElementById('inf-email').textContent;
+
   const qp = new URLSearchParams({
     pelatis: pelatis === '—' ? '' : pelatis,
     diey: diey === '—' ? '' : diey,
@@ -526,7 +528,9 @@ function openECert() {
     katpel: katpel === '—' ? '' : katpel,
     limani: limani || '',
     onomaskaf: onomaskaf || '',
-    skev: JSON.stringify(skev)
+    skev: JSON.stringify(skev),
+    email: email === '—' ? '' : email,
+    script: p.get('script') || ''
   });
   window.open('form_ecert.html?' + qp.toString(), '_blank');
 }
@@ -565,6 +569,8 @@ function openAutopsia() {
     if (typ === 'ΜΥΟΚΤΟΝΙΑ' && AUTOPSIA_MYOK_MAP[met]) myok.add(AUTOPSIA_MYOK_MAP[met]);
   }
 
+  const email = document.getElementById('inf-email').textContent;
+
   const qp = new URLSearchParams({
     pelatis: pelatis === '—' ? '' : pelatis,
     kod: kod === '—' ? '' : kod,
@@ -577,6 +583,8 @@ function openAutopsia() {
     eleg: [...eleg].join(','),
     myok: [...myok].join(','),
     notes: sim === '—' ? '' : sim,
+    email: email === '—' ? '' : email,
+    script: p.get('script') || ''
   });
   window.open('form_autopsia.html?' + qp.toString(), '_blank');
 }

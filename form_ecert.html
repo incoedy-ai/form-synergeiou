@@ -6,6 +6,7 @@
 <title>eCERT — Πιστοποιητικό Εφαρμογών</title>
 <style>
   body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 0 0 24px; background: #f5f7f8; color: #1a1a1a; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
   @page { margin: 8mm; }
   @media print {
     body { background: white; max-width: none; }
@@ -80,15 +81,24 @@
   .docCtrl { border-top: 1px solid #999; margin-top: 14px; padding: 6px 4px 0; font-size: 10.5px; text-align: center; color: #333; }
   .docCtrl b { font-weight: bold; }
 
-  .actions { display: flex; gap: 10px; margin: 16px; }
-  .actions button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
+  .actions { display: flex; gap: 10px; margin: 16px; flex-wrap: wrap; }
+  .actions button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; min-width: 200px; }
   #btnPrint { background: #087D8E; color: white; }
+  #btnEmail { background: #303F53; color: white; }
+  #btnEmail:disabled { opacity: 0.6; cursor: default; }
+  .emailRow { display: flex; gap: 8px; margin: 0 16px 16px; align-items: center; }
+  .emailRow input { flex: 1; padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
 </style>
 </head>
 <body>
 
+<div class="emailRow noPrint">
+  <label for="custEmail" style="font-size:13px;font-weight:bold;white-space:nowrap;">Email παραλήπτη:</label>
+  <input type="email" id="custEmail" placeholder="email@paradeigma.gr">
+</div>
 <div class="actions noPrint">
   <button id="btnPrint" onclick="window.print()">🖨️ Αποθήκευση ως PDF / Εκτύπωση</button>
+  <button id="btnEmail" onclick="sendPdfEmail()">✉️ Αποστολή στον Πελάτη</button>
 </div>
 
 <div class="page">
@@ -281,6 +291,9 @@ if (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ') {
   document.getElementById('custDiey').textContent = decodeURIComponent(p.get('diey') || '—');
 }
 document.getElementById('custDate').value = new Date().toISOString().slice(0, 10);
+document.getElementById('custEmail').value = decodeURIComponent(p.get('email') || '');
+const scriptUrl = p.get('script') || '';
+if (!scriptUrl) document.getElementById('btnEmail').title = 'Λείπει ο σύνδεσμος server — άνοιξε τη φόρμα μέσα από τη σελίδα του συνεργείου';
 
 let skevasmata = [];
 try {
@@ -319,6 +332,42 @@ function updateSignature() {
   const val = document.getElementById('scientistPicker').value;
   document.getElementById('sigImg').src = val === 'karavasilis' ? 'sig_karavasilis.png' : 'sig_trifonidis.png';
   document.getElementById('ctrlName').textContent = val === 'karavasilis' ? 'ΕΥΑΓΓΕΛΟΣ Κ. ΚΑΡΑΒΑΣΟΠΟΥΛΟΣ' : 'ΑΡΧΙΜΗΔΗΣ Λ. ΤΡΥΦΩΝΙΔΗΣ';
+}
+
+function buildStandaloneHtml() {
+  const styleText = document.querySelector('style').textContent;
+  const pageClone = document.querySelector('.page').cloneNode(true);
+  const base = location.href.replace(/[^\/]*$/, '');
+  pageClone.querySelectorAll('img').forEach(function(img) {
+    const src = img.getAttribute('src');
+    if (src && !/^https?:\/\//.test(src)) img.setAttribute('src', base + src);
+  });
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + styleText + '</style></head><body>' + pageClone.outerHTML + '</body></html>';
+}
+
+async function sendPdfEmail() {
+  const btn = document.getElementById('btnEmail');
+  const emailVal = document.getElementById('custEmail').value.trim();
+  if (!scriptUrl) { alert('Δεν βρέθηκε σύνδεσμος server (script). Άνοιξε τη φόρμα μέσα από τη σελίδα του συνεργείου.'); return; }
+  if (!emailVal) { alert('Συμπλήρωσε email παραλήπτη.'); return; }
+  const prevText = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Αποστολή...';
+  try {
+    const html = buildStandaloneHtml();
+    const pelatisName = document.getElementById('custEponymia').textContent;
+    const res = await fetch(scriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ form: 'sendPdf', doc: 'ecert', email: emailVal, pelatis: pelatisName, html: html })
+    });
+    const data = await res.json();
+    if (data.status === 'ok') alert('Το πιστοποιητικό στάλθηκε στο ' + emailVal);
+    else alert('Σφάλμα: ' + (data.error || 'άγνωστο'));
+  } catch (e) {
+    alert('Σφάλμα αποστολής: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = prevText;
+  }
 }
 </script>
 </body>
