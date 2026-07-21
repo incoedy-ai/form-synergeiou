@@ -26,9 +26,9 @@
   .headerRow img.logo { width: 195px; flex-shrink: 0; }
   .headerRight { flex: 1; display: flex; flex-direction: column; gap: 8px; }
 
-  .servicesBar { display: flex; align-items: stretch; }
-  .servicesBar .teal { flex: 1; color: white; font-weight: bold; font-size: 10.5px; padding: 6px 10px; line-height: 1.4; border-radius: 3px 0 0 3px; text-align: center; }
-  .servicesBar .kodBox { background: #eee; border: 1px solid #ccc; padding: 6px 10px; font-size: 12px; text-align: center; font-weight: bold; border-radius: 0 3px 3px 0; white-space: nowrap; }
+  .servicesBar { display: table; width: 100%; }
+  .servicesBar .teal { display: table-cell; width: 100%; color: white; font-weight: bold; font-size: 10.5px; padding: 6px 10px; line-height: 1.4; border-radius: 3px 0 0 3px; text-align: center; }
+  .servicesBar .kodBox { display: table-cell; background: #eee; border: 1px solid #ccc; padding: 6px 10px; font-size: 12px; text-align: center; font-weight: bold; border-radius: 0 3px 3px 0; white-space: nowrap; vertical-align: middle; }
 
   .tagline { color: #aeb0b2; font-weight: bold; font-size: 19px; margin-top: 4px; text-align: right; }
   .tagline .sub { color: #8a8d90; font-size: 13px; font-weight: bold; }
@@ -61,13 +61,13 @@
   .instr { font-size: 10.5px; color: #111; margin-top: 10px; line-height: 1.35; }
   .instr b { font-weight: bold; }
 
-  .footerRow { display: flex; gap: 10px; margin-top: 12px; align-items: stretch; }
+  .footerRow { display: flex; gap: 10px; margin-top: 6px; align-items: stretch; }
   .footerLeft { flex: 1.35; display: flex; flex-direction: column; }
   .footerRight { flex: 1; display: flex; flex-direction: column; }
   .footerLeft .sectionBar, .footerRight .sectionBar { margin-top: 0; }
   .footerRight .sectionBar { width: 200px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
   .contactNote { font-size: 11px; font-weight: bold; margin: 8px 0 6px; }
-  .navyBox { background: #303F53; color: white; padding: 16px 14px; border-radius: 4px; font-size: 13px; }
+  .navyBox { background: #303F53; color: white; padding: 10px 14px; border-radius: 4px; font-size: 13px; }
   .navyBox .row1 { display: flex; justify-content: center; gap: 16px; margin-bottom: 14px; }
   .navyBox .row1 span { background: white; color: #303F53; border-radius: 3px; padding: 3px 10px; font-weight: bold; font-size: 12px; }
   .navyBox .row2 { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
