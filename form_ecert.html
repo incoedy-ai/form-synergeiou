@@ -355,14 +355,12 @@ async function sendPdfEmail() {
   try {
     const html = buildStandaloneHtml();
     const pelatisName = document.getElementById('custEponymia').textContent;
-    const res = await fetch(scriptUrl, {
+    await fetch(scriptUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      mode: 'no-cors',
       body: JSON.stringify({ form: 'sendPdf', doc: 'ecert', email: emailVal, pelatis: pelatisName, html: html })
     });
-    const data = await res.json();
-    if (data.status === 'ok') alert('Το πιστοποιητικό στάλθηκε στο ' + emailVal);
-    else alert('Σφάλμα: ' + (data.error || 'άγνωστο'));
+    alert('Στάλθηκε αίτημα αποστολής στο ' + emailVal + ' — έλεγξε το inbox σε λίγο.');
   } catch (e) {
     alert('Σφάλμα αποστολής: ' + e.message);
   } finally {
