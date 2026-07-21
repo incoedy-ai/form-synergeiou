@@ -50,7 +50,7 @@
 
   .skevGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
   .skevCard { border: 1px solid #999; border-radius: 4px; padding: 6px 4px; text-align: center; height: 98px; font-size: 10px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-  .skevCard::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; height: 90%; background-image: url('card_watermark_logo.png'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.35; pointer-events: none; z-index: 0; }
+  .skevCard .cardWm { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; height: 90%; object-fit: contain; opacity: 0.35; pointer-events: none; z-index: 0; }
   .skevCard > * { position: relative; z-index: 1; }
   .skevCard .eco { display: inline-flex; align-items: center; gap: 2px; margin-top: 4px; padding: 1px 6px; border-radius: 10px; background: #2e8b3d; color: white; font-size: 6px; font-weight: bold; letter-spacing: 0.3px; }
   .skevCard .typ { font-weight: bold; font-size: 11px; color: #087D8E; text-transform: uppercase; }
@@ -311,6 +311,7 @@ for (let i = 0; i < slotCount; i++) {
   const item = skevasmata[i];
   const card = document.createElement('div');
   card.className = 'skevCard' + (item ? '' : ' empty');
+  card.innerHTML = '<img class="cardWm" src="card_watermark_logo.png" alt="">';
   if (item) {
     const info = SKEVASMATA_DB[item.skeuasma] || ['', '', '', ''];
     const name = info[0] || item.skeuasma.replace(/\s*\([^)]*\)\s*$/, '');
@@ -319,7 +320,7 @@ for (let i = 0; i < slotCount; i++) {
     const typos = info[3] || item.typos || '';
     const isEco = name && !drast && !info[4];
     const drastLabel = drast && !adeia ? 'Συστατικά' : '';
-    card.innerHTML =
+    card.innerHTML +=
       (typos ? '<div class="typ">' + typos + '</div>' : '') +
       '<div class="name">' + name + '</div>' +
       (drastLabel ? '<div class="adeia">' + drastLabel + '</div>' : '') +
