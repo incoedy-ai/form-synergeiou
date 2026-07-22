@@ -857,6 +857,50 @@ for (let i = 0; i < ROWS; i++) {
   container.appendChild(row);
 }
 
+// ---- Προσυμπλήρωση γραμμών σκευασμάτων από το URL ----
+// Param: ulika = JSON array, π.χ.
+//   [{"typos":"ΑΠΕΝΤΟΜΩΣΗ","methodos":"ΨΕΚΑΣΜΟΣ","skeuasma":"TETRAX (148)","q1":2}]
+// Τα dropdown είναι αλυσιδωτά (τύπος -> μέθοδος -> σκεύασμα -> συσκευασία), οπότε
+// κάθε τιμή πρέπει να μπει με τη σειρά και να πυροδοτηθεί το change ώστε να γεμίσει
+// το επόμενο. Έτσι ό,τι έρχεται από την Access εμφανίζεται στην εντολή και μετά
+// περνάει αυτόματα στο πιστοποιητικό/αυτοψία μέσω των υπαρχόντων κουμπιών.
+(function prefillUlika() {
+  const qs = new URLSearchParams(window.location.search);
+  const raw = qs.get('ulika');
+  if (!raw) return;
+  let items;
+  try {
+    items = JSON.parse(decodeURIComponent(raw));
+  } catch (e) {
+    return;
+  }
+  if (!Array.isArray(items)) return;
+
+  items.slice(0, ROWS).forEach(function(it, i) {
+    const selTyp = document.getElementById(`sk-typ-${i}`);
+    const selMet = document.getElementById(`sk-met-${i}`);
+    const selSk  = document.getElementById(`sk-sel-${i}`);
+    const selPak = document.getElementById(`sk-pak-${i}`);
+    if (!selTyp) return;
+
+    if (it.typos) {
+      selTyp.value = it.typos;
+      selTyp.dispatchEvent(new Event('change'));
+    }
+    if (it.methodos) {
+      selMet.value = it.methodos;
+      selMet.dispatchEvent(new Event('change'));
+    }
+    if (it.skeuasma) {
+      selSk.value = it.skeuasma;
+      selSk.dispatchEvent(new Event('change'));
+    }
+    if (it.pak) selPak.value = it.pak;
+    if (it.q1 != null && it.q1 !== '') document.getElementById(`sk-q1-${i}`).value = it.q1;
+    if (it.q2 != null && it.q2 !== '') document.getElementById(`sk-q2-${i}`).value = it.q2;
+  });
+})();
+
 // ---- ΚΟΥΜΠΙΑ ΕΝΑΛΛΑΓΗΣ ----
 function toggleBtn(btn) {
   const group = btn.dataset.group;
