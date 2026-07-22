@@ -67,11 +67,21 @@ function buildList(stations, containerId, prefix) {
   });
 }
 
+// Ο τύπος στο φύλλο γράφεται ποικιλοτρόπως ("ΔΣ", "Δ/Σ", "Δ.Σ", πεζά, με κενά),
+// γιατί τον συμπληρώνει άνθρωπος. Κρατάμε μόνο τα γράμματα για τη σύγκριση, ώστε
+// να μη χάνονται σταθμοί από ένα κατεβατό.
+function stationKind(t) {
+  const s = String(t == null ? '' : t).replace(/[^Ͱ-Ͽ]/g, '').toUpperCase();
+  if (s === 'ΔΣ') return 'ΔΣ';
+  if (s === 'ΣΕ') return 'ΣΕ';
+  return '';
+}
+
 fetch(URL + "?kod=" + encodeURIComponent(kod))
   .then(r => r.json())
   .then(stations => {
-    DS_STATIONS = stations.filter(s => s.kodikos && s.typos === 'ΔΣ').map(s => s.kodikos);
-    SE_STATIONS = stations.filter(s => s.kodikos && s.typos === 'ΣΕ').map(s => s.kodikos);
+    DS_STATIONS = stations.filter(s => s.kodikos && stationKind(s.typos) === 'ΔΣ').map(s => s.kodikos);
+    SE_STATIONS = stations.filter(s => s.kodikos && stationKind(s.typos) === 'ΣΕ').map(s => s.kodikos);
 
     document.getElementById('loading').style.display = 'none';
     if (DS_STATIONS.length > 0) {
