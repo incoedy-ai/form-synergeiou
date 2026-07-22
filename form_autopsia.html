@@ -426,13 +426,18 @@ const ENTOMPAG_METHODS = ['Ηλεκτρική', 'Σύλληψης / Εγκλωβ
     }
   }
   const apenItems = ['Ψεκασμός', 'Gel', 'Επίχρισμα', 'Αερόλυμα', 'Καπνογόνο', 'Νεφελοποίηση'];
-  const elegItems = ['Κόλλα', 'Φερομόνη / Τροφοελκυστικό', 'Σύλληψης / Εγκλωβισμού', 'Ηλεκτρική'];
 
   (p.get('apen') || '').split(',').filter(Boolean).forEach(function(label) {
     checkByLabel('apen', apenItems, label);
   });
+  // Τα checkbox του πίνακα εντομοπαγίδων είναι δεικτοδοτημένα με ENTOMPAG_METHODS,
+  // οπότε η αντιστοίχιση πρέπει να γίνει με ΑΥΤΗ τη λίστα -- παλιότερα γινόταν με
+  // διαφορετική σειρά ονομάτων, με αποτέλεσμα να τσεκάρεται λάθος γραμμή.
   (p.get('eleg') || '').split(',').filter(Boolean).forEach(function(label) {
-    checkByLabel('eleg', elegItems, label);
+    checkByLabel('eleg', ENTOMPAG_METHODS, label.trim());
+  });
+  (p.get('topo') || '').split(',').filter(Boolean).forEach(function(label) {
+    checkByLabel('topo', ENTOMPAG_METHODS, label.trim());
   });
   (p.get('myok') || '').split(',').filter(Boolean).forEach(function(id) {
     const el = document.getElementById(id);
@@ -440,6 +445,66 @@ const ENTOMPAG_METHODS = ['Ηλεκτρική', 'Σύλληψης / Εγκλωβ
   });
   const notes = p.get('notes');
   if (notes) document.getElementById('loipesErgasies').value = decodeURIComponent(notes);
+
+  // ---- Ελεύθερα πεδία κειμένου ----
+  const textMap = {
+    entTypos: 'entompagTypos', toxTypos: 'toxicTypos', ecoTypos: 'ecoTypos',
+    diorth: 'diorthotikes', rodnotes: 'rodentNotes',
+  };
+  Object.keys(textMap).forEach(function(key) {
+    const v = p.get(key);
+    const el = document.getElementById(textMap[key]);
+    if (v && el) el.value = decodeURIComponent(v);
+  });
+
+  // ---- Ευρήματα εντόμων ----
+  // hosts = [{"cat":"ΒΑΔΙΣΤΙΚΑ ΕΝΤΟΜΑ","species":"Blattella germanica","level":"2","where":"Κουζίνα"}]
+  try {
+    const rawHosts = p.get('hosts');
+    if (rawHosts) {
+      JSON.parse(decodeURIComponent(rawHosts)).forEach(function(it) {
+        const slug = CAT_SLUGS[it.cat];
+        if (!slug) return;
+        addFindingRow(slug, true);
+        const rows = document.querySelectorAll('.hostFindingRow[data-cat="' + slug + '"]');
+        const row = rows[rows.length - 1];
+        if (!row) return;
+        const id = row.dataset.id;
+        const sp = document.getElementById(id + '_species');
+        const known = Array.prototype.some.call(sp.options, function(o) { return o.value === it.species; });
+        if (known) {
+          sp.value = it.species;
+        } else {
+          sp.value = '__other__';
+          toggleCustomSpecies(id);
+          document.getElementById(id + '_custom').value = it.species || '';
+        }
+        if (it.level) document.getElementById(id + '_level').value = String(it.level);
+        if (it.where) document.getElementById(id + '_where').value = it.where;
+      });
+    }
+  } catch (e) { /* αγνοούμε κακοδιατυπωμένο hosts */ }
+
+  // ---- Ευρήματα τρωκτικών ----
+  // rodents = {"R. norvegicus":["ΙΧΝΗ","ΚΟΠΡΑΝΑ"],"M. musculus":["ΑΠΟΥΣΙΑ"]}
+  try {
+    const rawRod = p.get('rodents');
+    if (rawRod) {
+      const obj = JSON.parse(decodeURIComponent(rawRod));
+      Object.keys(obj).forEach(function(species) {
+        const i = RODENTS.indexOf(species);
+        if (i < 0) return;
+        (obj[species] || []).forEach(function(mark) {
+          const j = RODENT_COLS.indexOf(mark);
+          if (j < 0) return;
+          const el = document.getElementById('rod_' + i + '_' + j);
+          if (!el) return;
+          el.checked = true;
+          if (j === 0) toggleApousiaRow(i);
+        });
+      });
+    }
+  } catch (e) { /* αγνοούμε κακοδιατυπωμένο rodents */ }
 })();
 
 function updateSignature() {
