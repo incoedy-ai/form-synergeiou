@@ -107,6 +107,17 @@ function normalizeEntry(v) {
 }
 
 function submitForm() {
+  // Το fetch με mode:'no-cors' γυρίζει σχεδόν ακαριαία, οπότε ένα διπλό πάτημα
+  // (πολύ εύκολο σε κινητό) πρόφτανε να στείλει δεύτερη φορά -- και καταγράφονταν
+  // διπλές εγγραφές στο Sheet. Κλειδώνουμε όσο είναι σε εξέλιξη η αποστολή.
+  if (window.__sending) return;
+  window.__sending = true;
+  const __btn = document.getElementById('submitBtn');
+  if (__btn) { __btn.disabled = true; __btn.style.opacity = '0.6'; }
+  function __release() {
+    window.__sending = false;
+    if (__btn) { __btn.disabled = false; __btn.style.opacity = ''; }
+  }
   const entries = [];
   const invalid = [];
   DS_STATIONS.forEach(function(code) {
@@ -128,12 +139,12 @@ function submitForm() {
   if (invalid.length > 0) {
     msg.textContent = 'Μη έγκυρη τιμή στο: ' + invalid.join(', ') + ' (μόνο αριθμός ή - x ? !)';
     msg.style.color = 'red';
-    return;
+    __release(); return;
   }
   if (entries.length === 0) {
     msg.textContent = 'Συμπλήρωσε τουλάχιστον μία τιμή.';
     msg.style.color = 'red';
-    return;
+    __release(); return;
   }
 
   msg.textContent = 'Αποστολή...';
@@ -145,11 +156,13 @@ function submitForm() {
     body: JSON.stringify({ kod: kod, pelatis: pelatis, entries: entries })
   })
   .then(() => {
+    __release();
     msg.textContent = 'Καταχωρήθηκαν ' + entries.length + ' τιμές ✓';
     msg.style.color = 'green';
     document.querySelectorAll('input').forEach(i => i.value = '');
   })
   .catch(() => {
+    __release();
     msg.textContent = 'Σφάλμα αποστολής.';
     msg.style.color = 'red';
   });

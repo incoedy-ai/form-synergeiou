@@ -513,6 +513,17 @@ function updateSignature() {
 }
 
 function submitForm() {
+  // Το fetch με mode:'no-cors' γυρίζει σχεδόν ακαριαία, οπότε ένα διπλό πάτημα
+  // (πολύ εύκολο σε κινητό) πρόφτανε να στείλει δεύτερη φορά -- και καταγράφονταν
+  // διπλές εγγραφές στο Sheet. Κλειδώνουμε όσο είναι σε εξέλιξη η αποστολή.
+  if (window.__sending) return;
+  window.__sending = true;
+  const __btn = document.getElementById('btnSubmit');
+  if (__btn) { __btn.disabled = true; __btn.style.opacity = '0.6'; }
+  function __release() {
+    window.__sending = false;
+    if (__btn) { __btn.disabled = false; __btn.style.opacity = ''; }
+  }
   const msg = document.getElementById('msg');
   msg.style.color = 'black';
   msg.textContent = 'Αποστολή...';
@@ -590,15 +601,17 @@ function submitForm() {
   if (!scriptUrl) {
     msg.style.color = 'red';
     msg.textContent = 'Δεν βρέθηκε script URL για τον πελάτη.';
-    return;
+    __release(); return;
   }
 
   fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
     .then(function() {
+      __release();
       msg.style.color = 'green';
       msg.textContent = 'Η έκθεση αυτοψίας καταχωρήθηκε ✓';
     })
     .catch(function() {
+      __release();
       msg.style.color = 'red';
       msg.textContent = 'Σφάλμα αποστολής.';
     });
