@@ -465,33 +465,24 @@
     document.getElementById('inf-aparait').value = 'Ψεκαστήρας πλάτης\nΜάσκα FFP2\nΓάντια νιτριλίου';
   }
 
-  // ---- Κουμπάκια εντύπων ελέγχου, μόνο για όσα έντυπα ισχύουν για τον πελάτη ----
+  // ---- Κουμπάκια εντύπων ελέγχου: εμφανίζονται ΠΑΝΤΑ, για κάθε πελάτη ----
+  // Το backend είναι multi-tenant (ένα Google Script για όλους, φιλτράρει με τον
+  // κωδικό πελάτη), οπότε δεν υπάρχει λόγος να κρύβονται ανά πελάτη. Ο τεχνικός
+  // επιλέγει ποιο έντυπο θα συμπληρώσει — αποφεύγουμε λάθος/ελλιπή κουμπιά.
   const scriptUrl = p.get('script');
   if (scriptUrl) {
     const pelatisName = p.get('pelatis') || '';
     const kodPelati = p.get('kod') || '';
     const qp = new URLSearchParams({ script: scriptUrl, pelatis: pelatisName, kod: kodPelati });
-    let anyVisible = false;
 
-    if (p.get('e04') === '1') {
-      const a = document.getElementById('lnkMyoktonia');
-      a.href = 'form_myoktonia.html?' + qp.toString();
+    [['lnkMyoktonia', 'form_myoktonia.html'],
+     ['lnkEntomo', 'form_entomo.html'],
+     ['lnkFeromo', 'form_feromo.html']].forEach(function(pair) {
+      const a = document.getElementById(pair[0]);
+      a.href = pair[1] + '?' + qp.toString();
       a.style.display = 'inline-block';
-      anyVisible = true;
-    }
-    if (p.get('e06') === '1') {
-      const a = document.getElementById('lnkEntomo');
-      a.href = 'form_entomo.html?' + qp.toString();
-      a.style.display = 'inline-block';
-      anyVisible = true;
-    }
-    if (p.get('e05') === '1') {
-      const a = document.getElementById('lnkFeromo');
-      a.href = 'form_feromo.html?' + qp.toString();
-      a.style.display = 'inline-block';
-      anyVisible = true;
-    }
-    if (anyVisible) document.getElementById('checkFormsBar').style.display = 'flex';
+    });
+    document.getElementById('checkFormsBar').style.display = 'flex';
   }
 
   document.getElementById('btnECert').style.display = 'inline-block';
