@@ -395,6 +395,13 @@
 <div class="toast" id="toast">Η φόρμα στάλθηκε επιτυχώς!</div>
 
 <script>
+// ΠΡΟΣΩΡΙΝΟΣ ανιχνευτής σφαλμάτων — δείχνει με alert κάθε JS σφάλμα (π.χ. αν μια
+// συνάρτηση δεν έχει οριστεί ή σκάει), ώστε να μη «φαίνεται» απλώς ότι το κουμπί
+// δεν πατιέται. Αφαιρείται μόλις εντοπιστεί η αιτία.
+window.addEventListener('error', function(e) {
+  alert('ΣΦΑΛΜΑ: ' + (e.message || e.error) + '\n@ ' + (e.filename || '').split('/').pop() + ':' + e.lineno);
+});
+
 // ---- ΣΤΟΙΧΕΙΑ ΡΑΝΤΕΒΟΥ ΑΠΟ URL ----
 (function() {
   const p = new URLSearchParams(window.location.search);
