@@ -523,7 +523,17 @@ function openECert() {
     email: email === '—' ? '' : email,
     script: p.get('script') || ''
   });
-  window.open('form_ecert.html?' + qp.toString(), '_blank');
+  openDoc('form_ecert.html?' + qp.toString());
+}
+
+// Το window.open για νέα καρτέλα μπλοκάρεται συχνά ως popup (γι' αυτό «δεν άνοιγε»
+// το eCERT/ΑΥΤΟΨΙΑ από την εντολή). Δοκιμάζουμε νέα καρτέλα· αν μπλοκαριστεί,
+// ανοίγουμε στην ίδια καρτέλα ώστε να δουλεύει πάντα.
+function openDoc(url) {
+  const w = window.open(url, '_blank');
+  if (!w || w.closed || typeof w.closed === 'undefined') {
+    window.location.href = url;
+  }
 }
 
 // ---- Χαρτογράφηση Είδος/Μέθοδος εντολής -> checkboxes Έκθεσης Αυτοψίας ----
@@ -577,7 +587,7 @@ function openAutopsia() {
     email: email === '—' ? '' : email,
     script: p.get('script') || ''
   });
-  window.open('form_autopsia.html?' + qp.toString(), '_blank');
+  openDoc('form_autopsia.html?' + qp.toString());
 }
 
 // ---- ΛΙΣΤΑ ΣΚΕΥΑΣΜΑΤΩΝ ----
