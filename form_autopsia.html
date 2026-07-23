@@ -231,8 +231,9 @@ document.getElementById('custDiakr').textContent = decodeURIComponent(p.get('dia
 document.getElementById('custTil').textContent = decodeURIComponent(p.get('til') || '—');
 document.getElementById('custDate').value = new Date().toISOString().slice(0, 10);
 document.getElementById('custEmail').value = decodeURIComponent(p.get('email') || '');
-const scriptUrl = p.get('script') || '';
-if (!scriptUrl) document.getElementById('btnEmail').title = 'Λείπει ο σύνδεσμος server — άνοιξε τη φόρμα μέσα από τη σελίδα του συνεργείου';
+const scriptUrl = p.get('script') || '';   // script πελάτη — για ΚΑΤΑΧΩΡΗΣΗ στα φύλλα
+// Το email του PDF πάει ΠΑΝΤΑ στη dedicated μηχανή PDF (βλ. σχόλιο στο form_ecert).
+const PDF_SCRIPT = 'https://script.google.com/macros/s/AKfycbwjkBC2VoM5n3guIKMNeOw9E43aTzH6IDgK0G05Y5dAEoM9LlXL32JzbrW8MM-GI-SSSA/exec';
 
 // ---- Πελάτης κατηγορίας ΣΚΑΦΟΣ: Λιμάνι Ελλιμενισμού / Όνομα Σκάφους αντί για Διεύθυνση ----
 if (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ') {
@@ -634,14 +635,13 @@ function buildStandaloneHtml() {
 async function sendPdfEmail() {
   const btn = document.getElementById('btnEmail');
   const emailVal = document.getElementById('custEmail').value.trim();
-  if (!scriptUrl) { alert('Δεν βρέθηκε σύνδεσμος server (script). Άνοιξε τη φόρμα μέσα από τη σελίδα του συνεργείου.'); return; }
   if (!emailVal) { alert('Συμπλήρωσε email παραλήπτη.'); return; }
   const prevText = btn.textContent;
   btn.disabled = true; btn.textContent = 'Αποστολή...';
   try {
     const html = buildStandaloneHtml();
     const pelatisName = document.getElementById('custEponymia').textContent;
-    await fetch(scriptUrl, {
+    await fetch(PDF_SCRIPT, {
       method: 'POST',
       mode: 'no-cors',
       body: JSON.stringify({ form: 'sendPdf', doc: 'autopsia', email: emailVal, pelatis: pelatisName, html: html })
