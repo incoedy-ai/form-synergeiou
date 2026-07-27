@@ -1,11 +1,12 @@
 /**
- * INCO — Αποθήκευση Εντολών Εφαρμογής
- * Δέχεται POST (JSON) από τη web φόρμα (form_synergeiou.html) και γράφει:
- *   - φύλλο "ΕΝΤΟΛΕΣ"        → μία γραμμή κεφαλίδας ανά εντολή
- *   - φύλλο "ΕΝΤΟΛΕΣ_ΥΛΙΚΑ"  → μία γραμμή ανά υλικό
- * Τα φύλλα δημιουργούνται αυτόματα αν λείπουν.
- * Η υπογραφή αποθηκεύεται ως base64 (PNG) στη στήλη ΥΠΟΓΡΑΦΗ.
+ * INCO — Αποθήκευση & Ανάγνωση Εντολών Εφαρμογής
+ *  - doPost (JSON)  : σώζει εντολή (ΕΝΤΟΛΕΣ + ΕΝΤΟΛΕΣ_ΥΛΙΚΑ). Δημόσιο (η φόρμα).
+ *  - doGet?action=orders&token=... : επιστρέφει τις ΝΕΕΣ εντολές ως JSON (για την Access).
+ *  - doGet?action=mark&ids=..&token=.. : μαρκάρει εντολές ως ΣΥΓΧΡΟΝΙΣΜΕΝΗ.
+ * Τα action=orders/mark προστατεύονται με API_TOKEN (δεν υπάρχει στη δημόσια φόρμα).
  */
+
+var API_TOKEN = 'SET_YOUR_TOKEN_HERE';   // μυστικό — ΜΗΝ το ανεβάζεις στο public repo· το ξέρει μόνο το εργαλείο της Access
 
 var HEADER_COLS = [
   'orderId','timestamp','kod','pelatis','diey','dieyEf','imer','ora','och',
@@ -15,6 +16,11 @@ var HEADER_COLS = [
 var LINE_COLS = ['orderId','lineNo','typ','met','skevasma','kodSkevasma','pak','q1','q2'];
 
 function doGet(e) {
+  var action = (e && e.parameter && e.parameter.action) || '';
+  if (action === 'orders' || action === 'mark') {
+    if (e.parameter.token !== API_TOKEN) return jsonOut_({ ok: false, error: 'unauthorized' });
+    return action === 'orders' ? getOrders_(e) : markSynced_(e);
+  }
   return ContentService
     .createTextOutput('INCO Entoles endpoint OK — ' + new Date())
     .setMimeType(ContentService.MimeType.TEXT);
@@ -30,7 +36,6 @@ function doPost(e) {
     var now = new Date();
     var orderId = data.orderId || makeOrderId_(now);
 
-    // --- Κεφαλίδα ---
     var pay = data.payment || {};
     var doc = data.docs || {};
     hSheet.appendRow([
@@ -42,7 +47,6 @@ function doPost(e) {
       data.simSyn||'', data.signature||'', 'ΝΕΑ'
     ]);
 
-    // --- Γραμμές υλικών ---
     var mats = data.materials || [];
     for (var i = 0; i < mats.length; i++) {
       var m = mats[i];
@@ -56,6 +60,64 @@ function doPost(e) {
   } catch (err) {
     return jsonOut_({ ok: false, error: String(err) });
   }
+}
+
+// Επιστρέφει τις εντολές με status='ΝΕΑ' (ή όλες με &all=1), με τα υλικά τους.
+function getOrders_(e) {
+  var onlyNew = (e.parameter.all !== '1');
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var hSheet = ss.getSheetByName('ΕΝΤΟΛΕΣ');
+  if (!hSheet) return jsonOut_({ ok: true, count: 0, orders: [] });
+
+  var matMap = {};
+  var lSheet = ss.getSheetByName('ΕΝΤΟΛΕΣ_ΥΛΙΚΑ');
+  if (lSheet && lSheet.getLastRow() > 1) {
+    var lVals = lSheet.getDataRange().getValues();
+    var lHead = lVals.shift();
+    lVals.forEach(function(r) {
+      var o = rowToObj_(lHead, r);
+      if (!matMap[o.orderId]) matMap[o.orderId] = [];
+      matMap[o.orderId].push(o);
+    });
+  }
+
+  var orders = [];
+  if (hSheet.getLastRow() > 1) {
+    var hVals = hSheet.getDataRange().getValues();
+    var hHead = hVals.shift();
+    hVals.forEach(function(r) {
+      var o = rowToObj_(hHead, r);
+      if (!o.orderId) return;
+      if (onlyNew && o.status !== 'ΝΕΑ') return;
+      o.materials = matMap[o.orderId] || [];
+      orders.push(o);
+    });
+  }
+  return jsonOut_({ ok: true, count: orders.length, orders: orders });
+}
+
+// Μαρκάρει τις δοσμένες orderId ως ΣΥΓΧΡΟΝΙΣΜΕΝΗ ώστε να μην ξαναδιαβαστούν.
+function markSynced_(e) {
+  var ids = String(e.parameter.ids || '').split(',').filter(String);
+  if (!ids.length) return jsonOut_({ ok: false, error: 'no ids' });
+  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('ΕΝΤΟΛΕΣ');
+  var vals = sh.getDataRange().getValues();
+  var head = vals[0];
+  var idCol = head.indexOf('orderId'), stCol = head.indexOf('status');
+  var n = 0;
+  for (var i = 1; i < vals.length; i++) {
+    if (ids.indexOf(String(vals[i][idCol])) >= 0) {
+      sh.getRange(i + 1, stCol + 1).setValue('ΣΥΓΧΡΟΝΙΣΜΕΝΗ');
+      n++;
+    }
+  }
+  return jsonOut_({ ok: true, marked: n });
+}
+
+function rowToObj_(head, row) {
+  var o = {};
+  for (var i = 0; i < head.length; i++) o[head[i]] = row[i];
+  return o;
 }
 
 function ensureSheet_(ss, name, cols) {
@@ -76,7 +138,6 @@ function makeOrderId_(d) {
   return 'ENT-' + stamp + '-' + rnd;
 }
 
-// "148 — TETRAX" → "148"  (αλλιώς κενό)
 function extractKod_(sel) {
   if (!sel) return '';
   var m = String(sel).match(/^\s*([0-9A-Za-z]+)\s*[—-]/);
