@@ -1119,6 +1119,7 @@ ${simSyn}
   // ---- ΑΠΟΘΗΚΕΥΣΗ ΕΝΤΟΛΗΣ (Google Sheet) ----
   const och = document.getElementById('inf-och').textContent;
   const order = {
+    efid: p.get('efid') || '',   // ID ραντεβού ΕΦΑΡΜΟΓΕΣ (για match/update στην Access)
     kod, pelatis, diey, dieyEf, imer, ora, och,
     materials: skData,
     payment: { kat, trop, xrew, fpaPct, katharo, fpaPoso, enanti, ypol, exof },
