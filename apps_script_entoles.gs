@@ -9,7 +9,7 @@
 var API_TOKEN = 'SET_YOUR_TOKEN_HERE';   // μυστικό — ΜΗΝ το ανεβάζεις στο public repo· το ξέρει μόνο το εργαλείο της Access
 
 var HEADER_COLS = [
-  'orderId','timestamp','kod','pelatis','diey','dieyEf','imer','ora','och',
+  'orderId','efid','timestamp','kod','pelatis','diey','dieyEf','imer','ora','och',
   'kat','trop','xrew','fpaPct','katharo','fpaPoso','enanti','ypol','exof',
   'da','tda','tpy','apy','eaee','simSyn','signature','status'
 ];
@@ -39,7 +39,7 @@ function doPost(e) {
     var pay = data.payment || {};
     var doc = data.docs || {};
     hSheet.appendRow([
-      orderId, now, data.kod||'', data.pelatis||'', data.diey||'', data.dieyEf||'',
+      orderId, data.efid||'', now, data.kod||'', data.pelatis||'', data.diey||'', data.dieyEf||'',
       data.imer||'', data.ora||'', data.och||'',
       pay.kat||'', pay.trop||'', pay.xrew||'', pay.fpaPct||'', pay.katharo||'',
       pay.fpaPoso||'', pay.enanti||'', pay.ypol||'', pay.exof||'',
