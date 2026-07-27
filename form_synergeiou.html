@@ -401,7 +401,7 @@ const p = new URLSearchParams(window.location.search);
 
 // URL του αποκλειστικού Apps Script που αποθηκεύει τις εντολές (βλ. Code_ENTOLES.gs).
 // Συμπληρώνεται μετά το deploy. Μπορεί να παρακαμφθεί με ?orders=<url> για δοκιμή.
-const ORDERS_SCRIPT = p.get('orders') || 'PENDING_DEPLOY';
+const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKfycbxgQnXjGxEM88fYOUyN8flf87SoL7F13qWN0E5Eh6WjqVKz6xJlK3nZwxQBWhqvjIcWXQ/exec';
 
 // ---- ΣΤΟΙΧΕΙΑ ΡΑΝΤΕΒΟΥ ΑΠΟ URL ----
 (function() {
