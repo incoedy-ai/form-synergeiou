@@ -399,6 +399,10 @@
 // Πριν ήταν ορισμένο μόνο μέσα στο IIFE, οπότε τα κουμπιά έσκαγαν με "p is not defined".
 const p = new URLSearchParams(window.location.search);
 
+// URL του αποκλειστικού Apps Script που αποθηκεύει τις εντολές (βλ. Code_ENTOLES.gs).
+// Συμπληρώνεται μετά το deploy. Μπορεί να παρακαμφθεί με ?orders=<url> για δοκιμή.
+const ORDERS_SCRIPT = p.get('orders') || 'PENDING_DEPLOY';
+
 // ---- ΣΤΟΙΧΕΙΑ ΡΑΝΤΕΒΟΥ ΑΠΟ URL ----
 (function() {
   const map = {
@@ -980,12 +984,25 @@ function clearSig() {
   canvas.classList.remove('signed');
 }
 
+// ---- ΕΞΑΓΩΓΗ ΥΠΟΓΡΑΦΗΣ (μικρό PNG, λευκό φόντο) ----
+function getSignatureDataURL() {
+  const W = 500;
+  const H = Math.max(1, Math.round(W * canvas.height / canvas.width));
+  const out = document.createElement('canvas');
+  out.width = W; out.height = H;
+  const octx = out.getContext('2d');
+  octx.fillStyle = '#ffffff'; octx.fillRect(0, 0, W, H);
+  octx.drawImage(canvas, 0, 0, W, H);
+  return out.toDataURL('image/png');
+}
+
 // ---- SUBMIT ----
-function submitForm() {
+async function submitForm() {
   if (!hasSig) { alert('Απαιτείται υπογραφή πελάτη'); return; }
 
-  // Συλλογη σκευασματων
+  // Συλλογη σκευασματων (κειμενο για email + δομημενα δεδομενα για αποθηκευση)
   const skLines = [];
+  const skData = [];
   for (let i = 0; i < ROWS; i++) {
     const typ = document.getElementById(`sk-typ-${i}`).value;
     const met = document.getElementById(`sk-met-${i}`).value;
@@ -995,6 +1012,7 @@ function submitForm() {
       const q1 = document.getElementById(`sk-q1-${i}`).value || '—';
       const q2 = document.getElementById(`sk-q2-${i}`).value || '—';
       skLines.push(`  [${typ || '—'}]  [${met || '—'}]  ${sel || '—'}${pak ? ' (' + pak + ')' : ''}  |  ! ${q1}  |  @ ${q2}`);
+      skData.push({ typ, met, sel, pak, q1: q1 === '—' ? '' : q1, q2: q2 === '—' ? '' : q2 });
     }
   }
 
@@ -1059,6 +1077,32 @@ ${simSyn}
 
 [Η υπογραφή του πελάτη έχει ληφθεί ψηφιακά]`;
 
+  // ---- ΑΠΟΘΗΚΕΥΣΗ ΕΝΤΟΛΗΣ (Google Sheet) ----
+  const och = document.getElementById('inf-och').textContent;
+  const order = {
+    kod, pelatis, diey, dieyEf, imer, ora, och,
+    materials: skData,
+    payment: { kat, trop, xrew, fpaPct, katharo, fpaPoso, enanti, ypol, exof },
+    docs: { da, tda, tpy, apy },
+    simSyn,
+    signature: getSignatureDataURL()
+  };
+  if (ORDERS_SCRIPT && ORDERS_SCRIPT !== 'PENDING_DEPLOY') {
+    try {
+      await fetch(ORDERS_SCRIPT, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(order),
+        keepalive: true
+      });
+    } catch (err) {
+      console.error('Order save failed:', err);
+      // Δεν μπλοκαρουμε — το email παρακατω λειτουργει ως ασφαλεια.
+    }
+  }
+
+  // ---- EMAIL (ασφαλεια) ----
   const subject = `ΕΦΑΡΜΟΓΗ: ${pelatis} — ${imer}`;
   const mailto = `mailto:sales@in-co.gr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.location.href = mailto;
