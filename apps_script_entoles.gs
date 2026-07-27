@@ -124,6 +124,9 @@ function ensureSheet_(ss, name, cols) {
   var sh = ss.getSheetByName(name);
   if (!sh) {
     sh = ss.insertSheet(name);
+    // ΟΛΑ ως απλό κείμενο ώστε το Sheets να ΜΗΝ μετατρέπει "27/07/2026"->ημ/νία
+    // και "13:00"->ώρα (χαλάει ημερομηνίες/ώρες/κωδικούς με μηδενικά).
+    sh.getRange(1, 1, sh.getMaxRows(), cols.length).setNumberFormat('@');
     sh.appendRow(cols);
     sh.setFrozenRows(1);
   }
