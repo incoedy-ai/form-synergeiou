@@ -44,7 +44,7 @@
     display: grid; grid-template-columns: 1fr 1fr; gap: 0;
   }
   .skevasma-header {
-    display: grid; grid-template-columns: 130px 130px 180px 70px 75px 75px;
+    display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1.4fr) minmax(0,2.4fr) minmax(0,1fr) 48px 48px;
     gap: 6px; padding: 0 0 6px 0;
     border-bottom: 1px solid #e0e0e0; margin-bottom: 6px;
   }
@@ -61,7 +61,7 @@
   }
 
   .sk-row {
-    display: grid; grid-template-columns: 130px 130px 180px 70px 75px 75px;
+    display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1.4fr) minmax(0,2.4fr) minmax(0,1fr) 48px 48px;
     gap: 6px; margin-bottom: 7px; align-items: center;
   }
   .sk-select {
@@ -218,15 +218,15 @@
         <div class="info-item"><span class="info-label">ΚΩΔΙΚΟΣ</span><span class="info-val" id="inf-kod">—</span></div>
         <div class="info-item"><span class="info-label">e-NET</span><span class="info-val" id="inf-enet">—</span></div>
         <div class="info-item"><span class="info-label">ΕΠΩΝΥΜΙΑ</span><span class="info-val" id="inf-pelatis">—</span></div>
+        <div class="info-item" id="row-onomaskaf" style="display:none;"><span class="info-label">ΟΝΟΜΑ ΣΚΑΦΟΥΣ</span><span class="info-val" id="inf-onomaskaf">—</span></div>
         <div class="info-item"><span class="info-label">ΚΑΤΗΓΟΡΙΑ ΠΕΛΑΤΗ</span><span class="info-val" id="inf-katpel">—</span></div>
-        <div class="info-item"><span class="info-label">ΑΦΜ</span><span class="info-val" id="inf-afm">—</span></div>
+        <div class="info-item" id="row-afm"><span class="info-label">ΑΦΜ</span><span class="info-val" id="inf-afm">—</span></div>
         <div class="info-item"><span class="info-label">ΔΙΕΥΘΥΝΣΗ</span><span class="info-val" id="inf-diey">—</span></div>
         <div class="info-item"><span class="info-label">ΤΗΛΕΦΩΝΟ</span><span class="info-val" id="inf-til">—</span></div>
         <div class="info-item"><span class="info-label">EMAIL</span><span class="info-val" id="inf-email">—</span></div>
         <div class="info-item"><span class="info-label">E-ΤΙΜΟΛΟΓΙΟ</span><span class="info-val" id="inf-etim">—</span></div>
         <div class="info-item"><span class="info-label">ΑΠΟ (πηγή)</span><span class="info-val" id="inf-apo">—</span></div>
         <span id="inf-limani" style="display:none;"></span>
-        <span id="inf-onomaskaf" style="display:none;"></span>
       </div>
       <div class="rv-col rv-col-wide">
         <div class="info-col-title">ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ</div>
@@ -234,7 +234,7 @@
           <div class="info-item"><span class="info-label" style="color:#d97706;">ΗΜΕΡΟΜΗΝΙΑ</span><span class="info-val" id="inf-imer" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
           <div class="info-item"><span class="info-label" style="color:#d97706;">ΩΡΑ</span><span class="info-val" id="inf-ora" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
           <div class="info-item"><span class="info-label" style="color:#d97706;">ΣΥΝΕΡΓΕΙΟ</span><span class="info-val" id="inf-syn" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
-          <div class="info-item"><span class="info-label" style="color:#d97706;">ΔΙΕΥΘΥΝΣΗ ΕΦΑΡΜΟΓΗΣ</span><span class="info-val" id="inf-diey-ef" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
+          <div class="info-item"><span class="info-label" id="lbl-diey-ef" style="color:#d97706;">ΔΙΕΥΘΥΝΣΗ ΕΦΑΡΜΟΓΗΣ</span><span class="info-val" id="inf-diey-ef" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
           <div class="info-item"><span class="info-label">ΥΠΕΥΘΥΝΟΣ ΕΠΙΚΟΙΝΩΝΙΑΣ</span><span class="info-val" id="inf-yp">—</span></div>
           <div class="info-item"><span class="info-label">ΚΟΥΔΟΥΝΙ</span><span class="info-val" id="inf-koud">—</span></div>
           <div class="info-item"><span class="info-label">ΟΡΟΦΟΣ</span><span class="info-val" id="inf-orof">—</span></div>
@@ -269,10 +269,8 @@
 
 </div>
 
-<!-- ΣΚΕΥΑΣΜΑΤΑ + ΣΗΜΕΙΩΣΕΙΣ -->
-<div class="main-row" style="display:flex; gap:10px; align-items:stretch; margin:10px;">
-
-<div class="section" id="sec-sk" style="margin:0; flex-shrink:0;">
+<!-- ΣΚΕΥΑΣΜΑΤΑ (πλήρες πλάτος για να μην κόβονται τα πεδία) -->
+<div class="section" id="sec-sk" style="margin:10px;">
   <div class="section-title">ΣΚΕΥΑΣΜΑΤΑ / ΥΛΙΚΑ / ΠΟΣΟΤΗΤΕΣ</div>
   <div class="section-body">
     <div class="skevasma-cols">
@@ -292,7 +290,7 @@
   </div>
 </div>
 
-<div class="section" style="margin:0; flex:1; display:flex; flex-direction:column;">
+<div class="section" style="margin:10px; display:flex; flex-direction:column;">
   <div class="section-title">ΣΗΜΕΙΩΣΕΙΣ</div>
   <div class="section-body" style="flex:1; display:flex; flex-direction:column;">
     <textarea id="sim-synergeiou" placeholder="Παρατηρήσεις συνεργείου…"
@@ -301,8 +299,6 @@
              resize:none; min-height:120px;"></textarea>
   </div>
 </div>
-
-</div><!-- /flex row -->
 
 <!-- ΣΤΟΙΧΕΙΑ ΧΡΕΩΣΗΣ + ΠΛΗΡΩΜΗΣ + ΠΑΡΑΣΤΑΤΙΚΑ (3 στήλες δίπλα-δίπλα) -->
 <div class="bill-row">
@@ -501,6 +497,30 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
     document.getElementById('inf-egkat').value = 'ΔΣ: 4 τεμ. (Μαγκλ. Plus)\nΣΕ: 2 τεμ.\nΕντομοπαγίδες: 1 τεμ.';
     document.getElementById('inf-aparait').value = 'Ψεκαστήρας πλάτης\nΜάσκα FFP2\nΓάντια νιτριλίου';
   }
+
+  // ---- Προσαρμογή πεδίων ανά κατηγορία πελάτη (όπως στη φόρμα ΡΑΝΤΕΒΟΥ της Access) ----
+  // ΙΔΙΩΤΗΣ: χωρίς ΑΦΜ. ΣΚΑΦΟΣ: Όνομα Σκάφους + «Λιμάνι Ελλιμενισμού» αντί «Διεύθυνση Εφαρμογής».
+  (function adaptByCategory() {
+    const cat = (document.getElementById('inf-katpel').textContent || '').toUpperCase();
+    const isSkafos  = cat.indexOf('ΣΚΑΦ') >= 0;
+    const isIdiotis = cat.indexOf('ΙΔΙΩΤ') >= 0;
+
+    if (isSkafos) {
+      document.getElementById('row-onomaskaf').style.display = '';
+      const lbl = document.getElementById('lbl-diey-ef');
+      if (lbl) lbl.textContent = 'ΛΙΜΑΝΙ ΕΛΛΙΜΕΝΙΣΜΟΥ';
+      // Αν δεν έχει δοθεί ξεχωριστή διεύθυνση εφαρμογής, δείξε το λιμάνι ελλιμενισμού.
+      const limani = (document.getElementById('inf-limani').textContent || '').trim();
+      const dief = document.getElementById('inf-diey-ef');
+      const cur = (dief.textContent || '').trim();
+      if (limani && (cur === '' || cur === '—')) dief.textContent = limani;
+    }
+
+    if (isIdiotis) {
+      const rowAfm = document.getElementById('row-afm');
+      if (rowAfm) rowAfm.style.display = 'none';
+    }
+  })();
 
   // ---- Κουμπάκια εντύπων ελέγχου: εμφανίζονται ΠΑΝΤΑ, για κάθε πελάτη ----
   // Το backend είναι multi-tenant (ένα Google Script για όλους, φιλτράρει με τον
