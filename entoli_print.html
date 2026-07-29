@@ -34,6 +34,7 @@
   .col-t { font-size: 8px; font-weight: bold; color: #287B9B; border-bottom: 1px solid #e0e0e0; padding-bottom: 2px; margin-bottom: 4px; }
 
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; }
+  .grid1 { display: grid; grid-template-columns: 1fr; gap: 3px 10px; }
   .item { display: flex; flex-direction: column; }
   .item .l { font-size: 7px; color: #888; font-weight: bold; text-transform: uppercase; }
   .item .v { font-size: 9px; color: #2D3A4D; font-weight: bold; background: #f4f8fc; border-radius: 3px; padding: 2px 5px; min-height: 14px; }
@@ -72,7 +73,7 @@
     <div class="cols2">
       <div class="col">
         <div class="col-t">ΠΕΛΑΤΗΣ</div>
-        <div class="grid2">
+        <div class="grid1">
           <div class="item"><span class="l">Κωδικός</span><span class="v">{{KOD}}</span></div>
           <div class="item"><span class="l">e-NET</span><span class="v">{{ENET}}</span></div>
           <div class="item" style="grid-column:1/-1"><span class="l">Επωνυμία</span><span class="v">{{PELATIS}}</span></div>
