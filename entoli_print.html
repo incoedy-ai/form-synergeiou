@@ -53,10 +53,9 @@
   .chip { font-size: 8px; font-weight: bold; padding: 2px 8px; border: 1px solid #cbd5e0; border-radius: 10px; color: #888; }
   .chip.on { background: #287B9B; border-color: #287B9B; color: #fff; }
 
-  .sig { border: 1px solid #cfdbe6; border-radius: 6px; padding: 6px 8px; margin-top: 7px; }
-  .sig .st { font-size: 8px; font-weight: bold; color: #287B9B; margin-bottom: 4px; }
-  .sig img { max-height: 90px; max-width: 300px; }
-  .sig .empty { color: #bbb; font-style: italic; font-size: 9px; }
+  .sig-body { display: flex; align-items: center; justify-content: center; min-height: 80px; }
+  .sig-body img { max-height: 76px; max-width: 100%; }
+  .sig-body .empty { color: #bbb; font-style: italic; font-size: 9px; }
   .foot { margin-top: 6px; font-size: 7px; color: #999; text-align: right; }
 </style>
 </head>
@@ -134,17 +133,18 @@
         <span class="chip {{ON_PISTOSI}}">ΠΙΣΤΩΣΗ</span><span class="chip {{ON_WEB}}">WEB</span><span class="chip {{ON_IRIS}}">IRIS</span>
       </div>
     </div></div>
-    <div class="section" style="flex:1"><div class="st">ΠΑΡΑΣΤΑΤΙΚΑ</div><div class="sb">
+  </div>
+
+  <div class="cols2">
+    <div class="section" style="flex:0.7"><div class="st">ΠΑΡΑΣΤΑΤΙΚΑ</div><div class="sb">
       <div class="pay"><span class="l">ΔΑ</span><span class="v">{{DA}}</span></div>
       <div class="pay"><span class="l">ΤΔΑ</span><span class="v">{{TDA}}</span></div>
       <div class="pay"><span class="l">ΤΠΥ</span><span class="v">{{TPY}}</span></div>
       <div class="pay"><span class="l">ΑΠΥ</span><span class="v">{{APY}}</span></div>
     </div></div>
-  </div>
-
-  <div class="sig">
-    <div class="st">ΥΠΟΓΡΑΦΗ ΠΕΛΑΤΗ</div>
-    {{SIGNATURE}}
+    <div class="section" style="flex:1.6"><div class="st">ΥΠΟΓΡΑΦΗ ΠΕΛΑΤΗ</div><div class="sb sig-body">
+      {{SIGNATURE}}
+    </div></div>
   </div>
 
   <div class="foot">Εκτυπώθηκε: {{GEN_DATE}}</div>
