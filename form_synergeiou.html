@@ -223,6 +223,7 @@
         <div class="info-item" id="row-onomaskaf" style="display:none;"><span class="info-label">ΟΝΟΜΑ ΣΚΑΦΟΥΣ</span><span class="info-val" id="inf-onomaskaf">—</span></div>
         <div class="info-item"><span class="info-label">ΚΑΤΗΓΟΡΙΑ ΠΕΛΑΤΗ</span><span class="info-val" id="inf-katpel">—</span></div>
         <div class="info-item" id="row-afm"><span class="info-label">ΑΦΜ</span><span class="info-val" id="inf-afm">—</span></div>
+        <div class="info-item" id="row-dou"><span class="info-label">ΔΟΥ</span><span class="info-val" id="inf-dou">—</span></div>
         <div class="info-item"><span class="info-label">ΔΙΕΥΘΥΝΣΗ</span><span class="info-val" id="inf-diey">—</span></div>
         <div class="info-item"><span class="info-label">ΤΗΛΕΦΩΝΟ</span><span class="info-val" id="inf-til">—</span></div>
         <div class="info-item"><span class="info-label">EMAIL</span><span class="info-val" id="inf-email">—</span></div>
@@ -247,7 +248,7 @@
           <div class="info-item"><span class="info-label">ΠΛΗΡΩΜΗ</span><span class="info-val" id="inf-plirwmi">—</span></div>
           <div class="info-item"><span class="info-label">ΜΕΘΟΔΟΣ</span><span class="info-val two-line" id="inf-meth">—</span></div>
           <div class="info-item"><span class="info-label">ΧΡΕΩΣΗ</span><span class="info-val" id="inf-poso">—</span></div>
-          <div class="info-item"><span class="info-label">ΣΗΜΕΙΩΣΕΙΣ</span><span class="info-val" id="inf-sim" style="white-space:pre-wrap;">—</span></div>
+          <div class="info-item"><span class="info-label">ΣΗΜΕΙΩΣΕΙΣ</span><span class="info-val two-line" id="inf-sim">—</span></div>
         </div>
       </div>
     </div>
@@ -435,6 +436,7 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
     'diey_ef': 'inf-diey-ef',
     'til':     'inf-til',
     'afm':     'inf-afm',
+    'dou':     'inf-dou',
     'yp':      'inf-yp',
     'katpel':  'inf-katpel',
     'limani':  'inf-limani',
@@ -474,6 +476,7 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
     document.getElementById('inf-diey-ef').textContent = '—';
     document.getElementById('inf-til').textContent = '210-1234567';
     document.getElementById('inf-afm').textContent = '123456789';
+    document.getElementById('inf-dou').textContent = 'Α ΑΘΗΝΩΝ';
     document.getElementById('inf-yp').textContent = 'Γιώργος Παπαδόπουλος';
     document.getElementById('inf-katpel').textContent = 'Β';
     document.getElementById('inf-email').textContent = 'info@paradeyma.gr';
@@ -514,8 +517,11 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
     }
 
     if (isIdiotis) {
-      const rowAfm = document.getElementById('row-afm');
-      if (rowAfm) rowAfm.style.display = 'none';
+      // Ιδιώτης: χωρίς ΑΦΜ/ΔΟΥ
+      ['row-afm', 'row-dou'].forEach(id => {
+        const r = document.getElementById(id);
+        if (r) r.style.display = 'none';
+      });
     }
   })();
 
