@@ -137,6 +137,14 @@
     border-radius: 8px; font-size: 14px; display: none; z-index: 999;
   }
 
+  /* Οικονομικά: ΧΡΕΩΣΗ | ΠΛΗΡΩΜΗ | ΠΑΡΑΣΤΑΤΙΚΑ δίπλα-δίπλα (και σε ταμπλέτα) */
+  .bill-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px; align-items: stretch; }
+  .bill-row > .section { flex: 1 1 220px; min-width: 0; }
+  .bill-row .pay-input { max-width: 150px; }
+  .sig-row { margin: 10px; }
+  /* Σε στενή οθόνη (κινητό) πέφτουν κάθετα */
+  @media (max-width: 620px) { .bill-row > .section { flex: 1 1 100%; } }
+
   /* ---- RESPONSIVE (ταμπλέτα 11" portrait/landscape + κινητό) ---- */
   @media (max-width: 1280px) {
     /* Οι οριζοντιες ενοτητες γινονται καθετες, ωστε να χωρανε ολες */
@@ -214,7 +222,6 @@
         <div class="info-item"><span class="info-label">ΑΦΜ</span><span class="info-val" id="inf-afm">—</span></div>
         <div class="info-item"><span class="info-label">ΔΙΕΥΘΥΝΣΗ</span><span class="info-val" id="inf-diey">—</span></div>
         <div class="info-item"><span class="info-label">ΤΗΛΕΦΩΝΟ</span><span class="info-val" id="inf-til">—</span></div>
-        <div class="info-item"><span class="info-label">ΥΠΕΥΘΥΝΟΣ ΕΠΙΚΟΙΝΩΝΙΑΣ</span><span class="info-val" id="inf-yp">—</span></div>
         <div class="info-item"><span class="info-label">EMAIL</span><span class="info-val" id="inf-email">—</span></div>
         <div class="info-item"><span class="info-label">E-ΤΙΜΟΛΟΓΙΟ</span><span class="info-val" id="inf-etim">—</span></div>
         <div class="info-item"><span class="info-label">ΑΠΟ (πηγή)</span><span class="info-val" id="inf-apo">—</span></div>
@@ -228,15 +235,16 @@
           <div class="info-item"><span class="info-label" style="color:#d97706;">ΩΡΑ</span><span class="info-val" id="inf-ora" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
           <div class="info-item"><span class="info-label" style="color:#d97706;">ΣΥΝΕΡΓΕΙΟ</span><span class="info-val" id="inf-syn" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
           <div class="info-item"><span class="info-label" style="color:#d97706;">ΔΙΕΥΘΥΝΣΗ ΕΦΑΡΜΟΓΗΣ</span><span class="info-val" id="inf-diey-ef" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
+          <div class="info-item"><span class="info-label">ΥΠΕΥΘΥΝΟΣ ΕΠΙΚΟΙΝΩΝΙΑΣ</span><span class="info-val" id="inf-yp">—</span></div>
           <div class="info-item"><span class="info-label">ΚΟΥΔΟΥΝΙ</span><span class="info-val" id="inf-koud">—</span></div>
-          <div class="info-item"><span class="info-label">ΔΙΑΡΚΕΙΑ</span><span class="info-val" id="inf-diar">—</span></div>
           <div class="info-item"><span class="info-label">ΟΡΟΦΟΣ</span><span class="info-val" id="inf-orof">—</span></div>
-          <div class="info-item"><span class="info-label">ΟΧΗΜΑ</span><span class="info-val" id="inf-och">—</span></div>
+          <div class="info-item"><span class="info-label">ΔΙΑΡΚΕΙΑ</span><span class="info-val" id="inf-diar">—</span></div>
           <div class="info-item"><span class="info-label">ΠΡΟΒΛΗΜΑ</span><span class="info-val" id="inf-prob">—</span></div>
-          <div class="info-item"><span class="info-label">ΠΛΗΡΩΜΗ</span><span class="info-val" id="inf-plirwmi">—</span></div>
+          <div class="info-item"><span class="info-label">ΟΧΗΜΑ</span><span class="info-val" id="inf-och">—</span></div>
           <div class="info-item"><span class="info-label">ΕΙΔΟΣ ΕΦΑΡΜΟΓΗΣ</span><span class="info-val" id="inf-typ" style="white-space:pre-wrap;">—</span></div>
-          <div class="info-item"><span class="info-label">ΧΡΕΩΣΗ</span><span class="info-val" id="inf-poso">—</span></div>
+          <div class="info-item"><span class="info-label">ΠΛΗΡΩΜΗ</span><span class="info-val" id="inf-plirwmi">—</span></div>
           <div class="info-item"><span class="info-label">ΜΕΘΟΔΟΣ</span><span class="info-val" id="inf-meth" style="white-space:pre-wrap;">—</span></div>
+          <div class="info-item"><span class="info-label">ΧΡΕΩΣΗ</span><span class="info-val" id="inf-poso">—</span></div>
           <div class="info-item"><span class="info-label">ΣΗΜΕΙΩΣΕΙΣ</span><span class="info-val" id="inf-sim" style="white-space:pre-wrap;">—</span></div>
         </div>
       </div>
@@ -296,10 +304,10 @@
 
 </div><!-- /flex row -->
 
-<!-- ΣΤΟΙΧΕΙΑ ΧΡΕΩΣΗΣ + ΠΛΗΡΩΜΗΣ -->
-<div class="main-row" style="display:flex; gap:10px; align-items:stretch; margin:10px;">
+<!-- ΣΤΟΙΧΕΙΑ ΧΡΕΩΣΗΣ + ΠΛΗΡΩΜΗΣ + ΠΑΡΑΣΤΑΤΙΚΑ (3 στήλες δίπλα-δίπλα) -->
+<div class="bill-row">
 
-<div class="section" style="margin:0; width:fit-content; flex-shrink:0;">
+<div class="section" style="margin:0;">
   <div class="section-title">ΣΤΟΙΧΕΙΑ ΧΡΕΩΣΗΣ</div>
   <div class="section-body">
 
@@ -334,7 +342,7 @@
   </div>
 </div>
 
-<div class="section" style="margin:0; width:fit-content; flex-shrink:0;">
+<div class="section" style="margin:0;">
   <div class="section-title">ΣΤΟΙΧΕΙΑ ΠΛΗΡΩΜΗΣ</div>
   <div class="section-body">
 
@@ -369,7 +377,7 @@
   </div>
 </div>
 
-<div class="section" style="margin:0; width:fit-content; flex-shrink:0;">
+<div class="section" style="margin:0;">
   <div class="section-title">ΠΑΡΑΣΤΑΤΙΚΑ</div>
   <div class="section-body">
     <div class="doc-grid">
@@ -393,6 +401,9 @@
   </div>
 </div>
 
+</div><!-- /bill-row -->
+
+<div class="sig-row">
 <div class="section" style="margin:0; flex:1;">
   <div class="section-title">ΥΠΟΓΡΑΦΗ ΠΕΛΑΤΗ</div>
   <div class="section-body" style="height:100%;">
@@ -406,7 +417,7 @@
   </div>
 </div>
 
-</div><!-- /flex row -->
+</div><!-- /sig-row -->
 
 <button class="btn-submit" onclick="submitForm()">ΑΠΟΣΤΟΛΗ ΦΟΡΜΑΣ</button>
 <div class="toast" id="toast">Η φόρμα στάλθηκε επιτυχώς!</div>
