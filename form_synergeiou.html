@@ -93,6 +93,11 @@
   }
   .toggle-btn.active { background: #287B9B; border-color: #287B9B; color: white; }
 
+  /* ΤΡΟΠΟΣ πληρωμής: ΜΕΤΡΗΤΑ/ΚΑΡΤΑ πάνω, IRIS/WEB κάτω, ΠΙΣΤΩΣΗ δεξιά σε 2 γραμμές */
+  .btn-trop { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; flex: 1; }
+  .btn-trop .toggle-btn { padding: 8px 6px; }
+  .btn-trop .pistosi { grid-column: 3; grid-row: 1 / 3; }
+
   .pay-input {
     flex: 1; padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px;
     font-size: 14px; font-family: Verdana, sans-serif;
@@ -335,12 +340,12 @@
 
     <div class="pay-row">
       <span class="pay-label">ΤΡΟΠΟΣ</span>
-      <div class="btn-group">
+      <div class="btn-group btn-trop">
         <button class="toggle-btn" data-group="trop" data-val="ΜΕΤΡΗΤΑ" onclick="toggleBtn(this)">ΜΕΤΡΗΤΑ</button>
         <button class="toggle-btn" data-group="trop" data-val="ΚΑΡΤΑ" onclick="toggleBtn(this)">ΚΑΡΤΑ</button>
-        <button class="toggle-btn" data-group="trop" data-val="ΠΙΣΤΩΣΗ" onclick="toggleBtn(this)">ΠΙΣΤΩΣΗ</button>
-        <button class="toggle-btn" data-group="trop" data-val="WEB" onclick="toggleBtn(this)">WEB</button>
+        <button class="toggle-btn pistosi" data-group="trop" data-val="ΠΙΣΤΩΣΗ" onclick="toggleBtn(this)">ΠΙΣΤΩΣΗ</button>
         <button class="toggle-btn" data-group="trop" data-val="IRIS" onclick="toggleBtn(this)">IRIS</button>
+        <button class="toggle-btn" data-group="trop" data-val="WEB" onclick="toggleBtn(this)">WEB</button>
       </div>
     </div>
 
