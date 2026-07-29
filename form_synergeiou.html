@@ -171,6 +171,9 @@
   .rv-two { display: flex; gap: 16px; }
   .rv-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
   @media (max-width: 560px) { .rv-two { flex-direction: column; } }
+  .rv-col-wide { flex: 2 1 0; }
+  .prog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+  @media (max-width: 560px) { .prog-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -216,22 +219,24 @@
         <span id="inf-limani" style="display:none;"></span>
         <span id="inf-onomaskaf" style="display:none;"></span>
       </div>
-      <div class="rv-col">
+      <div class="rv-col rv-col-wide">
         <div class="info-col-title">ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ</div>
-        <div class="info-item"><span class="info-label" style="color:#d97706;">ΗΜΕΡΟΜΗΝΙΑ</span><span class="info-val" id="inf-imer" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
-        <div class="info-item"><span class="info-label" style="color:#d97706;">ΩΡΑ</span><span class="info-val" id="inf-ora" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
-        <div class="info-item"><span class="info-label" style="color:#d97706;">ΣΥΝΕΡΓΕΙΟ</span><span class="info-val" id="inf-syn" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
-        <div class="info-item"><span class="info-label" style="color:#d97706;">ΔΙΕΥΘΥΝΣΗ ΕΦΑΡΜΟΓΗΣ</span><span class="info-val" id="inf-diey-ef" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
-        <div class="info-item"><span class="info-label">ΟΧΗΜΑ</span><span class="info-val" id="inf-och">—</span></div>
-        <div class="info-item"><span class="info-label">ΔΙΑΡΚΕΙΑ</span><span class="info-val" id="inf-diar">—</span></div>
-        <div class="info-item"><span class="info-label">ΟΡΟΦΟΣ</span><span class="info-val" id="inf-orof">—</span></div>
-        <div class="info-item"><span class="info-label">ΚΟΥΔΟΥΝΙ</span><span class="info-val" id="inf-koud">—</span></div>
-        <div class="info-item"><span class="info-label">ΠΡΟΒΛΗΜΑ</span><span class="info-val" id="inf-prob">—</span></div>
-        <div class="info-item"><span class="info-label">ΕΙΔΟΣ ΕΦΑΡΜΟΓΗΣ</span><span class="info-val" id="inf-typ" style="white-space:pre-wrap;">—</span></div>
-        <div class="info-item"><span class="info-label">ΜΕΘΟΔΟΣ</span><span class="info-val" id="inf-meth" style="white-space:pre-wrap;">—</span></div>
-        <div class="info-item"><span class="info-label">ΣΗΜΕΙΩΣΕΙΣ</span><span class="info-val" id="inf-sim" style="white-space:pre-wrap;">—</span></div>
-        <div class="info-item"><span class="info-label">ΠΛΗΡΩΜΗ</span><span class="info-val" id="inf-plirwmi">—</span></div>
-        <div class="info-item"><span class="info-label">ΧΡΕΩΣΗ</span><span class="info-val" id="inf-poso">—</span></div>
+        <div class="prog-grid">
+          <div class="info-item"><span class="info-label" style="color:#d97706;">ΗΜΕΡΟΜΗΝΙΑ</span><span class="info-val" id="inf-imer" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
+          <div class="info-item"><span class="info-label" style="color:#d97706;">ΩΡΑ</span><span class="info-val" id="inf-ora" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
+          <div class="info-item"><span class="info-label" style="color:#d97706;">ΣΥΝΕΡΓΕΙΟ</span><span class="info-val" id="inf-syn" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
+          <div class="info-item"><span class="info-label" style="color:#d97706;">ΔΙΕΥΘΥΝΣΗ ΕΦΑΡΜΟΓΗΣ</span><span class="info-val" id="inf-diey-ef" style="background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;padding-left:10px;">—</span></div>
+          <div class="info-item"><span class="info-label">ΟΧΗΜΑ</span><span class="info-val" id="inf-och">—</span></div>
+          <div class="info-item"><span class="info-label">ΔΙΑΡΚΕΙΑ</span><span class="info-val" id="inf-diar">—</span></div>
+          <div class="info-item"><span class="info-label">ΟΡΟΦΟΣ</span><span class="info-val" id="inf-orof">—</span></div>
+          <div class="info-item"><span class="info-label">ΚΟΥΔΟΥΝΙ</span><span class="info-val" id="inf-koud">—</span></div>
+          <div class="info-item"><span class="info-label">ΠΡΟΒΛΗΜΑ</span><span class="info-val" id="inf-prob">—</span></div>
+          <div class="info-item"><span class="info-label">ΕΙΔΟΣ ΕΦΑΡΜΟΓΗΣ</span><span class="info-val" id="inf-typ" style="white-space:pre-wrap;">—</span></div>
+          <div class="info-item"><span class="info-label">ΜΕΘΟΔΟΣ</span><span class="info-val" id="inf-meth" style="white-space:pre-wrap;">—</span></div>
+          <div class="info-item"><span class="info-label">ΣΗΜΕΙΩΣΕΙΣ</span><span class="info-val" id="inf-sim" style="white-space:pre-wrap;">—</span></div>
+          <div class="info-item"><span class="info-label">ΠΛΗΡΩΜΗ</span><span class="info-val" id="inf-plirwmi">—</span></div>
+          <div class="info-item"><span class="info-label">ΧΡΕΩΣΗ</span><span class="info-val" id="inf-poso">—</span></div>
+        </div>
       </div>
     </div>
   </div>
