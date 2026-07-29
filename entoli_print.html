@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<title>Εντολή Εφαρμογής</title>
+<style>
+  @page { size: A4 portrait; margin: 10mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: Verdana, Arial, sans-serif; color: #222; font-size: 10px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .wrap { width: 100%; }
+  .topbar {
+    background: #2D3A4D; color: #fff; padding: 8px 12px; border-radius: 6px;
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+  }
+  .topbar h1 { font-size: 13px; margin: 0; letter-spacing: .3px; }
+  .topbar .sub { font-size: 8px; opacity: .85; }
+  .kod-box { text-align: right; }
+  .kod-box .lbl { font-size: 7px; opacity: .85; }
+  .kod-box .val { font-size: 13px; font-weight: bold; background:#2DAFCE; color:#2D3A4D; padding:2px 10px; border-radius:5px; display:inline-block; }
+
+  .section { border: 1px solid #cfdbe6; border-radius: 6px; margin-bottom: 7px; overflow: hidden; }
+  .section > .st { background: #287B9B; color: #fff; font-weight: bold; font-size: 9px; padding: 3px 8px; }
+  .section > .sb { padding: 6px 8px; }
+
+  .cols2 { display: flex; gap: 8px; }
+  .col { flex: 1; }
+  .col-t { font-size: 8px; font-weight: bold; color: #287B9B; border-bottom: 1px solid #e0e0e0; padding-bottom: 2px; margin-bottom: 4px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; }
+  .item { display: flex; flex-direction: column; }
+  .item .l { font-size: 7px; color: #888; font-weight: bold; text-transform: uppercase; }
+  .item .v { font-size: 9px; color: #2D3A4D; font-weight: bold; background: #f4f8fc; border-radius: 3px; padding: 2px 5px; min-height: 14px; }
+  .item .v.hi { background: #fffbeb; border-left: 3px solid #f59e0b; color: #92400e; }
+  .item.two .v { min-height: 26px; white-space: pre-wrap; }
+
+  table.mat { width: 100%; border-collapse: collapse; }
+  table.mat th { background: #eef4f8; color: #2D3A4D; font-size: 7.5px; padding: 3px 4px; border: 1px solid #d6e2ec; text-align: left; }
+  table.mat td { font-size: 8.5px; padding: 3px 4px; border: 1px solid #e3ebf2; }
+  table.mat td.c { text-align: center; }
+
+  .pay { display: flex; justify-content: space-between; font-size: 8.5px; padding: 2px 0; border-bottom: 1px dotted #e0e0e0; }
+  .pay .l { color: #666; font-weight: bold; }
+  .pay .v { color: #2D3A4D; font-weight: bold; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+  .chip { font-size: 8px; font-weight: bold; padding: 2px 8px; border: 1px solid #cbd5e0; border-radius: 10px; color: #888; }
+  .chip.on { background: #287B9B; border-color: #287B9B; color: #fff; }
+
+  .sig { border: 1px solid #cfdbe6; border-radius: 6px; padding: 6px 8px; margin-top: 7px; }
+  .sig .st { font-size: 8px; font-weight: bold; color: #287B9B; margin-bottom: 4px; }
+  .sig img { max-height: 90px; max-width: 300px; }
+  .sig .empty { color: #bbb; font-style: italic; font-size: 9px; }
+  .foot { margin-top: 6px; font-size: 7px; color: #999; text-align: right; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div><h1>ΕΝΤΟΛΗ – ΑΠΟΔΕΙΚΤΙΚΟ ΕΚΤΕΛΕΣΗΣ ΕΦΑΡΜΟΓΩΝ</h1><div class="sub">InCo LAB</div></div>
+    <div class="kod-box"><div class="lbl">ΚΩΔΙΚΟΣ ΕΝΤΟΛΗΣ</div><div class="val">{{KODIKOS_ENTOLIS}}</div></div>
+  </div>
+
+  <div class="section"><div class="st">ΣΤΟΙΧΕΙΑ ΡΑΝΤΕΒΟΥ</div><div class="sb">
+    <div class="cols2">
+      <div class="col">
+        <div class="col-t">ΠΕΛΑΤΗΣ</div>
+        <div class="grid2">
+          <div class="item"><span class="l">Κωδικός</span><span class="v">{{KOD}}</span></div>
+          <div class="item"><span class="l">e-NET</span><span class="v">{{ENET}}</span></div>
+          <div class="item" style="grid-column:1/-1"><span class="l">Επωνυμία</span><span class="v">{{PELATIS}}</span></div>
+          {{ROW_ONOMASKAF}}
+          <div class="item"><span class="l">Κατηγορία</span><span class="v">{{KATPEL}}</span></div>
+          {{ROW_AFM}}
+          {{ROW_DOU}}
+          <div class="item" style="grid-column:1/-1"><span class="l">Διεύθυνση</span><span class="v">{{DIEY}}</span></div>
+          <div class="item"><span class="l">Τηλέφωνο</span><span class="v">{{TIL}}</span></div>
+          <div class="item"><span class="l">Email</span><span class="v">{{EMAIL}}</span></div>
+          <div class="item"><span class="l">Από</span><span class="v">{{APO}}</span></div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="col-t">ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ</div>
+        <div class="grid2">
+          <div class="item"><span class="l">Ημερομηνία</span><span class="v hi">{{IMER}}</span></div>
+          <div class="item"><span class="l">Ώρα</span><span class="v hi">{{ORA}}</span></div>
+          <div class="item"><span class="l">Συνεργείο</span><span class="v hi">{{SYN}}</span></div>
+          <div class="item"><span class="l">{{DIEYEF_LABEL}}</span><span class="v hi">{{DIEYEF}}</span></div>
+          <div class="item"><span class="l">Υπεύθυνος επικ.</span><span class="v">{{YP}}</span></div>
+          <div class="item"><span class="l">Κουδούνι</span><span class="v">{{KOUD}}</span></div>
+          <div class="item"><span class="l">Όροφος</span><span class="v">{{OROF}}</span></div>
+          <div class="item"><span class="l">Όχημα</span><span class="v">{{OCH}}</span></div>
+          <div class="item two" style="grid-column:1/-1"><span class="l">Πρόβλημα</span><span class="v">{{PROB}}</span></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="section"><div class="st">ΣΚΕΥΑΣΜΑΤΑ / ΥΛΙΚΑ / ΠΟΣΟΤΗΤΕΣ</div><div class="sb">
+    <table class="mat">
+      <thead><tr>
+        <th style="width:18%">Εφαρμογή</th><th style="width:20%">Μέθοδος</th>
+        <th style="width:30%">Σκεύασμα / Υλικό</th><th style="width:12%">Κωδ.</th>
+        <th style="width:10%">Δόση/Τεμ.</th><th style="width:10%">Ποσ.</th>
+      </tr></thead>
+      <tbody>{{MATERIALS_ROWS}}</tbody>
+    </table>
+  </div></div>
+
+  <div class="section"><div class="st">ΣΗΜΕΙΩΣΕΙΣ</div><div class="sb" style="min-height:26px;font-size:9px;white-space:pre-wrap;">{{SIM}}</div></div>
+
+  <div class="cols2">
+    <div class="section" style="flex:1"><div class="st">ΣΤΟΙΧΕΙΑ ΧΡΕΩΣΗΣ</div><div class="sb">
+      <div class="pay"><span class="l">Χρέωση</span><span class="v">{{XREWSI}}</span></div>
+      <div class="pay"><span class="l">% ΦΠΑ</span><span class="v">{{FPA_PCT}}</span></div>
+      <div class="pay"><span class="l">Καθαρό Ποσό</span><span class="v">{{KATHARO}}</span></div>
+      <div class="pay"><span class="l">Ποσό ΦΠΑ</span><span class="v">{{FPA_POSO}}</span></div>
+    </div></div>
+    <div class="section" style="flex:1"><div class="st">ΣΤΟΙΧΕΙΑ ΠΛΗΡΩΜΗΣ</div><div class="sb">
+      <div class="pay"><span class="l">Έναντι</span><span class="v">{{ENANTI}}</span></div>
+      <div class="pay"><span class="l">Υπόλοιπο</span><span class="v">{{YPOLOIPO}}</span></div>
+      <div class="pay"><span class="l">Εξόφληση</span><span class="v">{{EXOFLISI}}</span></div>
+      <div class="chips">
+        <span class="chip {{ON_METRITA}}">ΜΕΤΡΗΤΑ</span><span class="chip {{ON_KARTA}}">ΚΑΡΤΑ</span>
+        <span class="chip {{ON_PISTOSI}}">ΠΙΣΤΩΣΗ</span><span class="chip {{ON_WEB}}">WEB</span><span class="chip {{ON_IRIS}}">IRIS</span>
+      </div>
+    </div></div>
+    <div class="section" style="flex:1"><div class="st">ΠΑΡΑΣΤΑΤΙΚΑ</div><div class="sb">
+      <div class="pay"><span class="l">ΔΑ</span><span class="v">{{DA}}</span></div>
+      <div class="pay"><span class="l">ΤΔΑ</span><span class="v">{{TDA}}</span></div>
+      <div class="pay"><span class="l">ΤΠΥ</span><span class="v">{{TPY}}</span></div>
+      <div class="pay"><span class="l">ΑΠΥ</span><span class="v">{{APY}}</span></div>
+    </div></div>
+  </div>
+
+  <div class="sig">
+    <div class="st">ΥΠΟΓΡΑΦΗ ΠΕΛΑΤΗ</div>
+    {{SIGNATURE}}
+  </div>
+
+  <div class="foot">Εκτυπώθηκε: {{GEN_DATE}}</div>
+
+</div>
+</body>
+</html>
