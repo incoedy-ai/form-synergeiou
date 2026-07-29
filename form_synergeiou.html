@@ -208,6 +208,7 @@
       <div class="rv-col">
         <div class="info-col-title">ΠΕΛΑΤΗΣ</div>
         <div class="info-item"><span class="info-label">ΚΩΔΙΚΟΣ</span><span class="info-val" id="inf-kod">—</span></div>
+        <div class="info-item"><span class="info-label">e-NET</span><span class="info-val" id="inf-enet">—</span></div>
         <div class="info-item"><span class="info-label">ΕΠΩΝΥΜΙΑ</span><span class="info-val" id="inf-pelatis">—</span></div>
         <div class="info-item"><span class="info-label">ΚΑΤΗΓΟΡΙΑ ΠΕΛΑΤΗ</span><span class="info-val" id="inf-katpel">—</span></div>
         <div class="info-item"><span class="info-label">ΑΦΜ</span><span class="info-val" id="inf-afm">—</span></div>
@@ -216,6 +217,7 @@
         <div class="info-item"><span class="info-label">ΥΠΕΥΘΥΝΟΣ ΕΠΙΚΟΙΝΩΝΙΑΣ</span><span class="info-val" id="inf-yp">—</span></div>
         <div class="info-item"><span class="info-label">EMAIL</span><span class="info-val" id="inf-email">—</span></div>
         <div class="info-item"><span class="info-label">E-ΤΙΜΟΛΟΓΙΟ</span><span class="info-val" id="inf-etim">—</span></div>
+        <div class="info-item"><span class="info-label">ΑΠΟ (πηγή)</span><span class="info-val" id="inf-apo">—</span></div>
         <span id="inf-limani" style="display:none;"></span>
         <span id="inf-onomaskaf" style="display:none;"></span>
       </div>
@@ -422,6 +424,8 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
 (function() {
   const map = {
     'kod':     'inf-kod',
+    'enet':    'inf-enet',
+    'apo':     'inf-apo',
     'pelatis': 'inf-pelatis',
     'diey':    'inf-diey',
     'diey_ef': 'inf-diey-ef',
