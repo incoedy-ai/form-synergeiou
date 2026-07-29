@@ -280,19 +280,11 @@
 <div class="section" id="sec-sk" style="margin:10px;">
   <div class="section-title">ΣΚΕΥΑΣΜΑΤΑ / ΥΛΙΚΑ / ΠΟΣΟΤΗΤΕΣ</div>
   <div class="section-body">
-    <div class="skevasma-cols">
-      <div>
-        <div class="skevasma-header">
-          <span>Εφαρμογή</span><span>Μέθοδος</span><span>Σκεύασμα / Υλικό</span><span>Συσκευασία</span><span>!</span><span>@</span>
-        </div>
-        <div id="sk-rows-left"></div>
+    <div class="skevasma-single">
+      <div class="skevasma-header">
+        <span>Εφαρμογή</span><span>Μέθοδος</span><span>Σκεύασμα / Υλικό</span><span>Συσκευασία</span><span>!</span><span>@</span>
       </div>
-      <div>
-        <div class="skevasma-header">
-          <span>Εφαρμογή</span><span>Μέθοδος</span><span>Σκεύασμα / Υλικό</span><span>Συσκευασία</span><span>!</span><span>@</span>
-        </div>
-        <div id="sk-rows-right"></div>
-      </div>
+      <div id="sk-rows"></div>
     </div>
   </div>
 </div>
@@ -944,10 +936,7 @@ for (let i = 0; i < ROWS; i++) {
   q2.className = 'sk-qty'; q2.type = 'number'; q2.placeholder = '@'; q2.min = '0';
   q2.id = `sk-q2-${i}`;
   row.appendChild(sel); row.appendChild(pak); row.appendChild(q1); row.appendChild(q2);
-  const container = i < 4
-    ? document.getElementById('sk-rows-left')
-    : document.getElementById('sk-rows-right');
-  container.appendChild(row);
+  document.getElementById('sk-rows').appendChild(row);
 }
 
 // ---- Προσυμπλήρωση γραμμών σκευασμάτων από το URL ----
