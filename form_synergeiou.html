@@ -150,7 +150,7 @@
   .bill-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px; align-items: stretch; }
   .bill-row > .section { flex: 1 1 220px; min-width: 0; }
   .bill-row .pay-input { max-width: 150px; }
-  .sig-row { margin: 10px; }
+  .sig-row { margin: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
   /* Σε στενή οθόνη (κινητό) πέφτουν κάθετα */
   @media (max-width: 620px) { .bill-row > .section { flex: 1 1 100%; } }
 
@@ -370,7 +370,10 @@
   </div>
 </div>
 
-<div class="section" style="margin:0;">
+</div><!-- /bill-row -->
+
+<div class="sig-row">
+<div class="section" style="margin:0; flex:1 1 180px;">
   <div class="section-title">ΠΑΡΑΣΤΑΤΙΚΑ</div>
   <div class="section-body">
     <div class="doc-grid">
@@ -393,11 +396,7 @@
     </div>
   </div>
 </div>
-
-</div><!-- /bill-row -->
-
-<div class="sig-row">
-<div class="section" style="margin:0; flex:1;">
+<div class="section" style="margin:0; flex:3 1 300px;">
   <div class="section-title">ΥΠΟΓΡΑΦΗ ΠΕΛΑΤΗ</div>
   <div class="section-body" style="height:100%;">
     <div class="sig-container">
