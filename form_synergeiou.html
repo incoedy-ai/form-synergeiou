@@ -875,6 +875,26 @@ function fillMethods(selectEl, typVal) {
   selectEl.value = stillThere ? current : '';
 }
 
+// Αντίστροφη ροή: επιλογή ΣΚΕΥΑΣΜΑΤΟΣ -> auto ΕΦΑΡΜΟΓΗ (μοναδική) + ΜΕΘΟΔΟΣ.
+// Η μέθοδος γεμίζει από τις ΔΙΚΕΣ του σκευάσματος (meta.meth), γιατί κάποιες
+// δεν ανήκουν στο TYPE_METHODS του είδους. Αν είναι μία -> μπαίνει αυτόματα·
+// αν πολλές -> μπαίνει η πρώτη κι ο χρήστης μπορεί να διαλέξει από τις υπόλοιπες.
+function autoFillFromSkevasma(selTyp, selMet, skev) {
+  const meta = SKEVASMA_META[skev];
+  if (!meta) return;
+  selTyp.value = meta.typ;
+  selMet.innerHTML = '';
+  const blank = document.createElement('option');
+  blank.value = ''; blank.textContent = '— Μέθοδος —';
+  selMet.appendChild(blank);
+  (meta.meth || []).forEach(m => {
+    const o = document.createElement('option');
+    o.value = m; o.textContent = m;
+    selMet.appendChild(o);
+  });
+  if (meta.meth && meta.meth.length) selMet.value = meta.meth[0];
+}
+
 const ROWS = 8;
 for (let i = 0; i < ROWS; i++) {
   const row = document.createElement('div');
@@ -907,7 +927,10 @@ for (let i = 0; i < ROWS; i++) {
   pak.className = 'sk-select';
   pak.id = `sk-pak-${i}`;
   fillPackaging(pak, '');
-  sel.addEventListener('change', () => fillPackaging(pak, sel.value));
+  sel.addEventListener('change', () => {
+    fillPackaging(pak, sel.value);
+    autoFillFromSkevasma(selTyp, selMet, sel.value);
+  });
   selTyp.addEventListener('change', () => {
     fillMethods(selMet, selTyp.value);
     fillSkevasmata(sel, selTyp.value, selMet.value);
