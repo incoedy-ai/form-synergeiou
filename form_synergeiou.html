@@ -997,7 +997,7 @@ function toggleBtn(btn) {
   setActive(group, btn.dataset.val);
   // Ο τροπος πληρωμης ρυθμιζει αυτοματα την εξοφληση (με δυνατοτητα χειροκινητης αλλαγης)
   if (group === 'trop') {
-    const paidNow = ['ΜΕΤΡΗΤΑ', 'ΚΑΡΤΑ', 'WEB'].includes(btn.dataset.val);
+    const paidNow = ['ΜΕΤΡΗΤΑ', 'ΚΑΡΤΑ', 'WEB', 'IRIS'].includes(btn.dataset.val);
     setActive('exof', paidNow ? 'ΝΑΙ' : 'ΟΧΙ');
   }
   if (group === 'trop' || group === 'exof') calcYpoloipo();
