@@ -346,6 +346,21 @@ function updateSignature() {
 function buildStandaloneHtml() {
   const styleText = document.querySelector('style').textContent;
   const pageClone = document.querySelector('.page').cloneNode(true);
+
+  // Ημερομηνία: το <input type="date"> ΔΕΝ σειριοποιεί το value μέσω outerHTML
+  // (μπαίνει με JS .value) ούτε τυπώνεται καθαρά -> αντικατέστησέ το με κείμενο dd/mm/yyyy.
+  const dcClone = pageClone.querySelector('#custDate');
+  if (dcClone) {
+    let v = (document.getElementById('custDate') || {}).value || '';
+    if (!v) v = new Date().toISOString().slice(0, 10);   // fallback: σήμερα
+    const parts = v.split('-');                            // YYYY-MM-DD
+    const txt = parts.length === 3 ? parts[2] + '/' + parts[1] + '/' + parts[0] : v;
+    const span = document.createElement('span');
+    span.textContent = txt;
+    span.setAttribute('style', 'padding:8px 10px; border:1px solid #ccc; border-radius:0 3px 3px 0; font-size:17px; font-weight:bold; display:inline-block; min-width:130px; background:#fff; text-align:center;');
+    dcClone.parentNode.replaceChild(span, dcClone);
+  }
+
   const base = location.href.replace(/[^\/]*$/, '');
   pageClone.querySelectorAll('img').forEach(function(img) {
     const src = img.getAttribute('src');
