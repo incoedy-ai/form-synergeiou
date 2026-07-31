@@ -288,6 +288,7 @@ document.getElementById('custTil').textContent = decodeURIComponent(p.get('til')
 document.getElementById('custAfm').textContent = decodeURIComponent(p.get('afm') || '—');
 
 const catPel = decodeURIComponent(p.get('katpel') || '').toUpperCase().trim();
+const ypoKat = decodeURIComponent(p.get('ypokat') || '').toUpperCase().trim();
 function hidePair(labelId, valId) {
   document.getElementById(labelId).style.display = 'none';
   document.getElementById(valId).style.display = 'none';
@@ -303,8 +304,8 @@ if (catPel === 'ΣΚΑΦΟΣ') {
   document.getElementById('custOnomaSkaf').textContent = decodeURIComponent(p.get('onomaskaf') || '—');
   document.getElementById('custDieyLabel').textContent = 'Λιμάνι Ελλιμενισμού:';
   document.getElementById('custDiey').textContent = decodeURIComponent(p.get('limani') || '—');
-} else if (catPel === 'ΠΟΛΥΚΑΤΟΙΚΙΑ') {
-  // Πολυκατοικία: μόνο Διεύθυνση + Περιοχή
+} else if (ypoKat === 'ΠΟΛΥΚΑΤΟΙΚΙΑ') {
+  // Πολυκατοικία (υποκατηγορία του ΙΔΙΩΤΗ): μόνο Διεύθυνση + Περιοχή
   hidePair('custEponymiaLabel', 'custEponymia');
   hidePair('custTilLabel', 'custTil');
   hidePair('custAfmLabel', 'custAfm');

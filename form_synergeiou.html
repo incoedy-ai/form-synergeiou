@@ -238,6 +238,7 @@
         <div class="info-item"><span class="info-label">ΑΠΟ (πηγή)</span><span class="info-val" id="inf-apo">—</span></div>
         <span id="inf-limani" style="display:none;"></span>
         <span id="inf-periohi" style="display:none;"></span>
+        <span id="inf-ypokat" style="display:none;"></span>
       </div>
       <div class="rv-col rv-col-wide">
         <div class="info-col-title">ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ</div>
@@ -435,6 +436,7 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
     'dou':     'inf-dou',
     'yp':      'inf-yp',
     'katpel':  'inf-katpel',
+    'ypokat':  'inf-ypokat',
     'limani':  'inf-limani',
     'periohi': 'inf-periohi',
     'onomaskaf': 'inf-onomaskaf',
@@ -558,6 +560,7 @@ function openECert() {
   const limani = document.getElementById('inf-limani').textContent;
   const onomaskaf = document.getElementById('inf-onomaskaf').textContent;
   const periohi = document.getElementById('inf-periohi').textContent;
+  const ypokat = document.getElementById('inf-ypokat').textContent;
 
   const skev = [];
   for (let i = 0; i < ROWS; i++) {
@@ -575,6 +578,7 @@ function openECert() {
     til: til === '—' ? '' : til,
     afm: afm === '—' ? '' : afm,
     katpel: katpel === '—' ? '' : katpel,
+    ypokat: ypokat === '—' ? '' : ypokat,
     limani: limani || '',
     onomaskaf: onomaskaf || '',
     periohi: periohi || '',
