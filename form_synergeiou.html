@@ -237,6 +237,7 @@
         <div class="info-item"><span class="info-label">E-ΤΙΜΟΛΟΓΙΟ</span><span class="info-val" id="inf-etim">—</span></div>
         <div class="info-item"><span class="info-label">ΑΠΟ (πηγή)</span><span class="info-val" id="inf-apo">—</span></div>
         <span id="inf-limani" style="display:none;"></span>
+        <span id="inf-periohi" style="display:none;"></span>
       </div>
       <div class="rv-col rv-col-wide">
         <div class="info-col-title">ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΣ</div>
@@ -435,6 +436,7 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
     'yp':      'inf-yp',
     'katpel':  'inf-katpel',
     'limani':  'inf-limani',
+    'periohi': 'inf-periohi',
     'onomaskaf': 'inf-onomaskaf',
     'email':   'inf-email',
     'etim':    'inf-etim',
@@ -555,6 +557,7 @@ function openECert() {
   const katpel = document.getElementById('inf-katpel').textContent;
   const limani = document.getElementById('inf-limani').textContent;
   const onomaskaf = document.getElementById('inf-onomaskaf').textContent;
+  const periohi = document.getElementById('inf-periohi').textContent;
 
   const skev = [];
   for (let i = 0; i < ROWS; i++) {
@@ -574,6 +577,7 @@ function openECert() {
     katpel: katpel === '—' ? '' : katpel,
     limani: limani || '',
     onomaskaf: onomaskaf || '',
+    periohi: periohi || '',
     skev: JSON.stringify(skev),
     email: email === '—' ? '' : email,
     script: p.get('script') || ''
