@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Έκθεση Καταπολέμησης Κοριών — CIMEX</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 0 0 24px; background: #f5f7f8; color: #1a1a1a; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+  @page { margin: 5mm; }
+  @media print {
+    body { background: white; max-width: none; padding: 0 !important; }
+    .noPrint { display: none !important; }
+    .page { box-shadow: none !important; margin: 0 !important; padding: 8px !important; }
+    .cimexBody.clean { opacity: 1 !important; }
+  }
+  .page { background: white; margin: 16px; padding: 16px; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
+  .watermark { position: absolute; z-index: 0; pointer-events: none; }
+  .watermark.wm1 { width: 1000px; left: 50%; top: 283px; transform: translateX(-50%); }
+  .page > *:not(.watermark) { position: relative; z-index: 1; }
+  textarea, input[type=text], select { background: rgba(255,255,255,0.7); }
+  input, select, textarea { font-weight: bold; }
+
+  .teal { background: #087D8E; } .navy { background: #303F53; }
+  .headerRow { display: flex; align-items: stretch; gap: 0; }
+  .headerRow img.logo { width: 78px; flex-shrink: 0; margin-right: 10px; }
+  .titleBar { flex: 1; background: #087D8E; color: white; padding: 3px 16px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; position: relative; }
+  .titleBar h1 { position: static; transform: none; font-size: 12.5px; margin: 0; line-height: 1.15; padding-right: 10px; }
+  .titleBar input[type=date] { padding: 8px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 15px; font-weight: bold; margin-left: auto; }
+  .kodBox { background: #eee; border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 11px; text-align: center; font-weight: bold; white-space: nowrap; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+  .sectionBar { color: white; font-weight: bold; font-size: 12px; padding: 4px 10px; border-radius: 3px; margin-top: 8px; text-align: center; }
+  .custGrid { display: grid; grid-template-columns: 120px 1fr 120px 1fr; gap: 4px 8px; font-size: 12px; margin-top: 5px; }
+  .custGrid b { white-space: nowrap; color: #444; } .custGrid span { font-weight: bold; }
+
+  .roomBox { border: 2px solid #303F53; border-radius: 5px; padding: 8px; margin-top: 8px; background: rgba(231,234,239,0.4); }
+  .roomHd { display: flex; gap: 6px; align-items: center; }
+  .roomHd .lbl { background: #303F53; color: white; font-size: 11px; font-weight: bold; padding: 6px 8px; border-radius: 3px; white-space: nowrap; }
+  .roomHd input { flex: 1; font-size: 13px; font-weight: bold; padding: 6px; border: 1px solid #087D8E; border-radius: 4px; min-width: 0; }
+  .unitBox { border: 1px solid #087D8E; border-radius: 4px; padding: 6px; margin-top: 6px; background: white; }
+  .unitHd { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .unitHd .lbl { background: #087D8E; color: white; font-size: 10px; font-weight: bold; padding: 5px 7px; border-radius: 3px; white-space: nowrap; }
+  .unitHd input { flex: 1; font-size: 12px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; min-width: 80px; }
+  .unitHd select { font-size: 11px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
+  .unitClean { display: flex; align-items: center; gap: 6px; font-size: 11px; margin: 6px 0; font-weight: bold; background: #eef6f7; border: 1px solid #087D8E; border-radius: 4px; padding: 4px 6px; }
+  .unitClean input { width: 15px; height: 15px; }
+  table.cimex { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 11px; }
+  table.cimex th, table.cimex td { border: 1px solid #ccc; padding: 3px; text-align: center; }
+  table.cimex th { background: #303F53; color: white; font-size: 9px; }
+  table.cimex td:first-child { text-align: left; font-size: 9.5px; }
+  table.cimex input[type=checkbox] { width: 15px; height: 15px; }
+  table.cimex select { font-size: 11px; padding: 2px; border: 1px solid #ccc; border-radius: 3px; font-weight: bold; }
+  .cimexBody.clean { opacity: 0.35; pointer-events: none; }
+  .delBtn { background: #c0392b; color: white; border: none; border-radius: 4px; cursor: pointer; padding: 5px 8px; font-size: 12px; flex-shrink: 0; }
+  .addBtn { background: #087D8E; color: white; border: none; border-radius: 4px; padding: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin-top: 6px; width: 100%; }
+  .addRoomBtn { background: #303F53; color: white; border: none; border-radius: 4px; padding: 9px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 8px; width: 100%; }
+  .legend { font-size: 10.5px; color: black; margin-top: 4px; text-align: center; font-weight: bold; }
+
+  .freeBox { border: 1px solid #ccc; border-radius: 4px; margin-top: 8px; }
+  .freeBox .hd { background: #303F53; color: white; font-size: 11px; font-weight: bold; padding: 5px 8px; text-align: center; }
+  .freeBox textarea { width: 100%; height: 46px; border: none; font-size: 11px; padding: 6px; box-sizing: border-box; resize: vertical; }
+  .noteBox { display: flex; gap: 8px; align-items: flex-start; background: #fdf3e6; border: 1px solid #c98a12; border-radius: 4px; padding: 8px 10px; font-size: 11px; margin-top: 5px; }
+  .noteBox b { color: #8a2b06; }
+  .sigWrap { width: 216px; margin: 8px auto 0; border: 1px solid #ccc; border-radius: 4px; }
+  .sigWrap .hd { background: #087D8E; color: white; font-size: 11px; font-weight: bold; padding: 5px 8px; text-align: center; }
+  .sigBoxArea { height: 110px; display: flex; align-items: center; justify-content: center; padding: 8px; }
+  .sigBoxArea img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  #scientistPicker { display: block; margin: 0 auto 6px; font-size: 10px; }
+
+  .actions { display: flex; gap: 10px; margin: 16px; flex-wrap: wrap; }
+  .actions button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; min-width: 200px; }
+  #btnPrint { background: #087D8E; color: white; } #btnSubmit { background: #303F53; color: white; } #btnEmail { background: #c0392b; color: white; }
+  #btnEmail:disabled { opacity: 0.6; cursor: default; }
+  #msg { text-align: center; font-weight: bold; margin-top: 6px; }
+  .emailRow { display: flex; gap: 8px; margin: 0 16px 16px; align-items: center; }
+  .emailRow input { flex: 1; padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+  .docCtrl { border-top: 1px solid #999; margin-top: 8px; padding: 2px 4px 0; font-size: 10.5px; text-align: center; color: #333; }
+</style>
+</head>
+<body>
+
+<div class="emailRow noPrint">
+  <label for="custEmail" style="font-size:13px;font-weight:bold;white-space:nowrap;">Email παραλήπτη:</label>
+  <input type="email" id="custEmail" placeholder="email@paradeigma.gr">
+</div>
+<div class="actions noPrint">
+  <button id="btnPrint" onclick="window.print()">🖨️ Αποθήκευση ως PDF / Εκτύπωση</button>
+  <button id="btnSubmit" onclick="submitForm()">☁️ Καταχώρηση</button>
+  <button id="btnEmail" onclick="sendPdfEmail()">✉️ Αποστολή στον Πελάτη</button>
+</div>
+<div id="msg" class="noPrint"></div>
+
+<div class="page">
+  <img class="watermark wm1" src="watermark_icon.png" alt="">
+  <div class="headerRow">
+    <img class="logo" src="inco_logo_new.png" alt="InCo">
+    <div class="titleBar">
+      <h1>ΕΚΘΕΣΗ ΑΠΟΤΕΛΕΣΜΑΤΩΝ ΚΑΤΑΠΟΛΕΜΗΣΗΣ ΚΟΡΙΩΝ</h1>
+      <input type="date" id="custDate">
+    </div>
+    <div class="kodBox">ΚΩΔ.<br>CIMEX</div>
+  </div>
+
+  <div class="sectionBar navy">ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</div>
+  <div class="custGrid">
+    <b>Επωνυμία:</b><span id="custEponymia">—</span>
+    <b>Διακριτικός Τίτλος:</b><span id="custDiakr">—</span>
+    <b id="custDieyLabel">Διεύθυνση:</b><span id="custDiey">—</span>
+    <b>Τηλέφωνο:</b><span id="custTil">—</span>
+    <b id="custBoatLabel" style="display:none;">Όνομα Σκάφους:</b><span id="custOnomaSkaf" style="display:none;">—</span>
+  </div>
+
+  <div class="sectionBar navy">ΕΛΕΓΧΟΣ ΧΩΡΩΝ / ΜΟΝΑΔΩΝ ΥΠΝΟΥ</div>
+  <div id="roomsContainer"></div>
+  <button type="button" class="addRoomBtn noPrint" onclick="addRoom()">+ Προσθήκη Χώρου</button>
+  <div class="legend">Επίπεδο Προσβολής: 0 Κανένα εύρημα · 1 Μεμονωμένη παρουσία · 2 Μικρή (&lt;10) · 3 Μεσαία (10–20) · 4 Μεγάλη (διασπορά &amp; σε άλλο χώρο)</div>
+
+  <div class="sectionBar" style="background:#c98a12;">ΟΔΗΓΙΕΣ ΧΕΙΡΙΣΜΟΥ ΚΛΙΝΟΣΚΕΠΑΣΜΑΤΩΝ</div>
+  <div class="noteBox">🧺&nbsp;<div>Τα ακάθαρτα κλινοσκεπάσματα <b>ΠΡΕΠΕΙ</b> να μπαίνουν σε σακούλες/σάκους <b>ΠΡΙΝ</b> την έξοδό τους και να κλείνουν καλά. <b>ΔΕΝ</b> συγκεντρώνονται στο μέσο του ορόφου χωρίς κλειστές σακούλες. Πλένονται σε θερμοκρασία <b>άνω των 60&nbsp;°C</b>.</div></div>
+
+  <div class="freeBox"><div class="hd">ΣΥΜΠΕΡΑΣΜΑ / ΣΥΣΤΑΣΗ ΑΝΤΙΜΕΤΩΠΙΣΗΣ</div><textarea id="systasi" placeholder="π.χ. Ενεργή προσβολή στο διπλό κρεβάτι Δωμ.101 — συνέχιση θερμικής/χημικής θεραπείας, απομόνωση, επανέλεγχος σε 14 ημέρες..."></textarea></div>
+  <div class="freeBox"><div class="hd">ΛΟΙΠΕΣ ΣΗΜΕΙΩΣΕΙΣ</div><textarea id="notes"></textarea></div>
+
+  <div class="sigWrap">
+    <div class="hd">ΓΙΑ ΤΟΝ ΕΛΕΓΧΟ</div>
+    <div class="sigBoxArea"><img id="sigImg" src="sig_trifonidis.png" alt="Υπογραφή"></div>
+    <select id="scientistPicker" class="noPrint" onchange="updateSignature()">
+      <option value="trifonidis">Αρχιμήδης Λ. Τρυφωνίδης</option>
+      <option value="karavasilis">Ευάγγελος Κ. Καραβασόπουλος</option>
+    </select>
+  </div>
+
+  <div class="docCtrl">
+    ΣΥΝΤΑΞΗ / ΕΓΚΡΙΣΗ : <b id="ctrlName">ΑΡΧΙΜΗΔΗΣ Λ. ΤΡΥΦΩΝΙΔΗΣ</b> &nbsp;|&nbsp;
+    ΕΚΔ. : <b>digital 01</b> &nbsp;|&nbsp;
+    ΙΣΧΥΕΙ ΑΠΟ : <b>08/2026</b>
+  </div>
+</div>
+
+<script>
+const p = new URLSearchParams(window.location.search);
+document.getElementById('custEponymia').textContent = decodeURIComponent(p.get('pelatis') || '—');
+document.getElementById('custDiakr').textContent = decodeURIComponent(p.get('diakr') || '—');
+document.getElementById('custTil').textContent = decodeURIComponent(p.get('til') || '—');
+document.getElementById('custDate').value = new Date().toISOString().slice(0, 10);
+document.getElementById('custEmail').value = decodeURIComponent(p.get('email') || '');
+const scriptUrl = p.get('script') || '';
+const PDF_SCRIPT = 'https://script.google.com/macros/s/AKfycbwjkBC2VoM5n3guIKMNeOw9E43aTzH6IDgK0G05Y5dAEoM9LlXL32JzbrW8MM-GI-SSSA/exec';
+
+if (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ') {
+  document.getElementById('custDieyLabel').textContent = 'Λιμάνι Ελλιμενισμού:';
+  document.getElementById('custDiey').textContent = decodeURIComponent(p.get('limani') || '—');
+  document.getElementById('custBoatLabel').style.display = '';
+  document.getElementById('custOnomaSkaf').style.display = '';
+  document.getElementById('custOnomaSkaf').textContent = decodeURIComponent(p.get('onomaskaf') || '—');
+} else {
+  document.getElementById('custDiey').textContent = decodeURIComponent(p.get('diey') || '—');
+}
+
+const POINTS = ["Πλαίσιο Κρεβατιού","Κεφαλάρι","Πόδια Κρεβατιού","Στρώμα","Έπιπλα 2μ από κρεβάτι","Σανίδες","Μαξιλαροθήκες","Σεντόνια / Κουρτίνες","Κάδρα / Κομοδίνα"];
+const EVID = ["Έντομα","Νεκρά","Κόπρανα","Εξωδέρματα","Ωα"];
+const UNIT_TYPES = ["Διπλό","Μονό","Ημίδιπλο","Κουκέτα","Καναπές-κρεβάτι","Άλλο"];
+
+let roomIdx = 0, unitIdx = 0;
+
+function addRoom(name) {
+  const rid = 'room_' + (roomIdx++);
+  const box = document.createElement('div');
+  box.className = 'roomBox'; box.dataset.rid = rid;
+  box.innerHTML =
+    '<div class="roomHd"><span class="lbl">ΧΩΡΟΣ</span>' +
+    '<input type="text" class="roomName" placeholder="π.χ. Δωμάτιο 101" value="' + (name || '') + '">' +
+    '<button type="button" class="delBtn noPrint" onclick="this.closest(\'.roomBox\').remove()">✕</button></div>' +
+    '<div class="unitsContainer"></div>' +
+    '<button type="button" class="addBtn noPrint" onclick="addUnit(\'' + rid + '\')">+ Προσθήκη Μονάδας ύπνου</button>';
+  document.getElementById('roomsContainer').appendChild(box);
+  addUnit(rid);
+}
+
+function addUnit(rid) {
+  const uid = 'unit_' + (unitIdx++);
+  const cont = document.querySelector('.roomBox[data-rid="' + rid + '"] .unitsContainer');
+  const box = document.createElement('div');
+  box.className = 'unitBox'; box.dataset.uid = uid;
+  let typeOpts = UNIT_TYPES.map(function(t){ return '<option value="' + t + '">' + t + '</option>'; }).join('');
+  let rows = '';
+  POINTS.forEach(function(pt, pi) {
+    let tds = '';
+    for (let j = 0; j < EVID.length; j++) tds += '<td><input type="checkbox" class="ev_' + j + '"></td>';
+    let lvlOpts = [0,1,2,3,4].map(function(l){ return '<option value="' + l + '">' + l + '</option>'; }).join('');
+    rows += '<tr><td>' + pt + '</td>' + tds + '<td><select class="lvl">' + lvlOpts + '</select></td></tr>';
+  });
+  let headEvid = EVID.map(function(e){ return '<th>' + e + '</th>'; }).join('');
+  box.innerHTML =
+    '<div class="unitHd"><span class="lbl">ΜΟΝΑΔΑ</span>' +
+    '<input type="text" class="unitName" placeholder="π.χ. Κρεβάτι 1">' +
+    '<select class="unitType">' + typeOpts + '</select>' +
+    '<button type="button" class="delBtn noPrint" onclick="this.closest(\'.unitBox\').remove()">✕</button></div>' +
+    '<label class="unitClean noPrint"><input type="checkbox" class="unitCleanChk" checked onchange="toggleClean(\'' + uid + '\')">ΔΕΝ εντοπίστηκαν ευρήματα (καθαρό)</label>' +
+    '<div class="cimexBody clean"><table class="cimex"><thead><tr><th>Σημείο Ελέγχου</th>' + headEvid + '<th>Επίπεδο</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  cont.appendChild(box);
+}
+
+function toggleClean(uid) {
+  const box = document.querySelector('.unitBox[data-uid="' + uid + '"]');
+  const clean = box.querySelector('.unitCleanChk').checked;
+  box.querySelector('.cimexBody').classList.toggle('clean', clean);
+}
+
+// ξεκινάμε με έναν χώρο & μία μονάδα
+addRoom();
+
+function updateSignature() {
+  const val = document.getElementById('scientistPicker').value;
+  document.getElementById('sigImg').src = val === 'karavasilis' ? 'sig_karavasilis.png' : 'sig_trifonidis.png';
+  document.getElementById('ctrlName').textContent = val === 'karavasilis' ? 'ΕΥΑΓΓΕΛΟΣ Κ. ΚΑΡΑΒΑΣΟΠΟΥΛΟΣ' : 'ΑΡΧΙΜΗΔΗΣ Λ. ΤΡΥΦΩΝΙΔΗΣ';
+}
+
+function collectRooms() {
+  const rooms = [];
+  document.querySelectorAll('.roomBox').forEach(function(roomEl) {
+    const roomName = roomEl.querySelector('.roomName').value.trim();
+    const units = [];
+    roomEl.querySelectorAll('.unitBox').forEach(function(unitEl) {
+      const uName = unitEl.querySelector('.unitName').value.trim();
+      const uType = unitEl.querySelector('.unitType').value;
+      const clean = unitEl.querySelector('.unitCleanChk').checked;
+      let maxLvl = 0;
+      const points = [];
+      if (!clean) {
+        unitEl.querySelectorAll('tbody tr').forEach(function(tr, pi) {
+          const evid = EVID.filter(function(_, j) { return tr.querySelector('.ev_' + j).checked; });
+          const level = parseInt(tr.querySelector('.lvl').value, 10) || 0;
+          if (level > maxLvl) maxLvl = level;
+          if (evid.length || level > 0) points.push({ point: POINTS[pi], evidence: evid, level: level });
+        });
+      }
+      units.push({ name: uName, type: uType, clean: clean, level: maxLvl, points: points });
+    });
+    rooms.push({ name: roomName, units: units });
+  });
+  return rooms;
+}
+
+function submitForm() {
+  if (window.__sending) return;
+  window.__sending = true;
+  const __btn = document.getElementById('btnSubmit');
+  if (__btn) { __btn.disabled = true; __btn.style.opacity = '0.6'; }
+  function __release() { window.__sending = false; if (__btn) { __btn.disabled = false; __btn.style.opacity = ''; } }
+  const msg = document.getElementById('msg');
+  msg.style.color = 'black'; msg.textContent = 'Αποστολή...';
+
+  const rooms = collectRooms();
+  const payload = {
+    form: 'cimex',
+    kod: p.get('kod') || '',
+    pelatis: decodeURIComponent(p.get('pelatis') || ''),
+    date: document.getElementById('custDate').value,
+    rooms: rooms,
+    systasi: document.getElementById('systasi').value,
+    notes: document.getElementById('notes').value,
+    giaTonElegxo: document.getElementById('scientistPicker').selectedOptions[0].textContent,
+  };
+
+  if (!scriptUrl) {
+    msg.style.color = 'red'; msg.textContent = 'Δεν βρέθηκε script URL για τον πελάτη.'; __release(); return;
+  }
+  fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
+    .then(function() { __release(); msg.style.color = 'green'; msg.textContent = 'Η έκθεση κοριών καταχωρήθηκε ✓'; })
+    .catch(function() { __release(); msg.style.color = 'red'; msg.textContent = 'Σφάλμα αποστολής.'; });
+}
+
+function buildStandaloneHtml() {
+  const styleText = document.querySelector('style').textContent;
+  const pageClone = document.querySelector('.page').cloneNode(true);
+  const base = location.href.replace(/[^\/]*$/, '');
+  pageClone.querySelectorAll('img').forEach(function(img) {
+    const src = img.getAttribute('src');
+    if (src && !/^https?:\/\//.test(src)) img.setAttribute('src', base + src);
+  });
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + styleText + '</style></head><body>' + pageClone.outerHTML + '</body></html>';
+}
+
+async function sendPdfEmail() {
+  const btn = document.getElementById('btnEmail');
+  const emailVal = document.getElementById('custEmail').value.trim();
+  if (!emailVal) { alert('Συμπλήρωσε email παραλήπτη.'); return; }
+  const prevText = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Αποστολή...';
+  try {
+    const html = buildStandaloneHtml();
+    const pelatisName = document.getElementById('custEponymia').textContent;
+    await fetch(PDF_SCRIPT, { method: 'POST', mode: 'no-cors',
+      body: JSON.stringify({ form: 'sendPdf', doc: 'cimex', email: emailVal, pelatis: pelatisName, html: html }) });
+    alert('Στάλθηκε αίτημα αποστολής στο ' + emailVal + ' — έλεγξε το inbox σε λίγο.');
+  } catch (e) { alert('Σφάλμα αποστολής: ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = prevText; }
+}
+</script>
+</body>
+</html>
