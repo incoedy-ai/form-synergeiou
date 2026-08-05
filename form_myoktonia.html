@@ -61,6 +61,12 @@ function buildList(stations, containerId, prefix) {
     input.type = 'text';
     input.placeholder = '# ή - x ? !';
     input.id = prefix + '_' + code;
+    // Προεπιλογή 0: οι περισσότεροι σταθμοί δεν έχουν κατανάλωση/σύλληψη, οπότε
+    // ο τεχνικός αλλάζει μόνο τις εξαιρέσεις αντί να συμπληρώνει όλα τα κουτιά.
+    input.value = '0';
+    input.className = 'stationInput';
+    // με το πάτημα επιλέγεται όλο, ώστε η νέα τιμή να αντικαθιστά το 0 κατευθείαν
+    input.addEventListener('focus', function () { this.select(); });
     row.appendChild(label);
     row.appendChild(input);
     container.appendChild(row);
@@ -159,7 +165,8 @@ function submitForm() {
     __release();
     msg.textContent = 'Καταχωρήθηκαν ' + entries.length + ' τιμές ✓';
     msg.style.color = 'green';
-    document.querySelectorAll('input').forEach(i => i.value = '');
+    // επαναφορά στην προεπιλογή 0, όχι σε κενό
+    document.querySelectorAll('input.stationInput').forEach(i => i.value = '0');
   })
   .catch(() => {
     __release();
