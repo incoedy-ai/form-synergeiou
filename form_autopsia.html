@@ -648,6 +648,10 @@ function buildStandaloneHtml() {
       // γιατί το ✓ έβγαινε εκτός πλαισίου στη μετατροπή.
       const box = document.createElement('span');
       box.className = 'pdfbox' + (el.checked ? ' on' : '');
+      // Κρυμμένο checkbox μένει κρυμμένο. Στον πίνακα τρωκτικών, όταν είναι
+      // τσεκαρισμένη η ΑΠΟΥΣΙΑ, το checkbox κρύβεται και εμφανίζεται ένα «Χ» --
+      // αν το αντικαταστήσουμε με ορατό κουτάκι, το Χ φαίνεται δίπλα του.
+      if (getComputedStyle(el).display === 'none') box.style.display = 'none';
       if (c.parentNode) c.parentNode.replaceChild(box, c);
     } else if (el.tagName === 'SELECT') {
       Array.prototype.forEach.call(c.options, function (o, j) {
