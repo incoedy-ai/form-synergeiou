@@ -284,7 +284,10 @@ const SKEVASMATA_DB = {
 
 const p = new URLSearchParams(window.location.search);
 document.getElementById('custEponymia').textContent = decodeURIComponent(p.get('pelatis') || '—');
-document.getElementById('custTil').textContent = decodeURIComponent(p.get('til') || '—');
+// Στο πιστοποιητικό θέλουμε το τηλέφωνο της επιχείρησης / υπευθύνου
+// επικοινωνίας, ΟΧΙ το τηλέφωνο του ραντεβού (αφορά μόνο τη μία επίσκεψη).
+document.getElementById('custTil').textContent =
+  decodeURIComponent(p.get('tilep') || p.get('til') || '—');
 document.getElementById('custAfm').textContent = decodeURIComponent(p.get('afm') || '—');
 
 const catPel = decodeURIComponent(p.get('katpel') || '').toUpperCase().trim();

@@ -599,20 +599,25 @@ function openECert() {
 
   const email = document.getElementById('inf-email').textContent;
 
-  const qp = new URLSearchParams({
-    pelatis: pelatis === '—' ? '' : pelatis,
-    diey: diey === '—' ? '' : diey,
-    til: til === '—' ? '' : til,
-    afm: afm === '—' ? '' : afm,
-    katpel: katpel === '—' ? '' : katpel,
-    ypokat: ypokat === '—' ? '' : ypokat,
-    limani: limani || '',
-    onomaskaf: onomaskaf || '',
-    periohi: periohi || '',
-    skev: JSON.stringify(skev),
-    email: email === '—' ? '' : email,
-    script: p.get('script') || ''
-  });
+  // Όπως και στην αυτοψία: ξεκινάμε από ΟΛΑ όσα έστειλε η Access και γράφουμε
+  // από πάνω τις τρέχουσες τιμές -- ώστε νέα πεδία να περνούν μόνα τους.
+  const qp = new URLSearchParams(location.search);
+  const setp = function (k, v) {
+    if (v === undefined || v === null || v === '' || v === '—') qp.delete(k);
+    else qp.set(k, v);
+  };
+  setp('pelatis', pelatis);
+  setp('diey', diey);
+  setp('til', til);
+  setp('afm', afm);
+  setp('katpel', katpel);
+  setp('ypokat', ypokat);
+  setp('limani', limani);
+  setp('onomaskaf', onomaskaf);
+  setp('periohi', periohi);
+  setp('skev', JSON.stringify(skev));
+  setp('email', email);
+  setp('script', p.get('script'));
   openDoc('form_ecert.html?' + qp.toString());
 }
 
