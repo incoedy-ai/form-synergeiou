@@ -37,6 +37,12 @@
   .info-val { font-size: 12px; color: #2D3A4D; font-weight: bold; padding: 5px 8px; background: #f4f8fc; border-radius: 6px; min-height: 26px; min-width: 270px; }
   /* Πεδία με περισσότερο κείμενο (Πρόβλημα/Είδος/Μέθοδος): 2 γραμμές */
   .info-val.two-line { min-height: 46px; white-space: pre-wrap; }
+  /* Τηλέφωνο με ένα άγγιγμα. Το 📞 μπαίνει με ::after ώστε να ΜΗΝ μετράει στο
+     textContent -- η αποστολή στέλνει καθαρό αριθμό. */
+  a.tel-link { color: #287B9B; text-decoration: none; font-weight: bold;
+               border-bottom: 1px dotted #287B9B; padding: 2px 0; }
+  a.tel-link::after { content: " 📞"; font-size: .95em; border: 0; }
+  a.tel-link:active { color: #2DAFCE; }
   /* Σημειώσεις προγραμματισμού: περισσότερες γραμμές */
   .info-val.notes-line { min-height: 92px; white-space: pre-wrap; }
 
@@ -497,6 +503,25 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
     document.getElementById('inf-egkat').value = 'ΔΣ: 4 τεμ. (Μαγκλ. Plus)\nΣΕ: 2 τεμ.\nΕντομοπαγίδες: 1 τεμ.';
     document.getElementById('inf-aparait').value = 'Ψεκαστήρας πλάτης\nΜάσκα FFP2\nΓάντια νιτριλίου';
   }
+
+  // ---- Τηλέφωνο = ένα άγγιγμα για κλήση ----
+  // Ο τεχνικός είναι στον δρόμο· ο αριθμός πρέπει να καλείται, όχι να αντιγράφεται.
+  // Τυλίγουμε ΜΟΝΟ τα νούμερα σε <a href="tel:">, αφήνοντας το υπόλοιπο κείμενο
+  // ανέπαφο -- έτσι το textContent παραμένει ίδιο και η αποστολή δεν αλλάζει.
+  (function tilefonoSeLink() {
+    const el = document.getElementById('inf-til');
+    if (!el) return;
+    const txt = (el.textContent || '').trim();
+    if (!txt || txt === '—') return;
+    const esc = s => s.replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    // ακολουθία που μοιάζει με τηλέφωνο: ≥9 ψηφία, με προαιρετικά κενά/παύλες
+    el.innerHTML = esc(txt).replace(/\+?\d[\d\s().\-]{7,}\d/g, m => {
+      const kathara = m.replace(/[^\d+]/g, '');
+      if (kathara.replace(/\D/g, '').length < 9) return m;
+      return '<a class="tel-link" href="tel:' + kathara + '">' + m + '</a>';
+    });
+  })();
 
   // ---- Προσαρμογή πεδίων ανά κατηγορία πελάτη (όπως στη φόρμα ΡΑΝΤΕΒΟΥ της Access) ----
   // ΙΔΙΩΤΗΣ: χωρίς ΑΦΜ. ΣΚΑΦΟΣ: Όνομα Σκάφους + «Λιμάνι Ελλιμενισμού» αντί «Διεύθυνση Εφαρμογής».
