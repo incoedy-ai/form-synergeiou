@@ -196,7 +196,14 @@
   @media (max-width: 560px) { .rv-two { flex-direction: column; } }
   .rv-col-wide { flex: 2 1 0; }
   .prog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
-  @media (max-width: 560px) { .prog-grid { grid-template-columns: 1fr; } }
+  /* Η ΜΕΘΟΔΟΣ πιάνει δύο σειρές ώστε να φτάνει ως το κάτω όριο της ενότητας,
+     δίπλα στις ΣΗΜΕΙΩΣΕΙΣ -- συνήθως έχει πολλές γραμμές κειμένου. */
+  .prog-grid .info-item.span2 { grid-row: span 2; }
+  .prog-grid .info-item.span2 .info-val { flex: 1; }
+  @media (max-width: 560px) {
+    .prog-grid { grid-template-columns: 1fr; }
+    .prog-grid .info-item.span2 { grid-row: auto; }
+  }
 </style>
 </head>
 <body>
@@ -234,6 +241,7 @@
         <div class="info-item"><span class="info-label">ΚΩΔΙΚΟΣ</span><span class="info-val" id="inf-kod">—</span></div>
         <div class="info-item"><span class="info-label">e-NET</span><span class="info-val" id="inf-enet">—</span></div>
         <div class="info-item"><span class="info-label">ΕΠΩΝΥΜΙΑ</span><span class="info-val" id="inf-pelatis">—</span></div>
+        <div class="info-item" id="row-diakr"><span class="info-label">ΔΙΑΚΡΙΤΙΚΟΣ ΤΙΤΛΟΣ</span><span class="info-val" id="inf-diakr">—</span></div>
         <div class="info-item" id="row-onomaskaf" style="display:none;"><span class="info-label">ΟΝΟΜΑ ΣΚΑΦΟΥΣ</span><span class="info-val" id="inf-onomaskaf">—</span></div>
         <div class="info-item"><span class="info-label">ΚΑΤΗΓΟΡΙΑ ΠΕΛΑΤΗ</span><span class="info-val" id="inf-katpel">—</span></div>
         <div class="info-item" id="row-afm"><span class="info-label">ΑΦΜ</span><span class="info-val" id="inf-afm">—</span></div>
@@ -261,9 +269,9 @@
           <div class="info-item"><span class="info-label">ΠΡΟΒΛΗΜΑ</span><span class="info-val two-line" id="inf-prob">—</span></div>
           <div class="info-item"><span class="info-label">ΟΧΗΜΑ</span><span class="info-val" id="inf-och">—</span></div>
           <div class="info-item"><span class="info-label">ΕΙΔΟΣ ΕΦΑΡΜΟΓΗΣ</span><span class="info-val two-line" id="inf-typ">—</span></div>
-          <div class="info-item"><span class="info-label">ΠΛΗΡΩΜΗ</span><span class="info-val" id="inf-plirwmi">—</span></div>
-          <div class="info-item"><span class="info-label">ΜΕΘΟΔΟΣ</span><span class="info-val two-line" id="inf-meth">—</span></div>
           <div class="info-item"><span class="info-label">ΧΡΕΩΣΗ</span><span class="info-val" id="inf-poso">—</span></div>
+          <div class="info-item span2"><span class="info-label">ΜΕΘΟΔΟΣ</span><span class="info-val two-line" id="inf-meth">—</span></div>
+          <div class="info-item"><span class="info-label">ΠΛΗΡΩΜΗ</span><span class="info-val" id="inf-plirwmi">—</span></div>
           <div class="info-item"><span class="info-label">ΣΗΜΕΙΩΣΕΙΣ</span><span class="info-val notes-line" id="inf-sim">—</span></div>
         </div>
       </div>
@@ -439,6 +447,7 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
     'diey':    'inf-diey',
     'diey_ef': 'inf-diey-ef',
     'til':     'inf-til',
+    'diakr':   'inf-diakr',
     'afm':     'inf-afm',
     'dou':     'inf-dou',
     'yp':      'inf-yp',
@@ -503,6 +512,29 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
     document.getElementById('inf-egkat').value = 'ΔΣ: 4 τεμ. (Μαγκλ. Plus)\nΣΕ: 2 τεμ.\nΕντομοπαγίδες: 1 τεμ.';
     document.getElementById('inf-aparait').value = 'Ψεκαστήρας πλάτης\nΜάσκα FFP2\nΓάντια νιτριλίου';
   }
+
+  // ---- Διακριτικός τίτλος, περιοχή στη διεύθυνση, νόμισμα στη χρέωση ----
+  (function tidyCustomerInfo() {
+    // ο διακριτικός τίτλος δεν υπάρχει σε κάθε πελάτη -- κρύβουμε τη γραμμή
+    const dk = (document.getElementById('inf-diakr').textContent || '').trim();
+    if (!dk || dk === '—') document.getElementById('row-diakr').style.display = 'none';
+
+    // η περιοχή ζει σε ξεχωριστό πεδίο· την ενώνουμε με τη διεύθυνση
+    const dEl = document.getElementById('inf-diey');
+    const d = (dEl.textContent || '').trim();
+    const per = (document.getElementById('inf-periohi').textContent || '').trim();
+    if (d && d !== '—' && per && d.toUpperCase().indexOf(per.toUpperCase()) < 0) {
+      dEl.textContent = d + ', ' + per;
+    }
+
+    // η χρέωση χωρίς νόμισμα διαβάζεται λάθος -- προσθέτουμε €
+    const pEl = document.getElementById('inf-poso');
+    const v = (pEl.textContent || '').trim();
+    if (v && v !== '—' && v.indexOf('€') < 0) {
+      const n = parseFloat(v.replace(',', '.'));
+      pEl.textContent = isNaN(n) ? v : n.toFixed(2).replace('.', ',') + ' €';
+    }
+  })();
 
   // ---- Τηλέφωνο = ένα άγγιγμα για κλήση ----
   // Ο τεχνικός είναι στον δρόμο· ο αριθμός πρέπει να καλείται, όχι να αντιγράφεται.
