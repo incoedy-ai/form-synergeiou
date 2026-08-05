@@ -135,8 +135,8 @@
   <div class="custGrid">
     <b>Επωνυμία:</b><span id="custEponymia">—</span>
     <b>Διακριτικός Τίτλος:</b><span id="custDiakr">—</span>
+    <b id="custDrastLabel">Δραστηριότητα:</b><span id="custDrast">—</span>
     <b id="custDieyLabel">Διεύθυνση:</b><span id="custDiey">—</span>
-    <b>Τηλέφωνο:</b><span id="custTil">—</span>
     <b id="custBoatLabel" style="display:none;">Όνομα Σκάφους:</b><span id="custOnomaSkaf" style="display:none;">—</span>
   </div>
 
@@ -228,10 +228,16 @@
 const p = new URLSearchParams(window.location.search);
 document.getElementById('custEponymia').textContent = decodeURIComponent(p.get('pelatis') || '—');
 document.getElementById('custDiakr').textContent = decodeURIComponent(p.get('diakr') || '—');
-// Στην αυτοψία θέλουμε το τηλέφωνο της επιχείρησης / υπευθύνου επικοινωνίας,
-// ΟΧΙ το τηλέφωνο του ραντεβού (που αφορά μόνο τη συγκεκριμένη επίσκεψη).
-document.getElementById('custTil').textContent =
-  decodeURIComponent(p.get('tilep') || p.get('til') || '—');
+// Στα έντυπα προς τον πελάτη δείχνουμε: Επωνυμία, Διακριτικό Τίτλο,
+// Δραστηριότητα, Διεύθυνση+Περιοχή. ΟΧΙ τηλέφωνο, ΟΧΙ ΑΦΜ.
+(function () {
+  const d = decodeURIComponent(p.get('drast') || '').trim();
+  if (d) document.getElementById('custDrast').textContent = d;
+  else {
+    document.getElementById('custDrastLabel').style.display = 'none';
+    document.getElementById('custDrast').style.display = 'none';
+  }
+})();
 document.getElementById('custDate').value = new Date().toISOString().slice(0, 10);
 document.getElementById('custEmail').value = decodeURIComponent(p.get('email') || '');
 const scriptUrl = p.get('script') || '';   // script πελάτη — για ΚΑΤΑΧΩΡΗΣΗ στα φύλλα

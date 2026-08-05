@@ -105,8 +105,8 @@
   <div class="custGrid">
     <b>Επωνυμία:</b><span id="custEponymia">—</span>
     <b>Διακριτικός Τίτλος:</b><span id="custDiakr">—</span>
+    <b id="custDrastLabel">Δραστηριότητα:</b><span id="custDrast">—</span>
     <b id="custDieyLabel">Διεύθυνση:</b><span id="custDiey">—</span>
-    <b>Τηλέφωνο:</b><span id="custTil">—</span>
     <b id="custBoatLabel" style="display:none;">Όνομα Σκάφους:</b><span id="custOnomaSkaf" style="display:none;">—</span>
   </div>
 
@@ -141,7 +141,16 @@
 const p = new URLSearchParams(window.location.search);
 document.getElementById('custEponymia').textContent = decodeURIComponent(p.get('pelatis') || '—');
 document.getElementById('custDiakr').textContent = decodeURIComponent(p.get('diakr') || '—');
-document.getElementById('custTil').textContent = decodeURIComponent(p.get('til') || '—');
+// Στα έντυπα προς τον πελάτη: Επωνυμία, Διακριτικός, Δραστηριότητα,
+// Διεύθυνση+Περιοχή. ΟΧΙ τηλέφωνο, ΟΧΙ ΑΦΜ.
+(function () {
+  const d = decodeURIComponent(p.get('drast') || '').trim();
+  if (d) document.getElementById('custDrast').textContent = d;
+  else {
+    document.getElementById('custDrastLabel').style.display = 'none';
+    document.getElementById('custDrast').style.display = 'none';
+  }
+})();
 document.getElementById('custDate').value = new Date().toISOString().slice(0, 10);
 document.getElementById('custEmail').value = decodeURIComponent(p.get('email') || '');
 const scriptUrl = p.get('script') || '';
@@ -154,7 +163,12 @@ if (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ') {
   document.getElementById('custOnomaSkaf').style.display = '';
   document.getElementById('custOnomaSkaf').textContent = decodeURIComponent(p.get('onomaskaf') || '—');
 } else {
-  document.getElementById('custDiey').textContent = decodeURIComponent(p.get('diey') || '—');
+  // η περιοχή ζει σε ξεχωριστό πεδίο -- την ενώνουμε με τη διεύθυνση
+  const dieyTxt = decodeURIComponent(p.get('diey') || '').trim();
+  const perTxt = decodeURIComponent(p.get('periohi') || '').trim();
+  const full = (dieyTxt && perTxt && dieyTxt.toUpperCase().indexOf(perTxt.toUpperCase()) < 0)
+    ? dieyTxt + ', ' + perTxt : (dieyTxt || perTxt);
+  document.getElementById('custDiey').textContent = full || '—';
 }
 
 const POINTS = ["Πλαίσιο Κρεβατιού","Κεφαλάρι","Πόδια Κρεβατιού","Στρώμα","Έπιπλα 2μ από κρεβάτι","Σανίδες","Μαξιλαροθήκες","Σεντόνια / Κουρτίνες","Κάδρα / Κομοδίνα"];
