@@ -528,6 +528,17 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
       dEl.textContent = d + ', ' + per;
     }
 
+    // Μέθοδοι και είδη έρχονται χωρισμένα με κόμμα και γίνονται ένα κατεβατό.
+    // Μία ανά γραμμή: ο τεχνικός τις διαβάζει με μια ματιά.
+    ['inf-meth', 'inf-typ', 'inf-prob'].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const t = (el.textContent || '').trim();
+      if (t && t !== '—' && t.indexOf(',') >= 0) {
+        el.textContent = t.split(/\s*,\s*/).filter(Boolean).join('\n');
+      }
+    });
+
     // η χρέωση χωρίς νόμισμα διαβάζεται λάθος -- προσθέτουμε €
     const pEl = document.getElementById('inf-poso');
     const v = (pEl.textContent || '').trim();
