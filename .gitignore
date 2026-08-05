@@ -1,0 +1,6 @@
+# Κώδικας Apps Script (server-side) — δεν ανεβαίνει σε δημόσιο repo
+*.gs
+kodikas_*.gs
+kodikas_*.txt
+logo_b64.txt
+logo_artifact_b64.txt
