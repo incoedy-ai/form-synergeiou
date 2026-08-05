@@ -667,6 +667,12 @@ function openAutopsia() {
     kod: kod === '—' ? '' : kod,
     diey: diey === '—' ? '' : diey,
     til: til === '—' ? '' : til,
+    // Έρχονται από την Access αλλά δεν προωθούνταν: ο διακριτικός τίτλος, η
+    // περιοχή (η αυτοψία τη δείχνει μαζί με τη διεύθυνση) και το τηλέφωνο
+    // ΕΠΙΚΟΙΝΩΝΙΑΣ -- στην αυτοψία δεν θέλουμε το τηλέφωνο του ραντεβού.
+    diakr: p.get('diakr') || '',
+    periohi: p.get('periohi') || '',
+    tilep: p.get('tilep') || '',
     katpel: katpel === '—' ? '' : katpel,
     limani: limani || '',
     onomaskaf: onomaskaf || '',

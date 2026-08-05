@@ -644,10 +644,10 @@ function buildStandaloneHtml() {
     if (!c) return;
     if (el.type === 'checkbox' || el.type === 'radio') {
       // Οι μετατροπείς HTML→PDF δεν αποδίδουν αξιόπιστα τα form controls.
-      // Τα αντικαθιστούμε με σχεδιασμένο κουτάκι που τυπώνεται πάντα σωστά.
+      // Τα αντικαθιστούμε με ΓΕΜΑΤΟ/ΑΔΕΙΟ κουτάκι -- χωρίς χαρακτήρα μέσα,
+      // γιατί το ✓ έβγαινε εκτός πλαισίου στη μετατροπή.
       const box = document.createElement('span');
       box.className = 'pdfbox' + (el.checked ? ' on' : '');
-      box.textContent = el.checked ? '✓' : '';
       if (c.parentNode) c.parentNode.replaceChild(box, c);
     } else if (el.tagName === 'SELECT') {
       Array.prototype.forEach.call(c.options, function (o, j) {
@@ -666,11 +666,19 @@ function buildStandaloneHtml() {
     const src = img.getAttribute('src');
     if (src && !/^https?:\/\//.test(src)) img.setAttribute('src', base + src);
   });
+  // Το «ΔΕΝ εντοπίστηκαν ευρήματα» είναι noPrint, δηλαδή κρυμμένο από την
+  // εκτύπωση. Όταν ΕΙΝΑΙ τσεκαρισμένο πρέπει να φαίνεται στο PDF -- αλλιώς
+  // ο πελάτης δεν βλέπει πουθενά ότι δηλώθηκε μηδενική παρουσία.
+  pageClone.querySelectorAll('.hostNoFind').forEach(function (d) {
+    if (d.querySelector('.pdfbox.on')) d.classList.remove('noPrint');
+  });
+
   // στυλ για τα κουτάκια που αντικατέστησαν τα checkbox
-  const pdfCss = '\n.pdfbox{display:inline-block;width:13px;height:13px;line-height:13px;'
-    + 'border:1.4px solid #2D3A4D;border-radius:2px;text-align:center;font-size:11px;'
-    + 'font-weight:bold;color:#2D3A4D;vertical-align:middle;}'
-    + '\n.pdfbox.on{background:#2D3A4D;color:#fff;}\n';
+  const pdfCss = '\n.pdfbox{display:inline-block;width:11px;height:11px;'
+    + 'box-sizing:border-box;border:1.4px solid #2D3A4D;border-radius:2px;'
+    + 'vertical-align:-1px;overflow:hidden;font-size:0;line-height:0;'
+    + 'flex:none;margin-right:2px;}'
+    + '\n.pdfbox.on{background:#2D3A4D;}\n';
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + styleText + pdfCss
     + '</style></head><body>' + pageClone.outerHTML + '</body></html>';
 }
