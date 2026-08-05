@@ -16,7 +16,10 @@
   }
   .page { background: white; margin: 16px; padding: 20px; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
   .watermark { position: absolute; z-index: 0; pointer-events: none; }
-  .watermark.wm1 { width: 780px; left: 62%; top: 300px; transform: translateX(-50%); }
+  /* Σταθερό πλάτος 780px ξεπερνούσε το τυπώσιμο πλάτος του Α4 (~733px με
+     περιθώρια 8mm) και το overflow:hidden το έκοβε δεξιά στο PDF.
+     Αναλογικό πλάτος + κεντράρισμα: χωράει πάντα, σε κάθε μέγεθος σελίδας. */
+  .watermark.wm1 { width: 92%; max-width: 780px; left: 50%; top: 300px; transform: translateX(-50%); }
   .page > *:not(.watermark) { position: relative; z-index: 1; }
 
   .teal { background: #087D8E; }
