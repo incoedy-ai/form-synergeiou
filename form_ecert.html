@@ -140,7 +140,6 @@
     <b id="custBoatLabel" style="display:none;">Όνομα Σκάφους:</b><span id="custOnomaSkaf" style="display:none;">—</span>
     <b id="custDrastLabel">Δραστηριότητα:</b><span id="custDrast">—</span>
     <b id="custDieyLabel">Διεύθυνση:</b><span id="custDiey">—</span>
-    <b id="custPerioLabel">Περιοχή:</b><span id="custPerio">—</span>
   </div>
 
   <div class="sectionBar teal">ΕΦΑΡΜΟΓΗ / ΣΚΕΥΑΣΜΑ - ΔΡΑΣΤΙΚΗ ΟΥΣΙΑ - ΑΡ. ΕΓΚΡΙΣΗΣ / ΥΛΙΚΟ</div>
@@ -304,12 +303,18 @@ function setOrHide(labelId, valId, value) {
 }
 setOrHide('custDiakrLabel', 'custDiakr', decodeURIComponent(p.get('diakr') || ''));
 setOrHide('custDrastLabel', 'custDrast', decodeURIComponent(p.get('drast') || ''));
-setOrHide('custPerioLabel', 'custPerio', decodeURIComponent(p.get('periohi') || ''));
+
+// η περιοχή μπαίνει δίπλα στη διεύθυνση, όπως και στα άλλα δύο έντυπα
+function dieyMePerioxi() {
+  const d = decodeURIComponent(p.get('diey') || '').trim();
+  const per = decodeURIComponent(p.get('periohi') || '').trim();
+  if (d && per && d.toUpperCase().indexOf(per.toUpperCase()) < 0) return d + ', ' + per;
+  return d || per || '—';
+}
 
 if (catPel === 'ΣΚΑΦΟΣ') {
   // Σκάφος: Όνομα Σκάφους + Λιμάνι Ελλιμενισμού αντί για επωνυμία/διεύθυνση
   hidePair('custEponymiaLabel', 'custEponymia');
-  hidePair('custPerioLabel', 'custPerio');
   document.getElementById('custBoatLabel').style.display = '';
   document.getElementById('custOnomaSkaf').style.display = '';
   document.getElementById('custOnomaSkaf').textContent = decodeURIComponent(p.get('onomaskaf') || '—');
@@ -320,9 +325,9 @@ if (catPel === 'ΣΚΑΦΟΣ') {
   hidePair('custEponymiaLabel', 'custEponymia');
   hidePair('custDiakrLabel', 'custDiakr');
   hidePair('custDrastLabel', 'custDrast');
-  document.getElementById('custDiey').textContent = decodeURIComponent(p.get('diey') || '—');
+  document.getElementById('custDiey').textContent = dieyMePerioxi();
 } else {
-  document.getElementById('custDiey').textContent = decodeURIComponent(p.get('diey') || '—');
+  document.getElementById('custDiey').textContent = dieyMePerioxi();
 }
 document.getElementById('custDate').value = new Date().toISOString().slice(0, 10);
 document.getElementById('custEmail').value = decodeURIComponent(p.get('email') || '');
