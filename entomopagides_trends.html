@@ -116,7 +116,7 @@
   <div class="kpis" id="kpis"></div>
 
   <div class="card">
-    <h2><span class="dot" style="background:var(--cyan)"></span>Επισκέψεις σεζόν <span class="unit">τεχνικός &amp; υπογεγραμμένο δελτίο ανά επίσκεψη</span></h2>
+    <h2><span class="dot" style="background:var(--cyan)"></span>Επισκέψεις σεζόν <span class="unit">τεχνικός ανά επίσκεψη</span></h2>
     <div class="tscroll"><table id="tblV"></table></div>
   </div>
 
@@ -228,8 +228,9 @@ function buildReal(rows){
 
 // ---- ΕΠΙΣΚΕΨΕΙΣ: τεχνικός + υπογεγραμμένη εντολή ----
 // Πηγή: Access ΕΦΑΡΜΟΓΕΣ -> φύλλο «ΕΠΙΣΚΕΨΕΙΣ» (doGet ?type=visits-data).
-// Οι φόρμες μετρήσεων δεν καταγράφουν τεχνικό/υπογραφή — η υπογραφή δίνεται
-// μία φορά, στην εντολή της ίδιας επίσκεψης.
+// Οι φόρμες μετρήσεων δεν καταγράφουν τεχνικό -- έρχεται από την εντολή.
+// Η ΙΔΙΑ η εντολή ΔΕΝ δημοσιεύεται: είναι εσωτερικό έγγραφο (χρεώσεις/παραστατικά).
+// Απόδειξη εφαρμογής για τον πελάτη = πιστοποιητικό / αυτοψία / τα έντυπα ελέγχου.
 let VISITS={};
 function vKey(v){                       // -> "dd/mm/yy", ώστε να ταιριάζει με το DATES
   if(v==null||v==="")return "";
@@ -244,18 +245,13 @@ function applyVisits(rows){
   if(!rows||rows.length<2)return;
   rows.slice(1).forEach(r=>{
     const k=vKey(r[3]); if(!k)return;
-    VISITS[k]={tech:String(r[4]||"").trim(), pdf:String(r[7]||"").trim()};
+    VISITS[k]={tech:String(r[4]||"").trim()};
   });
   TECH=DATES.map(d=>(VISITS[d]&&VISITS[d].tech)||"—");
 }
 function renderVisits(){
   let hv="<thead><tr><th class='stn'>Επίσκεψη</th>";DATES.forEach(d=>hv+=`<th>${d}</th>`);hv+="</tr></thead><tbody>";
   hv+="<tr><th>Τεχνικός</th>";TECH.forEach(t=>hv+=`<td><div class="vcell">${t}</div></td>`);hv+="</tr>";
-  hv+="<tr><th>Υπογεγραμμένο δελτίο</th>";DATES.forEach(d=>{
-    const u=VISITS[d]&&VISITS[d].pdf;
-    hv+=u?`<td><a class="pdf" href="${u}" target="_blank" rel="noopener" title="Υπογεγραμμένη εντολή ${d}">📄</a></td>`
-         :`<td><span class="pdf" style="opacity:.22" title="Δεν έχει αρχειοθετηθεί ακόμη">📄</span></td>`;
-  });hv+="</tr>";
   hv+="</tbody>";document.getElementById("tblV").innerHTML=hv;
 }
 function renderTraps(){
