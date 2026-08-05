@@ -300,8 +300,7 @@ const P=new URLSearchParams(location.search);
 const SCRIPT=P.get("script"), KOD=P.get("kod"), PELATIS=P.get("pelatis");
 if(SCRIPT && KOD){
   const badge=document.querySelector(".demo"); if(badge) badge.textContent="ΖΩΝΤΑΝΑ ΔΕΔΟΜΕΝΑ";
-  const nm=document.querySelector(".cust .name"); if(nm) nm.textContent=(PELATIS?decodeURIComponent(PELATIS)+" · ":"")+KOD;
-  const mt=document.querySelector(".cust .meta"); if(mt) mt.textContent="";
+  setCustHeader(P, KOD, PELATIS ? decodeURIComponent(PELATIS) : "");
   const sub=document.querySelector(".head .sub"); if(sub) sub.innerHTML='Έντυπο Ε-Ε05 · <b style="color:#8fd4e6">Ζωντανός πίνακας καταγραφών</b>';
   fetch(SCRIPT+"?type=feromo-data&kod="+encodeURIComponent(KOD)).then(r=>r.json()).then(rows=>{
     if(!rows||rows.length<2){ if(badge)badge.textContent="ΧΩΡΙΣ ΚΑΤΑΓΡΑΦΕΣ ΑΚΟΜΑ"; buildDemo(); renderAll(); return; }
@@ -317,4 +316,22 @@ const tip=document.getElementById("tip");
 document.addEventListener("mouseover",e=>{const c=e.target.closest("[data-tip]");if(!c)return;const[s,d,v]=c.dataset.tip.split("|");tip.innerHTML=`<b>${s}</b> · ${d}<br>${v}`;tip.style.opacity="1";});
 document.addEventListener("mousemove",e=>{if(tip.style.opacity==="1"){tip.style.left=Math.min(e.clientX+14,innerWidth-260)+"px";tip.style.top=(e.clientY+16)+"px";}});
 document.addEventListener("mouseout",e=>{if(e.target.closest("[data-tip]"))tip.style.opacity="0";});
+
+// ---- Κεφαλίδα πελάτη (κοινή σε όλα τα ζωντανά έντυπα) ----
+// Σειρά που ζήτησε ο χρήστης: κωδικός, επωνυμία, διακριτικός τίτλος,
+// και από κάτω η διεύθυνση μαζί με την περιοχή.
+function setCustHeader(P, kod, pelatis) {
+  const dec = v => { try { return decodeURIComponent(v || ''); } catch (e) { return v || ''; } };
+  const diakr = dec(P.get('diakr')).trim();
+  const diey = dec(P.get('diey')).trim();
+  const per = dec(P.get('periohi')).trim();
+  const parts = [String(kod || '').trim(), String(pelatis || '').trim(), diakr].filter(Boolean);
+  let addr = diey;
+  if (diey && per && diey.toUpperCase().indexOf(per.toUpperCase()) < 0) addr = diey + ', ' + per;
+  else if (!diey) addr = per;
+  const nm = document.getElementById('custname') || document.querySelector('.cust .name');
+  const mt = document.getElementById('custmeta') || document.querySelector('.cust .meta');
+  if (nm) nm.textContent = parts.join(' \u00b7 ');
+  if (mt) mt.textContent = addr;
+}
 </script>

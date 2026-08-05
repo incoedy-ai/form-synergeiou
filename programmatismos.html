@@ -239,13 +239,30 @@ if(SCRIPT && KOD){
         return;
       }
       const R=buildReal(values);
-      document.getElementById("custname").textContent=KOD+(R.pelatis||PEL?" · "+(R.pelatis||PEL):"");
-      const meta=document.getElementById("custmeta"); if(meta) meta.textContent="";
+      setCustHeader(P, KOD, R.pelatis || (PEL ? decodeURIComponent(PEL) : ""));
       if(badge) badge.textContent="ΖΩΝΤΑΝΑ ΔΕΔΟΜΕΝΑ";
       renderAll(R.apps,R.perYear,R.freq);
     })
     .catch(()=>{ if(badge) badge.textContent="ΣΦΑΛΜΑ ΦΟΡΤΩΣΗΣ — ΕΝΔΕΙΚΤΙΚΑ"; renderAll(DEMO_APPS,6,"Δίμηνη"); });
 }else{
   renderAll(DEMO_APPS,6,"Δίμηνη");
+}
+
+// ---- Κεφαλίδα πελάτη (κοινή σε όλα τα ζωντανά έντυπα) ----
+// Σειρά που ζήτησε ο χρήστης: κωδικός, επωνυμία, διακριτικός τίτλος,
+// και από κάτω η διεύθυνση μαζί με την περιοχή.
+function setCustHeader(P, kod, pelatis) {
+  const dec = v => { try { return decodeURIComponent(v || ''); } catch (e) { return v || ''; } };
+  const diakr = dec(P.get('diakr')).trim();
+  const diey = dec(P.get('diey')).trim();
+  const per = dec(P.get('periohi')).trim();
+  const parts = [String(kod || '').trim(), String(pelatis || '').trim(), diakr].filter(Boolean);
+  let addr = diey;
+  if (diey && per && diey.toUpperCase().indexOf(per.toUpperCase()) < 0) addr = diey + ', ' + per;
+  else if (!diey) addr = per;
+  const nm = document.getElementById('custname') || document.querySelector('.cust .name');
+  const mt = document.getElementById('custmeta') || document.querySelector('.cust .meta');
+  if (nm) nm.textContent = parts.join(' \u00b7 ');
+  if (mt) mt.textContent = addr;
 }
 </script>
