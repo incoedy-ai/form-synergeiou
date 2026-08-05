@@ -662,27 +662,28 @@ function openAutopsia() {
 
   const email = document.getElementById('inf-email').textContent;
 
-  const qp = new URLSearchParams({
-    pelatis: pelatis === '—' ? '' : pelatis,
-    kod: kod === '—' ? '' : kod,
-    diey: diey === '—' ? '' : diey,
-    til: til === '—' ? '' : til,
-    // Έρχονται από την Access αλλά δεν προωθούνταν: ο διακριτικός τίτλος, η
-    // περιοχή (η αυτοψία τη δείχνει μαζί με τη διεύθυνση) και το τηλέφωνο
-    // ΕΠΙΚΟΙΝΩΝΙΑΣ -- στην αυτοψία δεν θέλουμε το τηλέφωνο του ραντεβού.
-    diakr: p.get('diakr') || '',
-    periohi: p.get('periohi') || '',
-    tilep: p.get('tilep') || '',
-    katpel: katpel === '—' ? '' : katpel,
-    limani: limani || '',
-    onomaskaf: onomaskaf || '',
-    apen: [...apen].join(','),
-    eleg: [...eleg].join(','),
-    myok: [...myok].join(','),
-    notes: sim === '—' ? '' : sim,
-    email: email === '—' ? '' : email,
-    script: p.get('script') || ''
-  });
+  // Ξεκινάμε από ΟΛΑ όσα έστειλε η Access και από πάνω γράφουμε τις τρέχουσες
+  // τιμές της φόρμας. Έτσι κάθε νέο πεδίο που προστίθεται στην Access φτάνει
+  // μόνο του στην αυτοψία -- δεν χρειάζεται να το προσθέτουμε και εδώ.
+  // (Ο διακριτικός τίτλος και η περιοχή χάνονταν ακριβώς γι' αυτόν τον λόγο.)
+  const qp = new URLSearchParams(location.search);
+  const setp = function (k, v) {
+    if (v === undefined || v === null || v === '' || v === '—') qp.delete(k);
+    else qp.set(k, v);
+  };
+  setp('pelatis', pelatis);
+  setp('kod', kod);
+  setp('diey', diey);
+  setp('til', til);
+  setp('katpel', katpel);
+  setp('limani', limani);
+  setp('onomaskaf', onomaskaf);
+  setp('apen', [...apen].join(','));
+  setp('eleg', [...eleg].join(','));
+  setp('myok', [...myok].join(','));
+  setp('notes', sim);
+  setp('email', email);
+  setp('script', p.get('script'));
   openDoc('form_autopsia.html?' + qp.toString());
 }
 
