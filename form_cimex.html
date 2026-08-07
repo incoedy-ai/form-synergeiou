@@ -281,7 +281,7 @@ function submitForm() {
     msg.style.color = 'red'; msg.textContent = 'Δεν βρέθηκε script URL για τον πελάτη.'; __release(); return;
   }
   fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
-    .then(function() { __release(); msg.style.color = 'green'; msg.textContent = 'Η έκθεση κοριών καταχωρήθηκε ✓'; })
+    .then(function() { __release(); window.__registered = true; msg.style.color = 'green'; msg.textContent = 'Η έκθεση κοριών καταχωρήθηκε ✓'; })
     .catch(function() { __release(); msg.style.color = 'red'; msg.textContent = 'Σφάλμα αποστολής.'; });
 }
 
@@ -303,6 +303,12 @@ async function sendPdfEmail() {
   const prevText = btn.textContent;
   btn.disabled = true; btn.textContent = 'Αποστολή...';
   try {
+    // Η Αποστολή καταχωρεί ΚΑΙ στη βάση, αν δεν έχει γίνει ήδη -- αλλιώς το
+    // έντυπο φεύγει στον πελάτη χωρίς να μείνει καμία εγγραφή.
+    if (!window.__registered) {
+      submitForm();
+      await new Promise(r => setTimeout(r, 1200));
+    }
     const html = buildStandaloneHtml();
     const pelatisName = document.getElementById('custEponymia').textContent;
     await fetch(PDF_SCRIPT, { method: 'POST', mode: 'no-cors',
