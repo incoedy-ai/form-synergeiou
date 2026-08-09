@@ -240,7 +240,7 @@ function build(){
   let head = '<div style="font-family:' + FONT + ';font-size:14px;line-height:1.45;color:' + NAVY + ';">'
            + '<b>' + esc(v.fname) + '</b>';
   if(v.ftitle) head += '<br><b>' + esc(v.ftitle) + '</b>';
-  if(roles)    head += '<br><br>' + roles;
+  if(roles)    head += '<br>' + roles;   /* χωρίς κενή γραμμή — οι ρόλοι κολλητά από κάτω */
   head += '</div>';
 
   /* --- μπλοκ εταιρείας: λογότυπο αριστερά, στοιχεία δεξιά --- */
