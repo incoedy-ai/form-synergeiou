@@ -388,6 +388,25 @@ function hideDemoOnlyCards(){
 }
 
 const P=new URLSearchParams(location.search);
+/* Κάτοψη (Ε-Ε07 μυοκτονία / Ε-Ε08 εντομοπαγίδες).
+   Έρχεται ως param από τη συντόμευση του φακέλου· αν λείπει, δεν δείχνουμε
+   τίποτα — ποτέ νεκρό κουμπί. */
+(function(){
+  var k = P.get("katopsi"); if(!k) return;
+  var host = document.querySelector(".head") || document.body;
+  var wrap = document.createElement("div");
+  wrap.style.cssText = "margin:12px 0 0;";
+  var a = document.createElement("a");
+  a.href = decodeURIComponent(k);
+  a.target = "_blank"; a.rel = "noopener";
+  a.textContent = "\uD83D\uDCD0  Κάτοψη δολωματικών σταθμών";
+  a.style.cssText = "display:inline-block;padding:9px 16px;border-radius:6px;"
+    + "background:#287B9B;color:#fff;text-decoration:none;font-weight:600;"
+    + "font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,.25);";
+  wrap.appendChild(a);
+  host.insertAdjacentElement("afterend", wrap);
+})();
+
 const SCRIPT=P.get("script"), KOD=P.get("kod"), PELATIS=P.get("pelatis");
 if(SCRIPT && KOD){
   const badge=document.querySelector(".demo"); if(badge){badge.textContent="ΖΩΝΤΑΝΑ ΔΕΔΟΜΕΝΑ";}
