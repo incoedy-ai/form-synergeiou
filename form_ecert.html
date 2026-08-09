@@ -84,6 +84,16 @@
 
   .sigBoxArea { border: 1px solid #ccc; height: 110px; width: 200px; box-sizing: border-box; margin: 0 auto; display: flex; align-items: center; justify-content: center; padding: 8px; }
   .sigBoxArea img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+/* ΜΕΓΕΘΟΣ ΣΦΡΑΓΙΔΑΣ ΣΕ ΕΚΤΥΠΩΣΗ */
+@media print {
+  .sigBoxArea { width: auto !important; height: auto !important;
+                border: 0 !important; padding: 0 !important; overflow: visible !important; }
+  /* το πλάτος αφορά ΟΛΗ την εικόνα, ώστε η σφραγίδα μέσα της να βγει σε φυσικό μέγεθος */
+  .sigBoxArea img { width: 7.44cm !important; height: auto !important;
+                    max-width: none !important; max-height: none !important; }
+  .sigBoxArea img[src*="karavasilis"] { width: 7.28cm !important; }
+}
   select#scientistPicker { width: 200px; display: block; margin: 4px auto 0; padding: 6px; font-size: 11px; border-radius: 3px; border: 1px solid #ccc; box-sizing: border-box; }
 
   .docCtrl { border-top: 1px solid #999; margin-top: 14px; padding: 6px 4px 0; font-size: 10.5px; text-align: center; color: #333; }
