@@ -192,6 +192,27 @@ const FONT = "Arial, Helvetica, sans-serif";
 const $ = id => document.getElementById(id);
 const FIELDS = ["fname","ftitle","froles","fmail","fmobile","fcompany","faddr","fphone","fsite","ffb","fig","fmap"];
 
+/* Σταθερά άτομα — ανοίγουν με σύντομο σύνδεσμο ?p=<κλειδί>
+   και εμφανίζονται πάντα στη λίστα, σε όποιον υπολογιστή κι αν ανοίξει η σελίδα. */
+const BUILTIN = {
+  "Αρχιμήδης Λ. Τρυφωνίδης": {
+    key: "arximidis",
+    fname: "Αρχιμήδης Λ. Τρυφωνίδης MSc",
+    ftitle: "Υγιεινολόγος ΤΕ - Λειτουργός Δημόσιας Υγείας",
+    froles: "Υπεύθυνος Επιστήμονας InCo - Εφαρμογές Δημόσιας Υγείας\n"
+          + "Σύμβουλος Επιχειρήσεων Υγειονομικού Ενδιαφέροντος\n"
+          + "Εκπαιδευτής Υγιεινής Ασφάλειας Τροφίμων (Μητρώο ΕΦΕΤ)",
+    fmail: "sales@in-co.gr", fmobile: ""
+  },
+  "Τσαλτούμη Δέσποινα": {
+    key: "despoina",
+    fname: "Τσαλτούμη Δέσποινα",
+    ftitle: "Υγιεινολόγος ΤΕ",
+    froles: "Υπεύθυνη Προγραμματισμού & Υποστήριξης Πελατών",
+    fmail: "support@in-co.gr", fmobile: ""
+  }
+};
+
 const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 /* το τηλέφωνο σε μορφή tel: — κρατάμε μόνο ψηφία και βάζουμε +30 */
 const tel = s => { const d = String(s).replace(/\D/g,""); return d ? "+30" + d.replace(/^30/,"") : ""; };
@@ -288,10 +309,15 @@ const KEY = "inco_sig_presets";
 const load = () => JSON.parse(localStorage.getItem(KEY) || "{}");
 const store = o => localStorage.setItem(KEY, JSON.stringify(o));
 
+/* τα σταθερά άτομα μπροστά, μετά όσα έχει αποθηκεύσει ο χρήστης */
+const allPeople = () => Object.assign({}, BUILTIN, load());
+
 function fillPresetList(sel){
-  const p = load(), s = $("preset");
+  const p = allPeople(), s = $("preset");
   s.innerHTML = '<option value="">— νέο άτομο —</option>';
-  Object.keys(p).sort().forEach(n => {
+  const builtin = Object.keys(BUILTIN);
+  const extra = Object.keys(p).filter(n => !builtin.includes(n)).sort();
+  builtin.concat(extra).forEach(n => {
     const o = document.createElement("option"); o.value = o.textContent = n; s.appendChild(o);
   });
   if(sel) s.value = sel;
@@ -309,13 +335,14 @@ $("savePreset").onclick = () => {
 $("delPreset").onclick = () => {
   const n = $("preset").value;
   if(!n) return;
+  if(BUILTIN[n]){ alert("Το «" + n + "» είναι σταθερό άτομο και δεν διαγράφεται."); return; }
   if(!confirm("Διαγραφή του «" + n + "» από τη λίστα;")) return;
   const p = load(); delete p[n]; store(p); fillPresetList();
 };
 
 $("preset").onchange = () => {
   const n = $("preset").value; if(!n) return;
-  const d = load()[n]; if(!d) return;
+  const d = allPeople()[n]; if(!d) return;
   FIELDS.forEach(f => { if(d[f] !== undefined) $(f).value = d[f]; });
   render();
 };
@@ -333,12 +360,26 @@ function personLink(){
 }
 
 (function applyLink(){
-  const q = new URLSearchParams(location.search).get("d");
-  if(!q) return;
-  try{
-    const d = b64dec(q);
-    FIELDS.forEach(f => { if(d[f] !== undefined) $(f).value = d[f]; });
-  }catch(e){ console.warn("Άκυρος σύνδεσμος στοιχείων", e); }
+  const q = new URLSearchParams(location.search);
+
+  /* ?p=arximidis — σύντομος σύνδεσμος για σταθερό άτομο */
+  const p = (q.get("p") || "").toLowerCase();
+  if(p){
+    const hit = Object.keys(BUILTIN).find(n => BUILTIN[n].key === p);
+    if(hit){
+      FIELDS.forEach(f => { if(BUILTIN[hit][f] !== undefined) $(f).value = BUILTIN[hit][f]; });
+      setTimeout(() => { $("preset").value = hit; }, 0);
+    }
+  }
+
+  /* ?d=<base64> — οποιοδήποτε άτομο, φτιαγμένο από «Αντιγραφή συνδέσμου» */
+  const d64 = q.get("d");
+  if(d64){
+    try{
+      const d = b64dec(d64);
+      FIELDS.forEach(f => { if(d[f] !== undefined) $(f).value = d[f]; });
+    }catch(e){ console.warn("Άκυρος σύνδεσμος στοιχείων", e); }
+  }
 })();
 
 /* ---------- σύνδεση ---------- */
