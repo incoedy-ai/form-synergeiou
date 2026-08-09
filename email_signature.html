@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>InCo — Γεννήτρια Υπογραφής Email</title>
+<style>
+  :root{
+    --navy:#2D3A4D; --blue:#287B9B; --cyan:#2DAFCE; --lightcyan:#65C7D7;
+    --bg:#EEF6F9; --red:#C0392B;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--navy)}
+  header{background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px}
+  header img{height:38px;display:block;background:#fff;border-radius:6px;padding:3px}
+  header h1{font-size:18px;margin:0;font-weight:700}
+  header span{font-size:13px;opacity:.75}
+  .wrap{max-width:1180px;margin:0 auto;padding:18px 20px 60px;display:grid;
+        grid-template-columns:minmax(340px,420px) 1fr;gap:22px;align-items:start}
+  @media(max-width:900px){.wrap{grid-template-columns:1fr}}
+
+  .card{background:#fff;border:1px solid #d5e4ea;border-radius:10px;padding:16px 18px;margin-bottom:16px}
+  .card > h2{margin:0 0 12px;font-size:13px;letter-spacing:.5px;text-transform:uppercase;
+             color:#fff;background:var(--navy);padding:7px 10px;border-radius:5px}
+
+  label{display:block;font-size:12px;font-weight:700;margin:10px 0 4px;color:var(--navy)}
+  input,textarea,select{width:100%;padding:8px 10px;border:1px solid #b9d2dc;border-radius:6px;
+        font:inherit;font-size:14px;font-weight:700;color:var(--navy);background:#fff}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--cyan);border-color:var(--cyan)}
+  textarea{resize:vertical;min-height:78px;line-height:1.5}
+  .hint{font-size:11px;font-weight:400;color:#6b7c8c;margin-top:3px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  button{font:inherit;font-weight:700;font-size:14px;padding:10px 16px;border-radius:6px;
+         cursor:pointer;border:1px solid transparent}
+  .btn-primary{background:var(--blue);color:#fff}
+  .btn-primary:hover{background:var(--navy)}
+  .btn-accent{background:var(--cyan);color:var(--navy)}
+  .btn-accent:hover{background:var(--lightcyan)}
+  .btn-ghost{background:#fff;color:var(--blue);border-color:var(--blue)}
+  .btn-ghost:hover{background:var(--blue);color:#fff}
+  .btn-danger{background:#fff;color:var(--red);border-color:var(--red)}
+  .btn-danger:hover{background:var(--red);color:#fff}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+
+  #preview{background:#fff;border:1px dashed #9dc0cd;border-radius:8px;padding:20px;overflow-x:auto}
+  #raw{width:100%;min-height:190px;font-family:Consolas,monospace;font-size:11px;font-weight:400;
+       line-height:1.45;white-space:pre;color:#33454f}
+  .ok{display:inline-block;margin-left:10px;font-size:13px;font-weight:700;color:#1e8449;opacity:0;
+      transition:opacity .2s}
+  .ok.show{opacity:1}
+
+  details{margin-top:6px;border:1px solid #d5e4ea;border-radius:8px;background:#fff}
+  details summary{cursor:pointer;padding:11px 14px;font-weight:700;font-size:13px;color:var(--blue)}
+  details .body{padding:0 16px 14px;font-size:13px;line-height:1.65}
+  details .body ol{margin:6px 0 0;padding-left:20px}
+  details .body li{margin-bottom:6px}
+  code{background:#eef6f9;padding:1px 5px;border-radius:3px;font-size:12px}
+</style>
+</head>
+<body>
+
+<header>
+  <img src="inco_logo_new.png" alt="InCo">
+  <div>
+    <h1>Γεννήτρια Υπογραφής Email</h1>
+    <span>Συμπλήρωσε τα στοιχεία → Αντιγραφή → επικόλληση στο Gmail / Outlook</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ ΑΡΙΣΤΕΡΑ: ΦΟΡΜΑ ============ -->
+  <div>
+    <div class="card">
+      <h2>Άτομο</h2>
+
+      <label for="preset">Αποθηκευμένα άτομα</label>
+      <select id="preset"><option value="">— νέο άτομο —</option></select>
+      <div class="btns" style="margin-top:8px">
+        <button class="btn-ghost" id="savePreset">Αποθήκευση ατόμου</button>
+        <button class="btn-danger" id="delPreset">Διαγραφή</button>
+      </div>
+
+      <label for="fname">Ονοματεπώνυμο <span class="hint">(με τίτλο σπουδών)</span></label>
+      <input id="fname" value="Αρχιμήδης Λ. Τρυφωνίδης MSc">
+
+      <label for="ftitle">Ιδιότητα <span class="hint">(2η έντονη γραμμή — άφησέ την κενή αν δεν χρειάζεται)</span></label>
+      <input id="ftitle" value="Υγιεινολόγος ΤΕ - Λειτουργός Δημόσιας Υγείας">
+
+      <label for="froles">Ρόλοι <span class="hint">— μία ανά γραμμή</span></label>
+      <textarea id="froles">Υπεύθυνος Επιστήμονας InCo - Εφαρμογές Δημόσιας Υγείας
+Σύμβουλος Επιχειρήσεων Υγειονομικού Ενδιαφέροντος
+Εκπαιδευτής Υγιεινής Ασφάλειας Τροφίμων (Μητρώο ΕΦΕΤ)</textarea>
+
+      <div class="row2">
+        <div>
+          <label for="fmail">Email</label>
+          <input id="fmail" value="sales@in-co.gr">
+        </div>
+        <div>
+          <label for="fmobile">Κινητό <span class="hint">(προαιρετικό)</span></label>
+          <input id="fmobile" placeholder="π.χ. 694 000 0000">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Εταιρεία</h2>
+      <label for="fcompany">Επωνυμία</label>
+      <input id="fcompany" value="InCo - Εφαρμογές Δημόσιας Υγείας">
+
+      <label for="faddr">Διεύθυνση</label>
+      <input id="faddr" value="Δελφών 140, Γλυφάδα 16561">
+
+      <div class="row2">
+        <div>
+          <label for="fphone">Τηλέφωνο</label>
+          <input id="fphone" value="210.96.44.310">
+        </div>
+        <div>
+          <label for="fsite">Ιστοσελίδα <span class="hint">(κενό = δεν εμφανίζεται)</span></label>
+          <input id="fsite" value="in-co.gr">
+        </div>
+      </div>
+
+      <label for="ffb">Facebook</label>
+      <input id="ffb" value="https://facebook.com/InCo.edy">
+
+      <label for="fig">Instagram</label>
+      <input id="fig" value="https://instagram.com/inco.lab">
+
+      <label for="fmap">Χάρτης <span class="hint">(σύνδεσμος Google Maps)</span></label>
+      <input id="fmap" value="https://www.google.com/maps/search/?api=1&query=Δελφών+140+Γλυφάδα+16561">
+    </div>
+  </div>
+
+  <!-- ============ ΔΕΞΙΑ: ΠΡΟΕΠΙΣΚΟΠΗΣΗ ============ -->
+  <div>
+    <div class="card">
+      <h2>Προεπισκόπηση</h2>
+      <div id="preview"></div>
+      <div class="btns">
+        <button class="btn-accent" id="copyBtn">Αντιγραφή υπογραφής</button>
+        <span class="ok" id="okCopy">✔ Αντιγράφηκε</span>
+        <button class="btn-ghost" id="copyLink">Αντιγραφή συνδέσμου γι' αυτό το άτομο</button>
+        <span class="ok" id="okLink">✔ Αντιγράφηκε</span>
+        <button class="btn-ghost" id="copyHtml">Αντιγραφή κώδικα HTML</button>
+        <span class="ok" id="okHtml">✔ Αντιγράφηκε</span>
+        <button class="btn-ghost" id="dlBtn">Λήψη .html</button>
+      </div>
+    </div>
+
+    <details>
+      <summary>Πώς μπαίνει στο Gmail</summary>
+      <div class="body">
+        <ol>
+          <li>Πάτα <b>Αντιγραφή υπογραφής</b> εδώ πάνω.</li>
+          <li>Gmail → γρανάζι ⚙ → <b>Δείτε όλες τις ρυθμίσεις</b>.</li>
+          <li>Κύλισε κάτω στην ενότητα <b>Υπογραφή</b> → <b>Δημιουργία νέας</b> (ή διάλεξε την υπάρχουσα).</li>
+          <li>Κάνε κλικ μέσα στο πλαίσιο και <b>Ctrl+V</b>.</li>
+          <li>Στα «Προεπιλογές υπογραφής» διάλεξέ την για <b>ΝΕΑ EMAIL</b> και για <b>ΑΠΑΝΤΗΣΗ/ΠΡΟΩΘΗΣΗ</b>.</li>
+          <li>Κάτω-κάτω: <b>Αποθήκευση αλλαγών</b>.</li>
+        </ol>
+      </div>
+    </details>
+
+    <details>
+      <summary>Πώς μπαίνει στο Outlook</summary>
+      <div class="body">
+        <ol>
+          <li><b>Outlook (desktop)</b>: Αρχείο → Επιλογές → Αλληλογραφία → <b>Υπογραφές</b> → Νέα → κλικ στο μεγάλο πλαίσιο → <b>Ctrl+V</b> → OK.</li>
+          <li><b>Outlook στο web</b>: ⚙ → Αλληλογραφία → Σύνταξη και απάντηση → επικόλληση στην <b>Υπογραφή email</b> → Αποθήκευση.</li>
+          <li>Αν χαλάσει το στήσιμο, χρησιμοποίησε <b>Λήψη .html</b>: άνοιξε το αρχείο στον Chrome, επίλεξε όλα (Ctrl+A), αντίγραψε και επικόλλησε.</li>
+        </ol>
+      </div>
+    </details>
+
+    <details>
+      <summary>Κώδικας HTML</summary>
+      <div class="body"><textarea id="raw" readonly></textarea></div>
+    </details>
+  </div>
+</div>
+
+<script>
+/* Οι εικόνες ΠΡΕΠΕΙ να δείχνουν σε δημόσιο URL — τα email clients δεν δέχονται τοπικά αρχεία. */
+const BASE = "https://incoedy-ai.github.io/form-synergeiou/";
+const NAVY = "#2D3A4D", BLUE = "#287B9B";
+const FONT = "Arial, Helvetica, sans-serif";
+
+const $ = id => document.getElementById(id);
+const FIELDS = ["fname","ftitle","froles","fmail","fmobile","fcompany","faddr","fphone","fsite","ffb","fig","fmap"];
+
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+/* το τηλέφωνο σε μορφή tel: — κρατάμε μόνο ψηφία και βάζουμε +30 */
+const tel = s => { const d = String(s).replace(/\D/g,""); return d ? "+30" + d.replace(/^30/,"") : ""; };
+/* τα ελληνικά μέσα σε URL πρέπει να κωδικοποιηθούν, αλλιώς σπάνε σε κάποια email clients */
+const url = s => {
+  s = String(s).trim(); if(!s) return "";
+  if(!/^https?:\/\//i.test(s)) s = "https://" + s;
+  return s.replace(/[^\x00-\x7F]+/g, m => encodeURIComponent(m));
+};
+
+function icon(href, img, alt){
+  if(!href) return "";
+  return '<a href="' + esc(href) + '" style="text-decoration:none;" target="_blank">'
+       + '<img src="' + BASE + 'sig/' + img + '" width="30" height="30" alt="' + alt + '" '
+       + 'style="display:inline-block;border:0;margin-right:9px;vertical-align:middle;"></a>';
+}
+
+function build(){
+  const v = {}; FIELDS.forEach(f => v[f] = $(f).value.trim());
+
+  const roles = v.froles.split("\n").map(s => s.trim()).filter(Boolean)
+                  .map(r => esc(r)).join("<br>");
+
+  /* --- μπλοκ ονόματος --- */
+  let head = '<div style="font-family:' + FONT + ';font-size:14px;line-height:1.45;color:' + NAVY + ';">'
+           + '<b>' + esc(v.fname) + '</b>';
+  if(v.ftitle) head += '<br><b>' + esc(v.ftitle) + '</b>';
+  if(roles)    head += '<br><br>' + roles;
+  head += '</div>';
+
+  /* --- μπλοκ εταιρείας: λογότυπο αριστερά, στοιχεία δεξιά --- */
+  let info = '<div style="font-family:' + FONT + ';font-size:13.5px;line-height:1.55;color:' + NAVY + ';">'
+           + '<b>' + esc(v.fcompany) + '</b>';
+  if(v.faddr)  info += '<br>' + esc(v.faddr);
+  if(v.fphone) info += '<br>Τηλ. <a href="tel:' + tel(v.fphone) + '" style="color:' + NAVY
+                     + ';text-decoration:none;">' + esc(v.fphone) + '</a>';
+  if(v.fmobile) info += '<br>Κιν. <a href="tel:' + tel(v.fmobile) + '" style="color:' + NAVY
+                     + ';text-decoration:none;">' + esc(v.fmobile) + '</a>';
+  if(v.fsite)  info += '<br><a href="' + esc(url(v.fsite)) + '" style="color:' + BLUE
+                     + ';text-decoration:none;"><b>' + esc(v.fsite) + '</b></a>';
+  info += '</div>';
+
+  /* --- εικονίδια (clickable) --- */
+  const icons = icon(v.fmail ? "mailto:" + v.fmail : "", "mail.png", "Email")
+              + icon(url(v.fmap), "map.png", "Χάρτης")
+              + icon(url(v.ffb),  "fb.png",  "Facebook")
+              + icon(url(v.fig),  "ig.png",  "Instagram");
+
+  return ''
+  + '<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">'
+  +   '<tr><td style="padding:0 0 16px 0;">' + head + '</td></tr>'
+  +   '<tr><td style="padding:0;">'
+  +     '<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">'
+  +       '<tr>'
+  +         '<td width="118" style="padding:0 16px 0 0;vertical-align:middle;">'
+  +           '<img src="' + BASE + 'inco_logo_new.png" width="102" alt="' + esc(v.fcompany) + '" '
+  +             'style="display:block;border:0;">'
+  +         '</td>'
+  +         '<td style="vertical-align:middle;">' + info + '</td>'
+  +       '</tr>'
+  +     '</table>'
+  +   '</td></tr>'
+  +   (icons ? '<tr><td style="padding:14px 0 0 0;">' + icons + '</td></tr>' : '')
+  + '</table>';
+}
+
+function render(){
+  const html = build();
+  $("preview").innerHTML = html;
+  $("raw").value = html;
+}
+
+/* ---------- αντιγραφή ---------- */
+function flash(el){ el.classList.add("show"); setTimeout(() => el.classList.remove("show"), 1600); }
+
+async function copyRich(){
+  const html = build();
+  try{
+    await navigator.clipboard.write([ new ClipboardItem({
+      "text/html":  new Blob([html], {type:"text/html"}),
+      "text/plain": new Blob([$("preview").innerText], {type:"text/plain"})
+    })]);
+  }catch(e){
+    /* εφεδρικό: επιλογή της προεπισκόπησης και αντιγραφή */
+    const r = document.createRange(); r.selectNodeContents($("preview"));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    document.execCommand("copy"); s.removeAllRanges();
+  }
+  flash($("okCopy"));
+}
+
+/* ---------- αποθηκευμένα άτομα ---------- */
+const KEY = "inco_sig_presets";
+const load = () => JSON.parse(localStorage.getItem(KEY) || "{}");
+const store = o => localStorage.setItem(KEY, JSON.stringify(o));
+
+function fillPresetList(sel){
+  const p = load(), s = $("preset");
+  s.innerHTML = '<option value="">— νέο άτομο —</option>';
+  Object.keys(p).sort().forEach(n => {
+    const o = document.createElement("option"); o.value = o.textContent = n; s.appendChild(o);
+  });
+  if(sel) s.value = sel;
+}
+
+$("savePreset").onclick = () => {
+  const name = $("fname").value.trim();
+  if(!name){ alert("Συμπλήρωσε πρώτα το ονοματεπώνυμο."); return; }
+  const p = load(); p[name] = {};
+  FIELDS.forEach(f => p[name][f] = $(f).value);
+  store(p); fillPresetList(name);
+  alert("Αποθηκεύτηκε: " + name);
+};
+
+$("delPreset").onclick = () => {
+  const n = $("preset").value;
+  if(!n) return;
+  if(!confirm("Διαγραφή του «" + n + "» από τη λίστα;")) return;
+  const p = load(); delete p[n]; store(p); fillPresetList();
+};
+
+$("preset").onchange = () => {
+  const n = $("preset").value; if(!n) return;
+  const d = load()[n]; if(!d) return;
+  FIELDS.forEach(f => { if(d[f] !== undefined) $(f).value = d[f]; });
+  render();
+};
+
+/* ---------- σύνδεσμος με προσυμπληρωμένα στοιχεία ----------
+   Ώστε ο κάθε υπάλληλος να ανοίγει τη σελίδα στον δικό του υπολογιστή
+   έτοιμη, χωρίς να πληκτρολογήσει τίποτα. */
+const b64enc = o => btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o))));
+const b64dec = s => JSON.parse(new TextDecoder().decode(
+                      Uint8Array.from(atob(s), c => c.charCodeAt(0))));
+
+function personLink(){
+  const d = {}; FIELDS.forEach(f => d[f] = $(f).value);
+  return location.origin + location.pathname + "?d=" + encodeURIComponent(b64enc(d));
+}
+
+(function applyLink(){
+  const q = new URLSearchParams(location.search).get("d");
+  if(!q) return;
+  try{
+    const d = b64dec(q);
+    FIELDS.forEach(f => { if(d[f] !== undefined) $(f).value = d[f]; });
+  }catch(e){ console.warn("Άκυρος σύνδεσμος στοιχείων", e); }
+})();
+
+/* ---------- σύνδεση ---------- */
+FIELDS.forEach(f => $(f).addEventListener("input", render));
+$("copyLink").onclick = async () => {
+  const l = personLink();
+  try{ await navigator.clipboard.writeText(l); }
+  catch(e){ prompt("Αντίγραψε τον σύνδεσμο:", l); }
+  flash($("okLink"));
+};
+$("copyBtn").onclick  = copyRich;
+$("copyHtml").onclick = async () => {
+  try{ await navigator.clipboard.writeText(build()); }
+  catch(e){ $("raw").select(); document.execCommand("copy"); }
+  flash($("okHtml"));
+};
+$("dlBtn").onclick = () => {
+  const doc = '<!DOCTYPE html><html lang="el"><head><meta charset="utf-8"><title>Υπογραφή</title></head>'
+            + '<body style="margin:24px;">' + build() + '</body></html>';
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([doc], {type:"text/html;charset=utf-8"}));
+  a.download = "ypografi_" + ($("fname").value.trim().replace(/\s+/g,"_") || "inco") + ".html";
+  a.click(); URL.revokeObjectURL(a.href);
+};
+
+fillPresetList();
+render();
+</script>
+</body>
+</html>
