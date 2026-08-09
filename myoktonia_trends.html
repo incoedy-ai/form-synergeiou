@@ -60,7 +60,9 @@
   .demo{display:inline-block;margin-top:8px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);
     color:#eaf3f8;font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:3px 9px;border-radius:999px;text-transform:uppercase;}
   /* kpi */
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0 8px;}
+  /* auto-fit: οι κάρτες έγιναν 5 (μπήκε «ημέρες χωρίς εύρημα») και πρέπει να
+     αναδιπλώνονται μόνες τους αντί για σταθερές 4 στήλες */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:18px 0 8px;}
   .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);}
   .kpi .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;}
   .kpi .val{font-size:26px;font-weight:700;color:var(--ink);margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
@@ -340,6 +342,32 @@ function renderVisits(){
   hv+="<tr><th>Τεχνικός</th>";TECH.forEach(t=>hv+=`<td><div class="vcell">${t}</div></td>`);hv+="</tr>";
   hv+="</tbody>";document.getElementById("tblV").innerHTML=hv;
 }
+/* ── «Ημέρες χωρίς εύρημα» ────────────────────────────────────────────────
+   Ο αριθμός που δείχνει ο πελάτης σε επιθεωρητή. Εύρημα = οποιαδήποτε
+   καταγεγραμμένη δραστηριότητα > 0 (κατανάλωση δολώματος ή σύλληψη).
+   Τα σύμβολα (x, !, ?, -) ΔΕΝ είναι ευρήματα — μόνο οι αριθμοί. */
+function parseVDate(s){
+  const m=String(s||"").match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  if(!m) return null;
+  let y=+m[3]; if(y<100) y+=2000;
+  return new Date(y,+m[2]-1,+m[1]);
+}
+function cleanStreak(){
+  if(!DATES.length) return null;
+  const rows=DS.concat(SE);
+  let idx=-1;
+  for(let i=DATES.length-1;i>=0;i--){
+    if(rows.some(r=>typeof r.vals[i]==="number" && r.vals[i]>0)){ idx=i; break; }
+  }
+  if(idx===DATES.length-1) return {days:0,since:DATES[idx],ever:true};
+  const ref=idx>=0?DATES[idx]:DATES[0];
+  const d=parseVDate(ref);
+  if(!d) return null;
+  // floor, ΟΧΙ round: 60 ημέρες + 22 ώρες είναι 60 συμπληρωμένες ημέρες.
+  // Σε επιθεώρηση δεν δηλώνουμε ποτέ μέρα που δεν έχει κλείσει.
+  const days=Math.max(0,Math.floor((new Date()-d)/86400000));
+  return {days:days,since:ref,ever:idx>=0};
+}
 function renderKPIs(){
   const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
   const dsNums=DS.map(r=>lastNum(r.vals)).filter(v=>v!==null);
@@ -348,12 +376,23 @@ function renderKPIs(){
   const seNums0=SE.map(r=>firstNum(r.vals)).filter(v=>v!==null);
   const dsLast=Math.round(avg(dsNums)), dsFirst=Math.round(avg(dsNums0));
   const seLast=avg(seNums), seFirst=avg(seNums0);
-  const kpis=[
+  const cs=cleanStreak();
+  const kpis=[];
+  if(cs){
+    kpis.push(cs.days===0
+      ? {lbl:"Ημέρες χωρίς εύρημα",val:"0",
+         note:`<span class="up">ενεργό εύρημα · ${cs.since}</span>`}
+      : {lbl:"Ημέρες χωρίς εύρημα",val:cs.days,sub:" ημέρες",
+         note:cs.ever
+           ? `<span class="down">από την επίσκεψη ${cs.since}</span>`
+           : `<span class="down">καμία δραστηριότητα από την αρχή</span>`});
+  }
+  kpis.push(
     {lbl:"Σταθμοί",val:(DS.length+SE.length),sub:` (${DS.length} Δ/Σ · ${SE.length} Σ/Ε)`},
     {lbl:"Επισκέψεις",val:DATES.length,sub:" καταγραφές"},
     {lbl:"Δολωματικοί · μέση κατανάλωση",val:dsLast+"%",note:(dsLast<dsFirst?`<span class="down">↓ ${dsFirst-dsLast}% από αρχή</span>`:dsLast>dsFirst?`<span class="up">↑ ${dsLast-dsFirst}%</span>`:`<span style="color:var(--muted)">σταθερό</span>`)},
-    {lbl:"Σημεία ελέγχου · μέσες συλλήψεις",val:seLast.toFixed(1),note:(seLast<seFirst?`<span class="down">↓ μείωση</span>`:seLast>seFirst?`<span class="up">↑ αύξηση</span>`:`<span style="color:var(--muted)">σταθερό</span>`)},
-  ];
+    {lbl:"Σημεία ελέγχου · μέσες συλλήψεις",val:seLast.toFixed(1),note:(seLast<seFirst?`<span class="down">↓ μείωση</span>`:seLast>seFirst?`<span class="up">↑ αύξηση</span>`:`<span style="color:var(--muted)">σταθερό</span>`)}
+  );
   document.getElementById("kpis").innerHTML=kpis.map(k=>
     `<div class="kpi"><div class="lbl">${k.lbl}</div><div class="val">${k.val}${k.sub?`<small>${k.sub}</small>`:""}</div>${k.note?`<div class="note">${k.note}</div>`:""}</div>`).join("");
 }
