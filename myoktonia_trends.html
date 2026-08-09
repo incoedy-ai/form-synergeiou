@@ -447,7 +447,14 @@ function setCustHeader(P, kod, pelatis) {
   const diakr = dec(P.get('diakr')).trim();
   const diey = dec(P.get('diey')).trim();
   const per = dec(P.get('periohi')).trim();
-  const parts = [String(kod || '').trim(), String(pelatis || '').trim(), diakr].filter(Boolean);
+  // Ο διακριτικός τίτλος μπαίνει ΜΟΝΟ αν προσθέτει κάτι. Πολύ συχνά ταυτίζεται
+  // με την επωνυμία ή περιέχεται μέσα της («PORCANOVA» μέσα στο «PORCANOVA
+  // ΑΥΘΕΝΤΙΚΗ ΓΟΥΡΟΥΝΟΠΟΥΛΑ Ι.Κ.Ε»), οπότε γραφόταν δύο φορές στην κεφαλίδα.
+  const _pel = String(pelatis || '').trim();
+  const _dup = diakr && _pel &&
+               _pel.toUpperCase().indexOf(diakr.toUpperCase()) >= 0;
+  const parts = [String(kod || '').trim(), _pel,
+                 _dup ? '' : diakr].filter(Boolean);
   let addr = diey;
   if (diey && per && diey.toUpperCase().indexOf(per.toUpperCase()) < 0) addr = diey + ', ' + per;
   else if (!diey) addr = per;
