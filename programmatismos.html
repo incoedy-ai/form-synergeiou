@@ -240,7 +240,7 @@ if(SCRIPT && KOD){
       }
       const R=buildReal(values);
       setCustHeader(P, KOD, R.pelatis || (PEL ? decodeURIComponent(PEL) : ""));
-      if(badge) badge.textContent="ΖΩΝΤΑΝΑ ΔΕΔΟΜΕΝΑ";
+      if(badge) badge.textContent="LIVE DATA";
       renderAll(R.apps,R.perYear,R.freq);
     })
     .catch(()=>{ if(badge) badge.textContent="ΣΦΑΛΜΑ ΦΟΡΤΩΣΗΣ — ΕΝΔΕΙΚΤΙΚΑ"; renderAll(DEMO_APPS,6,"Δίμηνη"); });
