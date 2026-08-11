@@ -85,7 +85,11 @@
 
   .actions { display: flex; gap: 10px; margin: 16px; flex-wrap: wrap; }
   .actions button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; min-width: 200px; }
-  #btnPrint { background: #087D8E; color: white; } #btnSubmit { background: #303F53; color: white; } #btnEmail { background: #c0392b; color: white; }
+  #btnPrint { background: #087D8E; color: white; } #btnSubmit { background: #303F53; color: white; } 
+    #btnEmail { background: #ffffff; color: #16305c; border: 2px solid #d7e3ea !important; display: flex; align-items: center; justify-content: center; gap: 9px; }
+  #btnEmail img { height: 26px; width: auto; display: block; }
+  #btnEmail span { font-size: 13.5px; font-weight: bold; letter-spacing: .2px; }
+  #btnEmail:hover { border-color: #2DAFCE !important; box-shadow: 0 2px 10px rgba(45,175,206,.25); }
   #btnEmail:disabled { opacity: 0.6; cursor: default; }
   #msg { text-align: center; font-weight: bold; margin-top: 6px; }
   .emailRow { display: flex; gap: 8px; margin: 0 16px 16px; align-items: center; }
@@ -102,7 +106,7 @@
 <div class="actions noPrint">
   <button id="btnPrint" onclick="window.print()">🖨️ Αποθήκευση ως PDF / Εκτύπωση</button>
   <button id="btnSubmit" onclick="submitForm()">☁️ Καταχώρηση</button>
-  <button id="btnEmail" onclick="sendPdfEmail()">✉️ Αποστολή στον Πελάτη</button>
+  <button id="btnEmail" onclick="sendPdfEmail()" title="Ανεβάζει το έγγραφο στον φάκελο του πελάτη και του το στέλνει"><span>Ανέβασμα στο</span><img src="myinco_word.png" alt="My InCo"></button>
 </div>
 <div id="msg" class="noPrint"></div>
 

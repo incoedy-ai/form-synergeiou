@@ -103,6 +103,10 @@
   .actions button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; min-width: 200px; }
   #btnPrint { background: #087D8E; color: white; }
   #btnEmail { background: #303F53; color: white; }
+    #btnEmail { background: #ffffff; color: #16305c; border: 2px solid #d7e3ea !important; display: flex; align-items: center; justify-content: center; gap: 9px; }
+  #btnEmail img { height: 26px; width: auto; display: block; }
+  #btnEmail span { font-size: 13.5px; font-weight: bold; letter-spacing: .2px; }
+  #btnEmail:hover { border-color: #2DAFCE !important; box-shadow: 0 2px 10px rgba(45,175,206,.25); }
   #btnEmail:disabled { opacity: 0.6; cursor: default; }
   .emailRow { display: flex; gap: 8px; margin: 0 16px 16px; align-items: center; }
   .emailRow input { flex: 1; padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
@@ -116,7 +120,7 @@
 </div>
 <div class="actions noPrint">
   <button id="btnPrint" onclick="window.print()">🖨️ Αποθήκευση ως PDF / Εκτύπωση</button>
-  <button id="btnEmail" onclick="sendPdfEmail()">✉️ Αποστολή στον Πελάτη</button>
+  <button id="btnEmail" onclick="sendPdfEmail()" title="Ανεβάζει το έγγραφο στον φάκελο του πελάτη και του το στέλνει"><span>Ανέβασμα στο</span><img src="myinco_word.png" alt="My InCo"></button>
 </div>
 
 <div class="page">
