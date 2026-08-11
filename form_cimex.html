@@ -51,6 +51,12 @@
   table.cimex input[type=checkbox] { width: 15px; height: 15px; }
   table.cimex select { font-size: 11px; padding: 2px; border: 1px solid #ccc; border-radius: 3px; font-weight: bold; }
   .cimexBody.clean { opacity: 0.35; pointer-events: none; }
+  .stageBar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 10.5px; font-weight: bold; background: #fff6e8; border: 1px solid #c98a34; border-radius: 4px; padding: 5px 6px; margin-top: 5px; }
+  .stageBar .stageLbl { background: #a8681c; color: white; font-size: 9.5px; padding: 4px 6px; border-radius: 3px; white-space: nowrap; }
+  .stageBar label { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .stageBar input { width: 15px; height: 15px; }
+  table.cimex input.ptName { width: 100%; font-size: 9.5px; padding: 2px 3px; border: 1px solid #087D8E; border-radius: 3px; }
+  .addPtBtn { background: #eef6f7; color: #087D8E; border: 1px dashed #087D8E; border-radius: 4px; padding: 4px; font-size: 10.5px; font-weight: bold; cursor: pointer; margin-top: 4px; width: 100%; }
   .delBtn { background: #c0392b; color: white; border: none; border-radius: 4px; cursor: pointer; padding: 5px 8px; font-size: 12px; flex-shrink: 0; }
   .addBtn { background: #087D8E; color: white; border: none; border-radius: 4px; padding: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin-top: 6px; width: 100%; }
   .addRoomBtn { background: #303F53; color: white; border: none; border-radius: 4px; padding: 9px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 8px; width: 100%; }
@@ -184,6 +190,10 @@ if (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ') {
 const POINTS = ["Πλαίσιο Κρεβατιού","Κεφαλάρι","Πόδια Κρεβατιού","Στρώμα","Έπιπλα 2μ από κρεβάτι","Σανίδες","Μαξιλαροθήκες","Σεντόνια / Κουρτίνες","Κάδρα / Κομοδίνα"];
 const EVID = ["Έντομα","Νεκρά","Κόπρανα","Εξωδέρματα","Ωα"];
 const UNIT_TYPES = ["Διπλό","Μονό","Ημίδιπλο","Κουκέτα","Καναπές-κρεβάτι","Άλλο"];
+// Ο κοριός περνάει 5 νυμφικά στάδια + ενήλικο. Στο πεδίο δεν ξεχωρίζεις Ν1 από Ν2,
+// γι' αυτό τα μαζεύουμε σε μικρές/μεγάλες. Ωά ή μικρές νύμφες = αναπαραγωγή επί τόπου.
+const STAGES = ["Ωά","Νύμφες μικρές (Ν1–Ν3)","Νύμφες μεγάλες (Ν4–Ν5)","Ενήλικα"];
+const STAGE_ROW = "ΣΤΑΔΙΑ ΑΝΑΠΤΥΞΗΣ";
 
 let roomIdx = 0, unitIdx = 0;
 
@@ -215,14 +225,34 @@ function addUnit(rid) {
     rows += '<tr><td>' + pt + '</td>' + tds + '<td><select class="lvl">' + lvlOpts + '</select></td></tr>';
   });
   let headEvid = EVID.map(function(e){ return '<th>' + e + '</th>'; }).join('');
+  let stageChks = STAGES.map(function(s, i) {
+    return '<label><input type="checkbox" class="stg_' + i + '">' + s + '</label>';
+  }).join('');
   box.innerHTML =
     '<div class="unitHd"><span class="lbl">ΜΟΝΑΔΑ</span>' +
     '<input type="text" class="unitName" placeholder="π.χ. Κρεβάτι 1">' +
     '<select class="unitType">' + typeOpts + '</select>' +
     '<button type="button" class="delBtn noPrint" onclick="this.closest(\'.unitBox\').remove()">✕</button></div>' +
     '<label class="unitClean noPrint"><input type="checkbox" class="unitCleanChk" checked onchange="toggleClean(\'' + uid + '\')">ΔΕΝ εντοπίστηκαν ευρήματα (καθαρό)</label>' +
-    '<div class="cimexBody clean"><table class="cimex"><thead><tr><th>Σημείο Ελέγχου</th>' + headEvid + '<th>Επίπεδο</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    '<div class="cimexBody clean">' +
+    '<div class="stageBar"><span class="stageLbl">ΣΤΑΔΙΟ ΑΝΑΠΤΥΞΗΣ</span>' + stageChks + '</div>' +
+    '<table class="cimex"><thead><tr><th>Σημείο Ελέγχου</th>' + headEvid + '<th>Επίπεδο</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<button type="button" class="addPtBtn noPrint" onclick="addPoint(\'' + uid + '\')">+ Άλλο σημείο (γράψ\' το εσύ)</button></div>';
   cont.appendChild(box);
+}
+
+/** Γραμμή με σημείο ελέγχου που το πληκτρολογεί ο τεχνικός — για ό,τι δεν
+    προβλέπει η λίστα των 9 (π.χ. «πίσω από σοβατεπί», «καρέκλα συνοδού»). */
+function addPoint(uid) {
+  const box = document.querySelector('.unitBox[data-uid="' + uid + '"]');
+  const tr = document.createElement('tr');
+  let tds = '';
+  for (let j = 0; j < EVID.length; j++) tds += '<td><input type="checkbox" class="ev_' + j + '"></td>';
+  const lvlOpts = [0,1,2,3,4].map(function(l){ return '<option value="' + l + '">' + l + '</option>'; }).join('');
+  tr.innerHTML = '<td><input type="text" class="ptName" placeholder="γράψε το σημείο..."></td>' +
+                 tds + '<td><select class="lvl">' + lvlOpts + '</select></td>';
+  box.querySelector('tbody').appendChild(tr);
+  tr.querySelector('.ptName').focus();
 }
 
 function toggleClean(uid) {
@@ -253,11 +283,19 @@ function collectRooms() {
       const points = [];
       if (!clean) {
         unitEl.querySelectorAll('tbody tr').forEach(function(tr, pi) {
+          const typed = tr.querySelector('.ptName');
+          const ptName = typed ? typed.value.trim() : POINTS[pi];
+          if (!ptName) return;                       // γραμμή που άνοιξε και έμεινε άγραφη
           const evid = EVID.filter(function(_, j) { return tr.querySelector('.ev_' + j).checked; });
           const level = parseInt(tr.querySelector('.lvl').value, 10) || 0;
           if (level > maxLvl) maxLvl = level;
-          if (evid.length || level > 0) points.push({ point: POINTS[pi], evidence: evid, level: level });
+          if (evid.length || level > 0) points.push({ point: ptName, evidence: evid, level: level });
         });
+        // το στάδιο αφορά ΟΛΗ τη μονάδα, όχι σημείο-σημείο: πάει σαν μία γραμμή
+        const stages = STAGES.filter(function(_, i) {
+          return unitEl.querySelector('.stg_' + i).checked;
+        });
+        if (stages.length) points.push({ point: STAGE_ROW, evidence: stages, level: 0 });
       }
       units.push({ name: uName, type: uType, clean: clean, level: maxLvl, points: points });
     });
