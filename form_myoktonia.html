@@ -16,6 +16,16 @@
   #loading { text-align: center; color: #888; margin-top: 20px; }
   .legend { background: #f0f0f0; border: 1px solid #ccc; border-radius: 6px; padding: 8px 12px; margin-top: 16px; font-size: 12px; }
   .legend b { color: #444; }
+
+  /* Κουμπί «Ανέβασμα στο My InCo»: το ίδιο σε όλα τα έντυπα, ώστε να είναι
+     αναγνωρίσιμο — πατώντας το ανεβαίνουν τα δεδομένα στον φάκελο του πελάτη. */
+  .myincoBtn { width: 100%; margin-top: 24px; padding: 12px; background: #ffffff;
+    color: #16305c; border: 2px solid #d7e3ea; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .myincoBtn span { font-size: 15px; font-weight: bold; }
+  .myincoBtn img { height: 28px; width: auto; display: block; }
+  .myincoBtn:hover { border-color: #2DAFCE; box-shadow: 0 2px 10px rgba(45,175,206,.25); }
+  .myincoBtn:disabled { opacity: .6; cursor: default; }
 </style>
 </head>
 <body>
@@ -37,7 +47,7 @@
   <div id="seList"></div>
 </div>
 
-<button id="submitBtn" onclick="submitForm()" style="display:none">Υποβολή</button>
+<button id="submitBtn" class="myincoBtn" onclick="submitForm()" style="display:none" title="Ανεβάζει τις μετρήσεις στο My InCo"><span>Ανέβασμα στο</span><img src="myinco_word.png" alt="My InCo"></button>
 <div id="msg"></div>
 
 <script>

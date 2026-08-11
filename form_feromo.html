@@ -25,6 +25,16 @@
   #empty { color: #999; font-size: 13px; padding: 8px 4px; }
   .legend { background: #e6f7f9; border: 1px solid #9fd8e0; border-radius: 6px; padding: 8px 12px; margin-top: 10px; font-size: 12px; }
   .legend b { color: #0e6b78; }
+
+  /* Κουμπί «Ανέβασμα στο My InCo»: το ίδιο σε όλα τα έντυπα, ώστε να είναι
+     αναγνωρίσιμο — πατώντας το ανεβαίνουν τα δεδομένα στον φάκελο του πελάτη. */
+  .myincoBtn { width: 100%; margin-top: 24px; padding: 12px; background: #ffffff;
+    color: #16305c; border: 2px solid #d7e3ea; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .myincoBtn span { font-size: 15px; font-weight: bold; }
+  .myincoBtn img { height: 28px; width: auto; display: block; }
+  .myincoBtn:hover { border-color: #2DAFCE; box-shadow: 0 2px 10px rgba(45,175,206,.25); }
+  .myincoBtn:disabled { opacity: .6; cursor: default; }
 </style>
 </head>
 <body>
@@ -66,7 +76,7 @@
 <label for="paratiriseis">Παρατηρήσεις</label>
 <textarea id="paratiriseis" rows="3" style="width:100%; padding:9px; font-size:15px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px;"></textarea>
 
-<button class="submitBtn" onclick="submitForm()">Υποβολή</button>
+<button class="submitBtn myincoBtn" onclick="submitForm()" title="Ανεβάζει τις μετρήσεις στο My InCo"><span>Ανέβασμα στο</span><img src="myinco_word.png" alt="My InCo"></button>
 <div id="msg"></div>
 
 <script>
