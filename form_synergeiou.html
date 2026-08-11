@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="el">
 <head>
 <meta charset="UTF-8">
@@ -767,7 +767,7 @@ const skevasmata = [
   'STICKY FTP30 (59)', 'STICKY INOXTRAP (61)', 'STICKY RT22 (62)', 'STICKY RT24 (63)',
   'MAGNUM ANT (41)', 'MAGNUM GEL (42)', 'PROVECTA (53)', 'SWIRR (117)', 'CT (52)',
   // ΠΟΝΤΙΚΙΑ
-  'ZAGOR (124/175)', 'MAST (139)', 'Π20 (76)', 'CORAL (70)',
+  'ZAGOR WAX BLOCK (124)', 'MAST (139)', 'Π20 (76)', 'CORAL (70)',
   'TBCL (71)', 'SNAPTRAP (125)',
   // ΚΟΛΛΕΣ
   'ITRAP 50 (37)', 'CHAMELEON (58)', 'X-LURE (93)', 'ROCK BAIT STATION (186)',
@@ -826,7 +826,9 @@ const SKEVASMA_META = {
   'PROVECTA (53)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
   'SWIRR (117)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ', 'ΕΠΙΠΑΣΗ'] },
   'CT (52)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ', 'ΕΠΙΧΡΙΣΜΑ'] },
-  'ZAGOR (124/175)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
+  // Οι δύο συσκευασίες (124/175) επιλέγονται από τη λίστα ΣΥΣΚΕΥΑΣΙΑ,
+  // ώστε να μη μεγαλώνει η λίστα φαρμάκων. Απόφαση χρήστη 11/08/2026.
+  'ZAGOR WAX BLOCK (124)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
   'MAST (139)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΠΑΓΙΔΑΣ ΜΕ ΚΟΛΛΑ'] },
   'Π20 (76)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ Σ/Ε'] },
   'CORAL (70)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ'] },
@@ -891,39 +893,29 @@ function fillSkevasmata(selectEl, typVal, methVal) {
   selectEl.value = stillThere ? current : '';
 }
 
-// ---- ΣΥΣΚΕΥΑΣΙΕΣ ΑΠΟΘΕΜΑΤΟΣ ΑΝΑ ΣΚΕΥΑΣΜΑ ----
+// ---- ΣΥΣΚΕΥΑΣΙΕΣ ΑΝΑ ΣΚΕΥΑΣΜΑ ----
+// Βγαλμένο από τον κατάλογο ΣΚΕΥΑΣΜΑΤΑ της βάσης (tools/propose_packaging.py).
+// ⚠️ Μη γράφεις κωδικούς στο χέρι: η παλιά λίστα είχε 5 ανύπαρκτους (23,28,45,98,129).
 const PACKAGING_DB = {
-  'DOBMEM (29)': [
-    ['29', '29'],
-    ['28', '28'],
-  ],
-  'DOBOL FUMIGATOR (26)': [
-    ['26', '26'],
+  'ZAGOR WAX BLOCK (124)': [
+    ['WAX BLOCK', '124'],
+    ['WAX BLOCK 175', '175'],
   ],
   'DOBOL OMICRON (31)': [
-    ['31', '31'],
-    ['32', '32'],
+    ['250 GR', '31'],
+    ['100 GR', '32'],
   ],
   'PANKILL DUST (151)': [
-    ['151', '151'],
-    ['154', '154'],
+    ['250 GR', '151'],
+    ['1000 GR', '154'],
   ],
-  'DELETE (109)': [
-    ['109', '109'],
-    ['98', '98'],
+  // Ίδιο όνομα, ΑΛΛΟΣ ΠΡΟΜΗΘΕΥΤΗΣ -> προς το παρόν ξεχωρίζουν από τον κωδικό
+  'PANKILL FOR BED BUGS (130)': [
+    ['κωδ. 130', '130'],
+    ['κωδ. 157', '157'],
   ],
-  'DOBOL ANT GEL PRO (25)': [
-    ['25', '25'],
-    ['129', '129'],
-  ],
-  'DOBOL ANT BAIT (23)': [
-    ['23', '23'],
-    ['137', '137'],
-  ],
-  'MURIBROM BLOCK (44)': [
-    ['44', '44'],
-    ['45', '45'],
-  ],
+  // ⚠️ To RAT SNAP TRAP ΔΕΝ μπαίνει εδώ: υπάρχει ήδη ΔΥΟ ΦΟΡΕΣ στη λίστα
+  // φαρμάκων, με τους δύο κωδικούς (125 και 156).
 };
 
 function fillPackaging(pakSelect, skeuasma) {
@@ -1202,7 +1194,11 @@ async function submitForm() {
       const q1 = document.getElementById(`sk-q1-${i}`).value || '—';
       const q2 = document.getElementById(`sk-q2-${i}`).value || '—';
       skLines.push(`  [${typ || '—'}]  [${met || '—'}]  ${sel || '—'}${pak ? ' (' + pak + ')' : ''}  |  ! ${q1}  |  @ ${q2}`);
-      skData.push({ typ, met, sel, pak, q1: q1 === '—' ? '' : q1, q2: q2 === '—' ? '' : q2 });
+      // Αν διαλέχτηκε συσκευασία, ο κωδικός της μπαίνει στην παρένθεση του
+      // σκευάσματος — από εκεί τον διαβάζει η Access. Χωρίς αυτό, η επιλογή
+      // συσκευασίας χανόταν εντελώς.
+      const selOut = (pak && sel) ? sel.replace(/\s*\([^)]*\)\s*$/, '') + ' (' + pak + ')' : sel;
+      skData.push({ typ, met, sel: selOut, pak, q1: q1 === '—' ? '' : q1, q2: q2 === '—' ? '' : q2 });
     }
   }
 
