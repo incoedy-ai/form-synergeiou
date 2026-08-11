@@ -761,14 +761,14 @@ const skevasmata = [
   // ΕΝΤΟΜΑ
   'TETRAX (148)', 'DELETE (109)', 'DOBMEM (29)', 'DOBOL FUMIGATOR (26)',
   'DOBOL ANT GEL PRO (25)', 'DOBOL ANT BAIT (23)', 'DOBOL ANT FLASK (24)',
-  'DOBOL GEL PRO (27)', 'DOBOL MICROCYP (30)', 'DOBOL OMICRON (31)', 'CYTROL FORTE (20)', 'AZAMAT (14)', 'ADVION ANT (13)', 'BEST BOX (16)', 'PROCAPTURA (19)', 'BED BUG TRAP (15)',
-  'BIRD NET (17)', 'ECOLOGIC (35)', 'BUGSTER DUST (149)', 'PANKILL DUST (151)', 'MAGNUM ROACHES IGR (136)',
+  'DOBOL GEL PRO (27)', 'DOBOL MICROCYP (30)', 'DOBOL OMICRON', 'CYTROL FORTE (20)', 'AZAMAT (14)', 'ADVION ANT (13)', 'BEST BOX (16)', 'PROCAPTURA (19)', 'BED BUG TRAP (15)',
+  'BIRD NET (17)', 'ECOLOGIC (35)', 'BUGSTER DUST (149)', 'PANKILL DUST', 'MAGNUM ROACHES IGR (136)',
   'INOXTRAP (38)', 'DIAMOND TRAP (172)',
   'STICKY FTP30 (59)', 'STICKY INOXTRAP (61)', 'STICKY RT22 (62)', 'STICKY RT24 (63)',
   'MAGNUM ANT (41)', 'MAGNUM GEL (42)', 'PROVECTA (53)', 'SWIRR (117)', 'CT (52)',
   // ΠΟΝΤΙΚΙΑ
-  'ZAGOR WAX BLOCK (124)', 'MAST (139)', 'Π20 (76)', 'CORAL (70)',
-  'TBCL (71)', 'RAT SNAP TRAP (125)',
+  'ZAGOR WAX BLOCK', 'MAST (139)', 'Π20 (76)', 'CORAL (70)',
+  'TBCL (71)', 'RAT SNAP TRAP',
   // ΚΟΛΛΕΣ
   'ITRAP 50 (37)', 'CHAMELEON (58)', 'X-LURE (93)', 'ROCK BAIT STATION (186)',
   'M26 (158)', 'M41 (119)', 'K43 (127)',
@@ -777,7 +777,7 @@ const skevasmata = [
   'LAMP CHAMELEON (40)', 'LAMP INOXTRAP SP (134)', 'LAMP CHAMELEON ATRIUM (138)', 'LAMP INOXTRAP CAPTURE (140)',
   'Π20 STICKY (150)', 'K22 I-TRAP30 (181)',
   'TRAPPER MINI REX (65)', 'TRAPPER T-REX (66)',
-  'PLAST BETA2 (69)', 'PLAST ROCK (99)', 'EC GEL (142)', 'SERPOL GEL (57)', 'ECOREX GEL (111)', 'PANKILL FOGGER (174)', 'PANKILL FOR BED BUGS (130)', 'MURIBROM BLOCK (44)', 'NOTRAC BB (161)', 'INASTRO (100)',
+  'PLAST BETA2 (69)', 'PLAST ROCK (99)', 'EC GEL (142)', 'SERPOL GEL (57)', 'ECOREX GEL (111)', 'PANKILL FOGGER (174)', 'PANKILL FOR BED BUGS', 'MURIBROM BLOCK (44)', 'NOTRAC BB (161)', 'INASTRO (100)',
   'MASTERCID MICRO (43)', 'BLATA 10SC (97)',
   // ΑΠΟΛΥΜΑΝΣΗ
   'DUOZON (34)', 'BIG SPRAY (87)', 'DALCO-100 (88)', 'DUTRION GEL (168)',
@@ -803,7 +803,7 @@ const SKEVASMA_META = {
   'DOBOL ANT FLASK (24)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
   'DOBOL GEL PRO (27)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
   'DOBOL MICROCYP (30)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
-  'DOBOL OMICRON (31)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ', 'ΕΠΙΠΑΣΗ'] },
+  'DOBOL OMICRON': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ', 'ΕΠΙΠΑΣΗ'] },
   'CYTROL FORTE (20)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
   'AZAMAT (14)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
   'ADVION ANT (13)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
@@ -813,7 +813,7 @@ const SKEVASMA_META = {
   'BIRD NET (17)': { typ: 'ΑΠΩΘΗΣΗ ΠΤΗΝΩΝ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΔΙΧΤΥΟΥ'] },
   'ECOLOGIC (35)': { typ: 'ΑΠΩΘΗΣΗ ΠΤΗΝΩΝ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΑΚΙΔΩΝ'] },
   'BUGSTER DUST (149)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΠΙΠΑΣΗ'] },
-  'PANKILL DUST (151)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΠΙΠΑΣΗ'] },
+  'PANKILL DUST': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΠΙΠΑΣΗ'] },
   'MAGNUM ROACHES IGR (136)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
   'INOXTRAP (38)': { typ: 'ΗΛΕΚΤΡΙΚΗ ΕΝΤΟΜΟΠΑΓΙΔΑ', meth: ['SERVICE ΕΝΤΟΜΟΠΑΓΙΔΩΝ'] },
   'DIAMOND TRAP (172)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ', 'ΤΟΠΟΘΕΤΗΣΗ ΠΑΓΙΔΩΝ'] },
@@ -828,12 +828,12 @@ const SKEVASMA_META = {
   'CT (52)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ', 'ΕΠΙΧΡΙΣΜΑ'] },
   // Οι δύο συσκευασίες (124/175) επιλέγονται από τη λίστα ΣΥΣΚΕΥΑΣΙΑ,
   // ώστε να μη μεγαλώνει η λίστα φαρμάκων. Απόφαση χρήστη 11/08/2026.
-  'ZAGOR WAX BLOCK (124)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
+  'ZAGOR WAX BLOCK': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
   'MAST (139)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΠΑΓΙΔΑΣ ΜΕ ΚΟΛΛΑ'] },
   'Π20 (76)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ Σ/Ε'] },
   'CORAL (70)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ'] },
   'TBCL (71)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ'] },
-  'RAT SNAP TRAP (125)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
+  'RAT SNAP TRAP': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
   'ITRAP 50 (37)': { typ: 'ΗΛΕΚΤΡΙΚΗ ΕΝΤΟΜΟΠΑΓΙΔΑ', meth: ['SERVICE ΕΝΤΟΜΟΠΑΓΙΔΩΝ'] },
   'CHAMELEON (58)': { typ: 'ΗΛΕΚΤΡΙΚΗ ΕΝΤΟΜΟΠΑΓΙΔΑ', meth: ['ΑΛΛΑΓΗ ΚΟΛΛΗΤΙΚΗΣ ΕΠΙΦΑΝΕΙΑΣ'] },
   'X-LURE (93)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΦΕΡΟΜΟΝΙΚΗΣ ΠΑΓΙΔΑΣ', 'ΤΟΠΟΘΕΤΗΣΗ ΠΑΓΙΔΩΝ'] },
@@ -861,7 +861,7 @@ const SKEVASMA_META = {
   'SERPOL GEL (57)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΠΙΧΡΙΣΜΑ'] },
   'ECOREX GEL (111)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
   'PANKILL FOGGER (174)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΑΕΡΟΛΥΜΑ'] },
-  'PANKILL FOR BED BUGS (130)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
+  'PANKILL FOR BED BUGS': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
   'MURIBROM BLOCK (44)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
   'NOTRAC BB (161)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
   'INASTRO (100)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
@@ -897,25 +897,25 @@ function fillSkevasmata(selectEl, typVal, methVal) {
 // Βγαλμένο από τον κατάλογο ΣΚΕΥΑΣΜΑΤΑ της βάσης (tools/propose_packaging.py).
 // ⚠️ Μη γράφεις κωδικούς στο χέρι: η παλιά λίστα είχε 5 ανύπαρκτους (23,28,45,98,129).
 const PACKAGING_DB = {
-  'ZAGOR WAX BLOCK (124)': [
+  'ZAGOR WAX BLOCK': [
     ['κωδ. 124', '124'],
     ['κωδ. 175', '175'],
   ],
-  'DOBOL OMICRON (31)': [
+  'DOBOL OMICRON': [
     ['κωδ. 31', '31'],
     ['κωδ. 32', '32'],
   ],
-  'PANKILL DUST (151)': [
+  'PANKILL DUST': [
     ['κωδ. 151', '151'],
     ['κωδ. 154', '154'],
   ],
   // Ίδιο όνομα, ΑΛΛΟΣ ΠΡΟΜΗΘΕΥΤΗΣ -> προς το παρόν ξεχωρίζουν από τον κωδικό
-  'PANKILL FOR BED BUGS (130)': [
+  'PANKILL FOR BED BUGS': [
     ['κωδ. 130', '130'],
     ['κωδ. 157', '157'],
   ],
   // Ίδιο προϊόν, ΑΛΛΟΣ ΠΡΟΜΗΘΕΥΤΗΣ — ο χρήστης ξεχωρίζει από τον κωδικό
-  'RAT SNAP TRAP (125)': [
+  'RAT SNAP TRAP': [
     ['κωδ. 125', '125'],
     ['κωδ. 156', '156'],
   ],
