@@ -201,7 +201,8 @@ function buildReal(rows){
     const extra=Object.keys(lastPts).filter(k=>!skip(k)&&POINTS.indexOf(k)<0);
     const names=POINTS.concat(extra);
     const detail=names.map(p=> lastPts[p] ? lastPts[p] : [0,0,0,0,0,0]);
-    roomsMap.get(rec.room).push({u:rec.u, t:rec.t, trend, detail, names, stages:lastPts._stages||[]});
+    roomsMap.get(rec.room).push({u:rec.u, t:rec.t, trend, detail, names,
+                                 stages:lastPts._stages||[], lastIdx:Math.max(lastI,0)});
   }
   ROOMS=[...roomsMap.entries()].map(([name,units])=>({name,units})); finalize();
 }
@@ -232,10 +233,14 @@ function renderDetails(){
     const names=u.names||POINTS, stages=u.stages||[];
     let h=`<div class="card"><h2><span class="dot"></span>Λεπτομέρειες <span class="tid">${u.room} · ${u.u}</span> <span class="unit">${u.t} · ${lastDate} · σημεία ελέγχου × ευρήματα</span></h2>`;
     if(stages.length){
-      const breeding=stages.some(isBreeding);
+      const breeding=stages.some(isBreeding), first=(u.lastIdx||0)===0;
+      // η σύσταση για δεύτερο πέρασμα αφορά την ΠΡΩΤΗ επίσκεψη· αν τα ίδια ευρήματα
+      // βγαίνουν σε επανέλεγχο, το ζητούμενο δεν είναι επανάληψη αλλά αναθεώρηση
+      const msg = !breeding ? "μόνο ώριμα άτομα — πιθανή πρόσφατη μεταφορά από έξω"
+        : first ? "αναπαραγωγή επί τόπου — χρειάζεται επανάληψη σε 7–14 ημέρες για όσα ωά εκκολαφθούν"
+                : "αναπαραγωγή επί τόπου ΜΕΤΑ την εφαρμογή — η προσβολή επιμένει: έλεγχος κάλυψης, γειτονικών χώρων και μεθόδου";
       h+=`<div class="stageStrip ${breeding?'breed':''}"><b>Στάδιο ανάπτυξης:</b> ${stages.join(" · ")}`+
-         `<span>${breeding?"αναπαραγωγή επί τόπου — χρειάζεται επανάληψη σε 7–14 ημέρες για όσα ωά εκκολαφθούν"
-                        :"μόνο ώριμα άτομα — πιθανή πρόσφατη μεταφορά από έξω"}</span></div>`;
+         `<span>${msg}</span></div>`;
     }
     h+=`<div class="tscroll"><table><thead><tr><th class="stn">Σημείο ελέγχου</th>`;
     EVID.forEach(e=>h+=`<th>${e}</th>`); h+="<th>Επίπεδο</th><th>Φωτό</th></tr></thead><tbody>";
