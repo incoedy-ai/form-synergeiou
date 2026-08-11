@@ -768,7 +768,7 @@ const skevasmata = [
   'MAGNUM ANT (41)', 'MAGNUM GEL (42)', 'PROVECTA (53)', 'SWIRR (117)', 'CT (52)',
   // ΠΟΝΤΙΚΙΑ
   'ZAGOR WAX BLOCK (124)', 'MAST (139)', 'Π20 (76)', 'CORAL (70)',
-  'TBCL (71)', 'SNAPTRAP (125)',
+  'TBCL (71)', 'RAT SNAP TRAP (125)',
   // ΚΟΛΛΕΣ
   'ITRAP 50 (37)', 'CHAMELEON (58)', 'X-LURE (93)', 'ROCK BAIT STATION (186)',
   'M26 (158)', 'M41 (119)', 'K43 (127)',
@@ -776,8 +776,8 @@ const skevasmata = [
   'MASTER TRAP (153)', 'BLATTRAP (176)', 'RTU (68)',
   'LAMP CHAMELEON (40)', 'LAMP INOXTRAP SP (134)', 'LAMP CHAMELEON ATRIUM (138)', 'LAMP INOXTRAP CAPTURE (140)',
   'Π20 STICKY (150)', 'K22 I-TRAP30 (181)',
-  'TRAPPER MINI REX (65)', 'TRAPPER T-REX (66)', 'RAT SNAP TRAP (156)',
-  'PLAST BETA2 (69)', 'PLAST ROCK (99)', 'EC GEL (142)', 'SERPOL GEL (57)', 'ECOREX GEL (111)', 'PANKILL FOGGER (174)', 'MURIBROM BLOCK (44)', 'NOTRAC BB (161)', 'INASTRO (100)',
+  'TRAPPER MINI REX (65)', 'TRAPPER T-REX (66)',
+  'PLAST BETA2 (69)', 'PLAST ROCK (99)', 'EC GEL (142)', 'SERPOL GEL (57)', 'ECOREX GEL (111)', 'PANKILL FOGGER (174)', 'PANKILL FOR BED BUGS (130)', 'MURIBROM BLOCK (44)', 'NOTRAC BB (161)', 'INASTRO (100)',
   'MASTERCID MICRO (43)', 'BLATA 10SC (97)',
   // ΑΠΟΛΥΜΑΝΣΗ
   'DUOZON (34)', 'BIG SPRAY (87)', 'DALCO-100 (88)', 'DUTRION GEL (168)',
@@ -833,7 +833,7 @@ const SKEVASMA_META = {
   'Π20 (76)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΕΛΕΓΧΟΣ / ΣΥΝΤΗΡΗΣΗ Σ/Ε'] },
   'CORAL (70)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ'] },
   'TBCL (71)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ'] },
-  'SNAPTRAP (125)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
+  'RAT SNAP TRAP (125)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
   'ITRAP 50 (37)': { typ: 'ΗΛΕΚΤΡΙΚΗ ΕΝΤΟΜΟΠΑΓΙΔΑ', meth: ['SERVICE ΕΝΤΟΜΟΠΑΓΙΔΩΝ'] },
   'CHAMELEON (58)': { typ: 'ΗΛΕΚΤΡΙΚΗ ΕΝΤΟΜΟΠΑΓΙΔΑ', meth: ['ΑΛΛΑΓΗ ΚΟΛΛΗΤΙΚΗΣ ΕΠΙΦΑΝΕΙΑΣ'] },
   'X-LURE (93)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΦΕΡΟΜΟΝΙΚΗΣ ΠΑΓΙΔΑΣ', 'ΤΟΠΟΘΕΤΗΣΗ ΠΑΓΙΔΩΝ'] },
@@ -855,13 +855,13 @@ const SKEVASMA_META = {
   'K22 I-TRAP30 (181)': { typ: 'ΗΛΕΚΤΡΙΚΗ ΕΝΤΟΜΟΠΑΓΙΔΑ', meth: ['ΑΛΛΑΓΗ ΚΟΛΛΗΤΙΚΗΣ ΕΠΙΦΑΝΕΙΑΣ'] },
   'TRAPPER MINI REX (65)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
   'TRAPPER T-REX (66)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
-  'RAT SNAP TRAP (156)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ ΜΗΧ. ΠΑΓΙΔΑΣ'] },
   'PLAST BETA2 (69)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ'] },
   'PLAST ROCK (99)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΤΟΠΟΘΕΤΗΣΗ Δ/Σ'] },
   'EC GEL (142)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
   'SERPOL GEL (57)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΕΠΙΧΡΙΣΜΑ'] },
   'ECOREX GEL (111)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['GEL'] },
   'PANKILL FOGGER (174)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΑΕΡΟΛΥΜΑ'] },
+  'PANKILL FOR BED BUGS (130)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
   'MURIBROM BLOCK (44)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
   'NOTRAC BB (161)': { typ: 'ΜΥΟΚΤΟΝΙΑ', meth: ['ΕΛΕΓΧΟΣ/ΣΥΝΤΗΡΗΣΗ Δ/Σ'] },
   'INASTRO (100)': { typ: 'ΑΠΕΝΤΟΜΩΣΗ', meth: ['ΨΕΚΑΣΜΟΣ'] },
@@ -914,8 +914,11 @@ const PACKAGING_DB = {
     ['κωδ. 130', '130'],
     ['κωδ. 157', '157'],
   ],
-  // ⚠️ To RAT SNAP TRAP ΔΕΝ μπαίνει εδώ: υπάρχει ήδη ΔΥΟ ΦΟΡΕΣ στη λίστα
-  // φαρμάκων, με τους δύο κωδικούς (125 και 156).
+  // Ίδιο προϊόν, ΑΛΛΟΣ ΠΡΟΜΗΘΕΥΤΗΣ — ο χρήστης ξεχωρίζει από τον κωδικό
+  'RAT SNAP TRAP (125)': [
+    ['κωδ. 125', '125'],
+    ['κωδ. 156', '156'],
+  ],
 };
 
 function fillPackaging(pakSelect, skeuasma) {
