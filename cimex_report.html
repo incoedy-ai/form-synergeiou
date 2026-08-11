@@ -146,7 +146,8 @@ const POINTS=["Πλαίσιο Κρεβατιού","Κεφαλάρι","Πόδια
 const EVID=["Έντομα","Νεκρά","Κόπρανα","Εξωδέρματα","Ωα"];
 const EVMAP={"Έντομα":0,"Νεκρά":1,"Κόπρανα":2,"Εξωδέρματα":3,"Ωα":4};
 const STAGE_ROW="ΣΤΑΔΙΑ ΑΝΑΠΤΥΞΗΣ";   // δεν είναι σημείο ελέγχου — αφορά όλη τη μονάδα
-const BREEDING=["Ωά","Νύμφες μικρές (Ν1–Ν3)"];   // αυτά σημαίνουν αναπαραγωγή επί τόπου
+// Ωά ή οποιοδήποτε νυμφικό στάδιο = εκκολάφθηκαν εκεί, άρα αναπαραγωγή επί τόπου
+const isBreeding=s=>s==="Ωά"||s.indexOf("Νυμφικό")===0;
 const LVL=["κανένα εύρημα","μεμονωμένη παρουσία","μικρή προσβολή (<10)","μεσαία προσβολή (10–20)","μεγάλη προσβολή (διασπορά)"];
 const Z=()=>POINTS.map(()=>[0,0,0,0,0,0]);
 const DEMO_INSPECTIONS=["05/07/2026","19/07/2026","02/08/2026"];
@@ -231,7 +232,7 @@ function renderDetails(){
     const names=u.names||POINTS, stages=u.stages||[];
     let h=`<div class="card"><h2><span class="dot"></span>Λεπτομέρειες <span class="tid">${u.room} · ${u.u}</span> <span class="unit">${u.t} · ${lastDate} · σημεία ελέγχου × ευρήματα</span></h2>`;
     if(stages.length){
-      const breeding=stages.some(s=>BREEDING.indexOf(s)>=0);
+      const breeding=stages.some(isBreeding);
       h+=`<div class="stageStrip ${breeding?'breed':''}"><b>Στάδιο ανάπτυξης:</b> ${stages.join(" · ")}`+
          `<span>${breeding?"αναπαραγωγή επί τόπου — χρειάζεται επανάληψη σε 7–14 ημέρες για όσα ωά εκκολαφθούν"
                         :"μόνο ώριμα άτομα — πιθανή πρόσφατη μεταφορά από έξω"}</span></div>`;
