@@ -307,6 +307,10 @@ const ypoKat = decodeURIComponent(p.get('ypokat') || '').toUpperCase().trim();
 // τα δύο γράμματα είναι οπτικά ταυτόσημα και μπερδεύονται στην καταχώρηση.
 const kodPel = decodeURIComponent(p.get('kod') || '').toUpperCase().trim();
 const isIdiotisB = /^[ΒB]/.test(kodPel);
+// Ο πελάτης είναι ΗΔΗ μέσα στο My InCo (έχει σύνδεσμο φακέλου, όχι απλώς φάκελο
+// στο δικό μας αρχείο). Τότε βλέπει μόνος του το πιστοποιητικό και δεν του
+// στέλνουμε email.
+const exeiMyInco = p.get('myinco') === '1';
 function hidePair(labelId, valId) {
   document.getElementById(labelId).style.display = 'none';
   document.getElementById(valId).style.display = 'none';
@@ -351,6 +355,11 @@ if (catPel === 'ΣΚΑΦΟΣ') {
 }
 document.getElementById('custDate').value = new Date().toISOString().slice(0, 10);
 document.getElementById('custEmail').value = decodeURIComponent(p.get('email') || '');
+// Ο τεχνικός πρέπει να ξέρει ΠΡΙΝ πατήσει αν θα φύγει email στον πελάτη ή όχι.
+if (exeiMyInco) {
+  const b = document.getElementById('btnEmail');
+  if (b) b.title = 'Ανεβάζει το έγγραφο στον φάκελο My InCo του πελάτη — ΔΕΝ του στέλνει email';
+}
 const scriptUrl = p.get('script') || '';
 // Το email του PDF πάει ΠΑΝΤΑ στη dedicated μηχανή PDF, ΟΧΙ στο script του πελάτη
 // (που ξέρει μόνο να γράφει στα φύλλα). Στη δοκιμή δούλευε γιατί περνούσαμε αυτό
@@ -460,9 +469,17 @@ function buildStandaloneHtml() {
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + styleText + '</style></head><body>' + pageClone.outerHTML + '</body></html>';
 }
 
+// Ο λογαριασμός που στέλνει και του οποίου τα Απεσταλμένα σαρώνει η αρχειοθέτηση.
+const ARCHIVE_MAILBOX = 'inco.edy@gmail.com';
+
 async function sendPdfEmail() {
   const btn = document.getElementById('btnEmail');
-  const emailVal = document.getElementById('custEmail').value.trim();
+  // ⚠️ Η αρχειοθέτηση δουλεύει ΔΙΑΒΑΖΟΝΤΑΣ το Gmail: η εργασία κάθε 15' κατεβάζει
+  // το συνημμένο και το βάζει στον φάκελο του πελάτη. Αν δεν σταλεί email πουθενά,
+  // δεν αρχειοθετείται τίποτα. Γι' αυτό για τους πελάτες του My InCo δεν κόβουμε
+  // την αποστολή — την ΓΥΡΝΑΜΕ στο γραφείο. Ο πελάτης δεν ειδοποιείται.
+  const emailVal = exeiMyInco ? ARCHIVE_MAILBOX
+                              : document.getElementById('custEmail').value.trim();
   if (!emailVal) { alert('Συμπλήρωσε email παραλήπτη.'); return; }
   const prevText = btn.textContent;
   btn.disabled = true; btn.textContent = 'Αποστολή...';
@@ -474,7 +491,9 @@ async function sendPdfEmail() {
       mode: 'no-cors',
       body: JSON.stringify({ form: 'sendPdf', doc: 'ecert', email: emailVal, pelatis: pelatisName, html: html })
     });
-    alert('Στάλθηκε αίτημα αποστολής στο ' + emailVal + ' — έλεγξε το inbox σε λίγο.');
+    alert(exeiMyInco
+      ? 'Το πιστοποιητικό ανεβαίνει στον φάκελο My InCo του πελάτη.\n\nΔΕΝ του στάλθηκε email — το βλέπει μόνος του.'
+      : 'Στάλθηκε αίτημα αποστολής στο ' + emailVal + ' — έλεγξε το inbox σε λίγο.');
   } catch (e) {
     alert('Σφάλμα αποστολής: ' + e.message);
   } finally {
