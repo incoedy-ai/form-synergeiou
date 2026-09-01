@@ -303,6 +303,10 @@ document.getElementById('custEponymia').textContent = decodeURIComponent(p.get('
 
 const catPel = decodeURIComponent(p.get('katpel') || '').toUpperCase().trim();
 const ypoKat = decodeURIComponent(p.get('ypokat') || '').toUpperCase().trim();
+// Ο κωδικός πελάτη. Το πρόθεμα Β σημαίνει ιδιώτη — δεκτό και με λατινικό B, γιατί
+// τα δύο γράμματα είναι οπτικά ταυτόσημα και μπερδεύονται στην καταχώρηση.
+const kodPel = decodeURIComponent(p.get('kod') || '').toUpperCase().trim();
+const isIdiotisB = /^[ΒB]/.test(kodPel);
 function hidePair(labelId, valId) {
   document.getElementById(labelId).style.display = 'none';
   document.getElementById(valId).style.display = 'none';
@@ -334,8 +338,10 @@ if (catPel === 'ΣΚΑΦΟΣ') {
   document.getElementById('custOnomaSkaf').textContent = decodeURIComponent(p.get('onomaskaf') || '—');
   document.getElementById('custDieyLabel').textContent = 'Λιμάνι Ελλιμενισμού:';
   document.getElementById('custDiey').textContent = decodeURIComponent(p.get('limani') || '—');
-} else if (ypoKat === 'ΠΟΛΥΚΑΤΟΙΚΙΑ') {
-  // Πολυκατοικία (υποκατηγορία του ΙΔΙΩΤΗ): μόνο Διεύθυνση + Περιοχή
+} else if (ypoKat === 'ΠΟΛΥΚΑΤΟΙΚΙΑ' || isIdiotisB) {
+  // Πολυκατοικία ή πελάτης με κωδικό Β (ιδιώτης): ΜΟΝΟ Διεύθυνση + Περιοχή.
+  // Στο πιστοποιητικό ενός σπιτιού δεν τυπώνεται όνομα ούτε δραστηριότητα —
+  // ο χώρος προσδιορίζεται από τη διεύθυνσή του (απόφαση χρήστη 2026-08-31).
   hidePair('custEponymiaLabel', 'custEponymia');
   hidePair('custDiakrLabel', 'custDiakr');
   hidePair('custDrastLabel', 'custDrast');
