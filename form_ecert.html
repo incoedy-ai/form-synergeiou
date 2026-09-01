@@ -359,6 +359,38 @@ try {
   skevasmata = [];
 }
 
+// Βρίσκει το σκεύασμα στον κατάλογο. Πρώτα ακριβές κλειδί· αλλιώς με τον ΚΩΔΙΚΟ
+// μέσα στην παρένθεση, γιατί κάποια κλειδιά κρατούν ΔΥΟ κωδικούς — «ZAGOR (124/175)»
+// — ενώ ο χρήστης επιλέγει ένα από τα δύο («ZAGOR WAX BLOCK 175»). Χωρίς αυτό η
+// αναζήτηση αποτύγχανε σιωπηλά και το πιστοποιητικό έβγαινε χωρίς δραστική ουσία.
+function lookupSkevasma(raw) {
+  const s = String(raw || '');
+  if (SKEVASMATA_DB[s]) return { info: SKEVASMATA_DB[s], found: true };
+
+  // ⚠️ ΜΟΝΟ ο κωδικός της ΤΕΛΙΚΗΣ παρένθεσης. Αν πάρεις όλα τα ψηφία της ονομασίας,
+  // το «ΚΟΛΛΑ Π20 (76)» ταιριάζει κατά λάθος με «CYTROL FORTE (20)» και το
+  // πιστοποιητικό τυπώνει ΛΑΘΟΣ δραστική ουσία — χειρότερο από το να μη βρει τίποτα.
+  // Δύο μορφές κυκλοφορούν: «ΟΝΟΜΑ (175)» από τη φόρμα συνεργείου και «175-ΟΝΟΜΑ»
+  // από τον πίνακα της Access. Δεχόμαστε και τις δύο — αλλά ΠΟΤΕ σκέτα ψηφία από
+  // μέσα στην ονομασία.
+  const tail = s.match(/\(([^)]*)\)\s*$/);
+  const head = s.match(/^\s*(\d+)\s*-/);
+  const codes = tail ? tail[1].split('/').map(function (x) { return x.trim(); })
+                            .filter(function (x) { return /^\d+$/.test(x); })
+                     : (head ? [head[1]] : []);
+  if (codes.length) {
+    for (const key in SKEVASMATA_DB) {
+      const km = key.match(/\(([^)]*)\)/);
+      if (!km) continue;
+      const kcodes = km[1].split('/').map(function (x) { return x.trim(); });
+      for (const c of codes) {
+        if (kcodes.indexOf(c) !== -1) return { info: SKEVASMATA_DB[key], found: true };
+      }
+    }
+  }
+  return { info: ['', '', '', ''], found: false };
+}
+
 const grid = document.getElementById('skevGrid');
 const slotCount = Math.max(8, Math.ceil(skevasmata.length / 4) * 4);
 for (let i = 0; i < slotCount; i++) {
@@ -367,12 +399,17 @@ for (let i = 0; i < slotCount; i++) {
   card.className = 'skevCard' + (item ? '' : ' empty');
   card.innerHTML = '<img class="cardWm" src="card_watermark_logo.png" alt="">';
   if (item) {
-    const info = SKEVASMATA_DB[item.skeuasma] || ['', '', '', ''];
+    const hit = lookupSkevasma(item.skeuasma);
+    const info = hit.info;
     const name = info[0] || item.skeuasma.replace(/\s*\([^)]*\)\s*$/, '');
     const drast = info[1] ? info[1].split('\n').map(function(l){ return '(' + l + ')'; }).join('<br>') : '';
     const adeia = info[2] || '';
     const typos = info[3] || item.typos || '';
-    const isEco = name && !drast && !info[4];
+    // ⚠️ ECO ΜΟΝΟ όταν το σκεύασμα ΒΡΕΘΗΚΕ και όντως δεν έχει δραστική ουσία.
+    // Πριν, η απλή απουσία δραστικής το έβγαζε eco — οπότε ένα σκεύασμα που απλώς
+    // δεν ταίριαξε στον κατάλογο (π.χ. ZAGOR, μυοκτόνο με Brodifacoum και άδεια
+    // ΤΠ14-0113) τυπωνόταν ως «ECO FRIENDLY» σε επίσημο πιστοποιητικό.
+    const isEco = hit.found && name && !drast && !info[4];
     const drastLabel = drast && !adeia ? 'Συστατικά' : '';
     card.innerHTML +=
       (typos ? '<div class="typ">' + typos + '</div>' : '') +
