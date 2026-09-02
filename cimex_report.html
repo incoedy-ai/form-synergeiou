@@ -74,6 +74,7 @@
   #tip{position:fixed;pointer-events:none;background:var(--navy);color:#fff;font-size:12px;padding:7px 10px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.3);opacity:0;transition:opacity .1s;z-index:50;max-width:250px;line-height:1.4;}
   :root[data-theme="dark"] #tip{background:#0f1720;border:1px solid var(--line);} #tip b{color:var(--cyan)}
   footer{margin-top:24px;text-align:center;color:var(--muted);font-size:12px;line-height:1.7;} footer b{color:var(--ink-2)}
+  .legal{margin-top:10px;padding-top:8px;border-top:1px solid var(--line,#dcdcdc);font-size:10px;line-height:1.6;color:var(--muted,#777);}
   @media print{:root{--bg:#fff;--surface:#fff;--surface-2:#f5f8fa;}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}body{background:#fff}.wrap{padding:6px 0}.head,.kpi,.card,.legend,.approval{box-shadow:none;break-inside:avoid}#tip{display:none}@page{margin:10mm}}
 </style>
 
@@ -135,8 +136,10 @@
 
   <footer>
     <b>InCo — Εφαρμογές Δημόσιας Υγείας · Τμήμα Pest Control</b><br>
-    Δελφών 140, Γλυφάδα 16561 · 210.96.44.310 · in-co.gr<br>
     Η έκθεση ενημερώνεται μετά από κάθε έλεγχο / επανέλεγχο.
+<!-- Νομικό υποσέλιδο: ο ΑΡ. ΓΕΜΗ και το ΑΦΜ είναι υποχρεωτικά σε κάθε
+     εταιρικό έγγραφο που φέρει την επωνυμία. Μην τα συντομεύσεις. -->
+  <div class="legal">ΑΡΧΙΜΗΔΗΣ Λ. ΤΡΥΦΩΝΙΔΗΣ / ΥΓΕΙΟΝΟΜΙΚΕΣ ΜΕΛΕΤΕΣ – ΑΠΟΛΥΜΑΝΣΕΙΣ / ΑΦΜ.104353567 / ΚΕΦΟΔΕ ΑΤΤΙΚΗΣ<br>ΑΡ. ΓΕΜΗ.008784101000 / ΔΕΛΦΩΝ 140 – 165,61 / ΓΛΥΦΑΔΑ / 210.96.44.310 / sales@in-co.gr / www.in-co.gr</div>
   </footer>
 </div>
 <div id="tip"></div>
