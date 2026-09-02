@@ -1212,6 +1212,11 @@ async function submitForm() {
   const dieyEf  = document.getElementById('inf-diey-ef').textContent;
   const imer    = document.getElementById('inf-imer').textContent;
   const ora     = document.getElementById('inf-ora').textContent;
+  // Το ΑΦΜ μπαίνει στα στοιχεία πελάτη του email — το χρειάζεται το λογιστήριο.
+  // Στους ιδιώτες η γραμμή είναι κρυφή στη φόρμα και το πεδίο κενό, οπότε τη
+  // βγάζουμε εντελώς αντί να τυπώσουμε «ΑΦΜ: —».
+  const afmPel  = (document.getElementById('inf-afm').textContent || '').trim();
+  const afmLine = (afmPel && afmPel !== '—') ? 'ΑΦΜ: ' + afmPel + '\n' : '';
 
   // Πληρωμη
   const kat    = document.querySelector('[data-group="kat"].active')?.dataset.val || '—';
@@ -1237,7 +1242,7 @@ async function submitForm() {
 ========================
 ΚΩΔΙΚΟΣ: ${kod}
 ΠΕΛΑΤΗΣ: ${pelatis}
-ΔΙΕΥΘΥΝΣΗ: ${diey}
+${afmLine}ΔΙΕΥΘΥΝΣΗ: ${diey}
 ΔΙΕΥΘ. ΕΦΑΡΜΟΓΗΣ: ${dieyEf}
 ΗΜΕΡΟΜΗΝΙΑ: ${imer}  ΩΡΑ: ${ora}
 
