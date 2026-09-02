@@ -403,6 +403,29 @@ function lookupSkevasma(raw) {
       }
     }
   }
+
+  // Τελευταία ευκαιρία: ταύτιση με το ΟΝΟΜΑ. Πέντε επιλογές της φόρμας συνεργείου
+  // δεν έχουν καθόλου κωδικό σε παρένθεση (ZAGOR WAX BLOCK, DOBOL OMICRON,
+  // PANKILL DUST, PANKILL FOR BED BUGS, RAT SNAP TRAP) — γι' αυτό το πιστοποιητικό
+  // τα τύπωνε χωρίς δραστική ουσία και χωρίς αριθμό έγκρισης.
+  // ⚠️ ΜΟΝΟ ακριβής ισότητα ονόματος, ΠΟΤΕ «περιέχει»: το «ZAGOR» θα κόλλαγε σε
+  // οτιδήποτε άλλο ξεκινούσε έτσι και θα τύπωνε λάθος δραστική ουσία.
+  const gymno = function (t) {
+    t = String(t || '').trim();
+    const p = t.lastIndexOf('(');
+    if (p > 0 && t.endsWith(')')) t = t.slice(0, p);
+    return t.trim().toUpperCase();
+  };
+  const zit = gymno(s);
+  if (zit) {
+    for (const key in SKEVASMATA_DB) {
+      const info = SKEVASMATA_DB[key];
+      if (gymno(key) === zit || String(info[0] || '').trim().toUpperCase() === zit) {
+        return { info: info, found: true };
+      }
+    }
+  }
+
   return { info: ['', '', '', ''], found: false };
 }
 
