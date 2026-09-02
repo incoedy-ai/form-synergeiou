@@ -333,6 +333,11 @@
       <span class="pay-label">ΧΡΕΩΣΗ</span>
       <input class="pay-input" type="number" id="xrewsi" placeholder="0.00" step="0.01" oninput="calcFPA()">
     </div>
+    <!-- Από πού βγήκε το ποσό. Κρύβεται όταν ο πελάτης δεν έχει βασικές χρεώσεις. -->
+    <div class="pay-row" id="row-vasikes" style="display:none;">
+      <span class="pay-label" style="opacity:.7;">ΒΑΣΙΚΕΣ</span>
+      <span id="inf-vasikes" style="font-size:12px;opacity:.75;line-height:1.4;"></span>
+    </div>
 
     <div class="pay-row">
       <span class="pay-label">% ΦΠΑ</span>
@@ -591,6 +596,28 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
         const r = document.getElementById(id);
         if (r) r.style.display = 'none';
       });
+    }
+  })();
+
+  // ---- ΧΡΕΩΣΗ: ξεκινά από το άθροισμα των ΒΑΣΙΚΩΝ χρεώσεων του πελάτη ----
+  // ⚠️ ΑΦΕΤΗΡΙΑ, ΟΧΙ ΚΛΕΙΔΩΜΑ: ο τεχνικός γράφει από πάνω ό,τι θέλει. Οι ΕΞΤΡΑ
+  // χρεώσεις δεν αθροίζονται — δεν γίνονται σε κάθε επίσκεψη.
+  (function () {
+    const synolo = parseFloat(p.get('vasiki') || '0') || 0;
+    const analysi = decodeURIComponent(p.get('vasikes') || '').trim();
+    const inp = document.getElementById('xrewsi');
+    // Δεν πατάμε ποτέ τιμή που υπάρχει ήδη στο πεδίο.
+    if (synolo > 0 && inp && !inp.value) {
+      inp.value = synolo.toFixed(2);
+      if (typeof calcFPA === 'function') calcFPA();
+    }
+    if (analysi) {
+      const meri = analysi.split('|').map(function (t) {
+        const i = t.lastIndexOf(':');
+        return i < 0 ? t : t.slice(0, i) + ' ' + t.slice(i + 1) + ' €';
+      });
+      document.getElementById('inf-vasikes').textContent = meri.join('  ·  ');
+      document.getElementById('row-vasikes').style.display = '';
     }
   })();
 
