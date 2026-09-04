@@ -112,6 +112,11 @@
   .pay-input.auto { background: #f5f5f5; color: #555; }
 
   /* ΠΑΡΑΣΤΑΤΙΚΑ */
+  /* ΠΑΡΑΣΤΑΤΙΚΑ: επιλογή, όχι πληκτρολόγηση. Μεγάλοι στόχοι — πατιούνται με
+     δάχτυλο σε tablet, μέσα στον χώρο του πελάτη. */
+  .par-help { font-size: 12px; color: #666; margin-bottom: 6px; }
+  .par-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .par-btn { padding: 12px 4px; font-size: 15px; font-weight: bold; }
   .doc-grid { display: grid; grid-template-columns: 1fr; gap: 6px; }
   .doc-item label { font-size: 13px; color: #555; font-weight: bold; display: block; margin-bottom: 3px; }
   .doc-item input {
@@ -396,23 +401,15 @@
 <div class="section" style="margin:0; flex:0 0 150px;">
   <div class="section-title">ΠΑΡΑΣΤΑΤΙΚΑ</div>
   <div class="section-body">
-    <div class="doc-grid">
-      <div class="doc-item">
-        <label>ΔΑ</label>
-        <input type="text" id="da" placeholder="Αριθμός">
-      </div>
-      <div class="doc-item">
-        <label>ΤΔΑ</label>
-        <input type="text" id="tda" placeholder="Αριθμός">
-      </div>
-      <div class="doc-item">
-        <label>ΤΠΥ</label>
-        <input type="text" id="tpy" placeholder="Αριθμός">
-      </div>
-      <div class="doc-item">
-        <label>ΑΠΥ</label>
-        <input type="text" id="apy" placeholder="Αριθμός">
-      </div>
+    <!-- Το συνεργείο ΔΕΝ γράφει αριθμούς: δηλώνει ΤΙ ΠΡΕΠΕΙ ΝΑ ΚΟΠΕΙ και το
+         γραφείο εκδίδει. Πολλαπλή επιλογή, γιατί κόβονται και συνδυασμοί
+         (ΔΑ+ΤΠΥ, ΔΑ+ΑΠΥ). Ο αριθμός μπαίνει μετά, στην Access. -->
+    <div class="par-help">Τι πρέπει να κοπεί;</div>
+    <div class="par-group">
+      <button type="button" class="toggle-btn par-btn" data-par="ΔΑ"  onclick="togglePar(this)">ΔΑ</button>
+      <button type="button" class="toggle-btn par-btn" data-par="ΤΔΑ" onclick="togglePar(this)">ΤΔΑ</button>
+      <button type="button" class="toggle-btn par-btn" data-par="ΤΠΥ" onclick="togglePar(this)">ΤΠΥ</button>
+      <button type="button" class="toggle-btn par-btn" data-par="ΑΠΥ" onclick="togglePar(this)">ΑΠΥ</button>
     </div>
   </div>
 </div>
@@ -570,6 +567,20 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
       if (kathara.replace(/\D/g, '').length < 9) return m;
       return '<a class="tel-link" href="tel:' + kathara + '">' + m + '</a>';
     });
+  })();
+
+  // ---- ΠΑΡΑΣΤΑΤΙΚΑ: προεπιλογή από το αρχικό του κωδικού πελάτη ----
+  // Α -> ΤΙΜΟΛΟΓΙΟ ΠΑΡΟΧΗΣ ΥΠΗΡΕΣΙΩΝ, Β -> ΑΠΟΔΕΙΞΗ. Ισχύει 26 στις 26 φορές
+  // στα δεδομένα του 2026, οπότε ο τεχνικός δεν χρειάζεται να το σκεφτεί.
+  // Ο ίδιος μπορεί να το αλλάξει και να προσθέσει ΔΑ όταν παραδίδονται υλικά.
+  (function prosepilogiParastatikou() {
+    const kod = (document.getElementById('inf-kod').textContent || '').trim();
+    // ⚠️ ελληνικό/λατινικό Α και Β μοιάζουν ίδια — δέχομαι και τα δύο
+    const arxiko = kod.charAt(0).toUpperCase().replace('A', 'Α').replace('B', 'Β');
+    const proep = arxiko === 'Α' ? 'ΤΠΥ' : (arxiko === 'Β' ? 'ΑΠΥ' : '');
+    if (!proep) return;
+    const b = document.querySelector('.par-btn[data-par="' + proep + '"]');
+    if (b) b.classList.add('active');
   })();
 
   // ---- Προσαρμογή πεδίων ανά κατηγορία πελάτη (όπως στη φόρμα ΡΑΝΤΕΒΟΥ της Access) ----
@@ -1141,6 +1152,21 @@ function toggleBtn(btn) {
   if (group === 'trop' || group === 'exof') calcYpoloipo();
 }
 
+// ΠΑΡΑΣΤΑΤΙΚΑ: ΠΟΛΛΑΠΛΗ επιλογή — όχι setActive, που καθαρίζει τα αδέλφια.
+// Κόβονται και συνδυασμοί (ΔΑ+ΤΠΥ, ΔΑ+ΑΠΥ), οπότε το ένα δεν αποκλείει το άλλο.
+function togglePar(btn) {
+  btn.classList.toggle('active');
+}
+function selectedPar() {
+  return [...document.querySelectorAll('.par-btn.active')]
+    .map(b => b.dataset.par).join('+');
+}
+// ⚠️ ΟΧΙ includes(): το «ΤΔΑ» ΠΕΡΙΕΧΕΙ «ΔΑ», οπότε μια επιλογή ΤΔΑ θα τσέκαρε
+// λάθος και το ΔΑ. Ταύτιση με ολόκληρο όρο, όχι υποσυμβολοσειρά.
+function parExei(p) {
+  return document.querySelector('.par-btn.active[data-par="' + p + '"]') !== null;
+}
+
 // ---- ΦΠΑ + ΥΠΟΛΟΙΠΟ ----
 function calcFPA() {
   const x   = parseFloat(document.getElementById('xrewsi').value) || 0;
@@ -1261,11 +1287,8 @@ async function submitForm() {
   const ypol   = document.getElementById('ypoloipo').value || '—';
   const exof   = document.querySelector('[data-group="exof"].active')?.dataset.val || '—';
 
-  // Παραστατικα
-  const da  = document.getElementById('da').value || '—';
-  const tda = document.getElementById('tda').value || '—';
-  const tpy = document.getElementById('tpy').value || '—';
-  const apy = document.getElementById('apy').value || '—';
+  // Παραστατικα: ΤΙ ΖΗΤΑΕΙ το συνεργειο να κοπει (ο αριθμος μπαινει στο γραφειο)
+  const parast = selectedPar();
 
   const simSyn = document.getElementById('sim-synergeiou').value || '—';
 
@@ -1292,11 +1315,8 @@ ${skLines.length ? skLines.join('\n') : '(κανένα)'}
 ΥΠΟΛΟΙΠΟ: ${ypol} €
 ΕΞΟΦΛΗΣΗ: ${exof}
 
---- ΠΑΡΑΣΤΑΤΙΚΑ ---
-ΔΑ: ${da}
-ΤΔΑ: ${tda}
-ΤΠΥ: ${tpy}
-ΑΠΥ: ${apy}
+--- ΠΑΡΑΣΤΑΤΙΚΑ ΠΡΟΣ ΕΚΔΟΣΗ ---
+${parast || '(δεν επιλέχθηκε)'}
 
 --- ΣΗΜΕΙΩΣΕΙΣ ΣΥΝΕΡΓΕΙΟΥ ---
 ${simSyn}
@@ -1310,7 +1330,19 @@ ${simSyn}
     kod, pelatis, diey, dieyEf, imer, ora, och,
     materials: skData,
     payment: { kat, trop, xrew, fpaPct, katharo, fpaPoso, enanti, ypol, exof },
-    docs: { da, tda, tpy, apy },
+    // ⚠️ ΓΙΑΤΙ ΤΑΞΙΔΕΥΕΙ ΜΕΣΑ ΣΤΟ docs: το Apps Script των εντολών έχει ΣΤΑΘΕΡΕΣ
+    // στήλες (HEADER_COLS) και γράφει ρητά doc.da/tda/tpy/apy — οτιδήποτε άλλο
+    // στέλναμε θα πεταγόταν ΣΙΩΠΗΛΑ. Οι στήλες αυτές άδειασαν ούτως ή άλλως,
+    // αφού το συνεργείο δεν γράφει πια αριθμούς: τις χρησιμοποιούμε ως σημαίες.
+    // Το sync_orders_to_access τις μεταφράζει σε ΖΗΤΟΥΜΕΝΑ_ΠΑΡΑΣΤΑΤΙΚΑ και
+    // ΔΕΝ τις γράφει στα ΔΑ/ΤΔΑ/ΤΠΥ/ΑΠΥ της Access.
+    docs: {
+      da:  parExei('ΔΑ')  ? 'ΝΑΙ' : '',
+      tda: parExei('ΤΔΑ') ? 'ΝΑΙ' : '',
+      tpy: parExei('ΤΠΥ') ? 'ΝΑΙ' : '',
+      apy: parExei('ΑΠΥ') ? 'ΝΑΙ' : ''
+    },
+    parast,
     simSyn,
     signature: getSignatureDataURL()
   };
