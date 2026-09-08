@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Αποδοχή Πρότασης Συνεργασίας — InCo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Παλέτα λογοτύπου InCo. Μία μόνο σελίδα, ένα πάτημα — τίποτα να συμπληρώσει
+   ο πελάτης. Η ταυτοποίηση γίνεται από το μυστικό κλειδί μέσα στον σύνδεσμο. */
+:root{
+  --navy:#2D3A4D; --blue:#287B9B; --cyan:#2DAFCE;
+  --ground:#EEF3F4; --card:#FFFFFF; --line:#D5E0E3;
+  --ink:#16222C; --muted:#61727D; --ok:#1F7A4D; --ok-bg:#E2F1E8;
+  --warn:#9A6410; --warn-bg:#FBF0DC;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+     font:16px/1.55 "Fira Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+     padding:16px;display:flex;justify-content:center}
+.wrap{width:100%;max-width:520px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;
+      padding:20px 18px;box-shadow:0 1px 3px rgba(22,34,44,.06)}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.top img{width:64px;height:auto;display:block}
+h1{font-size:19px;line-height:1.25;margin:0;color:var(--navy);text-wrap:balance}
+.sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+.pel{font-size:20px;font-weight:600;color:var(--navy);margin:0 0 2px;text-wrap:balance}
+.dt{color:var(--muted);font-size:13px;margin:0 0 14px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+td{padding:9px 0;border-bottom:1px solid #EEF2F4}
+td.v{text-align:right;font-weight:600;color:var(--navy);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.fpa{color:var(--muted);font-size:12px;margin:6px 0 0}
+button{width:100%;margin-top:22px;padding:17px 20px;border:0;border-radius:8px;
+       background:var(--blue);color:#fff;font:600 17px "Fira Sans",sans-serif;
+       cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:hover{background:#22688296}
+button:active{transform:translateY(1px)}
+button:disabled{background:#9DB3BD;cursor:default;transform:none}
+button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.msg{margin-top:20px;padding:16px;border-radius:8px;display:none}
+.msg.ok{display:block;background:var(--ok-bg);border:1px solid #BFDFCD;color:var(--ok)}
+.msg.bad{display:block;background:var(--warn-bg);border:1px solid #E8D3A6;color:var(--warn)}
+.msg b{display:block;font-size:17px;margin-bottom:4px}
+.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:18px;line-height:1.7}
+.foot a{color:var(--blue)}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#141C22; --card:#1C262E; --line:#2C3A45; --ink:#E8EEF1;
+    --muted:#9AAAB4; --navy:#CFE3EC; --ok-bg:#16302410; --warn-bg:#2A230F;
+  }
+  :root:not([data-theme="light"]) td{border-bottom-color:#26323B}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="top">
+      <img src="assets/logo_entoli.png" alt="InCo">
+      <div>
+        <h1>Πρόταση Συνεργασίας</h1>
+        <p class="sub">InCo — Εφαρμογές Δημόσιας Υγείας</p>
+      </div>
+    </div>
+    <hr>
+    <p class="pel" id="pel">—</p>
+    <p class="dt" id="dt"></p>
+    <table id="poso"></table>
+    <p class="fpa" id="fpa"></p>
+
+    <button id="btn" type="button">✔ ΑΠΟΔΕΧΟΜΑΙ ΤΗΝ ΠΡΟΤΑΣΗ</button>
+
+    <div class="msg" id="msg"></div>
+  </div>
+  <p class="foot">
+    InCo — Εφαρμογές Δημόσιας Υγείας · Δελφών 140, Γλυφάδα<br>
+    <a href="tel:2109644310">210.96.44.310</a> ·
+    <a href="mailto:sales@in-co.gr">sales@in-co.gr</a>
+  </p>
+</div>
+
+<script>
+// Το endpoint των εντολών — ήδη δημόσιο μέσα στη φόρμα συνεργείου.
+const SCRIPT = 'https://script.google.com/macros/s/AKfycbxgQnXjGxEM88fYOUyN8flf87SoL7F13qWN0E5Eh6WjqVKz6xJlK3nZwxQBWhqvjIcWXQ/exec';
+
+const p    = new URLSearchParams(location.search);
+const key  = (p.get('k') || '').trim().toUpperCase();
+const btn  = document.getElementById('btn');
+const msg  = document.getElementById('msg');
+
+function evro(v){
+  const n = parseFloat(String(v).replace(',', '.'));
+  if (!isFinite(n)) return '';
+  return n.toLocaleString('el-GR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+}
+function deixe(kind, titlos, keimeno){
+  msg.className = 'msg ' + kind;
+  msg.innerHTML = '<b>' + titlos + '</b>' + keimeno;
+}
+
+// ---- Τα στοιχεία ταξιδεύουν μέσα στον σύνδεσμο: η σελίδα δεν ρωτάει κανέναν,
+// ώστε να ανοίγει ακαριαία και χωρίς εξάρτηση από τη βάση.
+document.getElementById('pel').textContent = p.get('e') || 'Η επιχείρησή σας';
+const d = p.get('d') || '';
+document.getElementById('dt').textContent =
+  d ? ('Ημερομηνία έκδοσης ' + d + (p.get('is') ? ' · ισχύς έως ' + p.get('is') : '')) : '';
+
+const seires = [];
+if (p.get('pr')) seires.push(['Πρώτη επίσκεψη', evro(p.get('pr'))]);
+if (p.get('an')) seires.push(['Κόστος ανά επίσκεψη', evro(p.get('an'))]);
+if (p.get('n'))  seires.push(['Επισκέψεις ανά έτος', p.get('n')]);
+document.getElementById('poso').innerHTML =
+  seires.map(r => '<tr><td>' + r[0] + '</td><td class="v">' + r[1] + '</td></tr>').join('');
+if (seires.length) document.getElementById('fpa').textContent = 'Στις τιμές περιλαμβάνεται Φ.Π.Α 24%.';
+
+if (!key) {
+  btn.disabled = true;
+  deixe('bad', 'Ο σύνδεσμος δεν είναι πλήρης',
+        'Άνοιξέ τον ξανά από το email που λάβατε, ή τηλεφωνήστε μας στο 210.96.44.310.');
+}
+
+btn.addEventListener('click', async () => {
+  btn.disabled = true;
+  btn.textContent = 'Καταχώρηση…';
+  const payload = {
+    type: 'apodoxi',            // ⚠️ ο δρομολογητής του Apps Script το ψάχνει
+    key: key,
+    pelatis: p.get('e') || '',
+    imerominia: d,
+    when: new Date().toISOString(),
+    agent: navigator.userAgent.slice(0, 120)
+  };
+  try {
+    // mode:'no-cors' -> δεν διαβάζουμε απάντηση. Ίδιο μοτίβο με τη φόρμα
+    // συνεργείου· η επιβεβαίωση έρχεται από τον συγχρονισμό, όχι από εδώ.
+    await fetch(SCRIPT, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify(payload),
+      keepalive: true
+    });
+  } catch (err) {
+    console.error(err);
+  }
+  btn.textContent = '✔ Η ΑΠΟΔΟΧΗ ΚΑΤΑΓΡΑΦΗΚΕ';
+  deixe('ok', 'Ευχαριστούμε!',
+        'Η αποδοχή σας καταγράφηκε. Θα επικοινωνήσουμε μαζί σας για να ορίσουμε ' +
+        'την πρώτη επίσκεψη. Μπορείτε να κλείσετε τη σελίδα.');
+});
+</script>
+</body>
+</html>
