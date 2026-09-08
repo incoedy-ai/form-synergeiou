@@ -83,8 +83,9 @@ button:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
 </div>
 
 <script>
-// Το endpoint των εντολών — ήδη δημόσιο μέσα στη φόρμα συνεργείου.
-const SCRIPT = 'https://script.google.com/macros/s/AKfycbxgQnXjGxEM88fYOUyN8flf87SoL7F13qWN0E5Eh6WjqVKz6xJlK3nZwxQBWhqvjIcWXQ/exec';
+// Αποκλειστικό Apps Script για τις αποδοχές (08/09/2026). ΞΕΧΩΡΙΣΤΟ από των
+// εντολών: αν χαλάσει, το συνεργείο συνεχίζει να δουλεύει.
+const SCRIPT = 'https://script.google.com/macros/s/AKfycbyHzR46bS64aBi9kcW3yuzl3W3ar2DJ6Ktdt1sQqwuD0_Z-E3KkuUGXPxK9mkWUcGkDiQ/exec';
 
 const p    = new URLSearchParams(location.search);
 const key  = (p.get('k') || '').trim().toUpperCase();
