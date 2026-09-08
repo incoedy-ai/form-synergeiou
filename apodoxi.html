@@ -115,7 +115,11 @@ if (p.get('an')) seires.push(['Κόστος ανά επίσκεψη', evro(p.get
 if (p.get('n'))  seires.push(['Επισκέψεις ανά έτος', p.get('n')]);
 document.getElementById('poso').innerHTML =
   seires.map(r => '<tr><td>' + r[0] + '</td><td class="v">' + r[1] + '</td></tr>').join('');
-if (seires.length) document.getElementById('fpa').textContent = 'Στις τιμές περιλαμβάνεται Φ.Π.Α 24%.';
+// Τα ποσά ΔΕΝ αθροίζονται πια σε «ανά επίσκεψη» — μπορεί να είναι διαφορετικές
+// επισκέψεις με διαφορετική τιμή. Η αναλυτική εικόνα είναι στο PDF.
+document.getElementById('fpa').textContent = (p.get('pr') || p.get('an'))
+  ? 'Στις τιμές περιλαμβάνεται Φ.Π.Α 24%.'
+  : 'Τα αναλυτικά ποσά είναι στην πρόταση (PDF) που λάβατε με το email.';
 
 if (!key) {
   btn.disabled = true;
