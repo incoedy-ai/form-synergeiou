@@ -340,8 +340,20 @@
     </div>
     <!-- Από πού βγήκε το ποσό. Κρύβεται όταν ο πελάτης δεν έχει βασικές χρεώσεις. -->
     <div class="pay-row" id="row-vasikes" style="display:none;">
-      <span class="pay-label" style="opacity:.7;">ΒΑΣΙΚΕΣ</span>
+      <span class="pay-label" id="lbl-vasikes" style="opacity:.7;">ΒΑΣΙΚΕΣ</span>
       <span id="inf-vasikes" style="font-size:12px;opacity:.75;line-height:1.4;"></span>
+    </div>
+
+    <!-- ΕΞΤΡΑ: ό,τι γράφεται εδώ ΠΡΟΣΤΙΘΕΤΑΙ στη ΧΡΕΩΣΗ από πάνω, ζωντανά.
+         Δεν είναι ξεχωριστό ποσό που ταξιδεύει μόνο του -- το σύνολο μένει
+         ΕΝΑ, όπως το περιμένει το γραφείο και το τιμολόγιο. -->
+    <div class="pay-row">
+      <span class="pay-label">ΕΞΤΡΑ</span>
+      <input class="pay-input" type="number" id="extra" placeholder="0.00" step="0.01" oninput="applyExtra()">
+    </div>
+    <div class="pay-row" id="row-extres" style="display:none;">
+      <span class="pay-label" style="opacity:.7;">ΤΙΜΟΚΑΤΑΛΟΓΟΣ</span>
+      <span id="inf-extres" style="font-size:12px;opacity:.75;line-height:1.4;"></span>
     </div>
 
     <div class="pay-row">
@@ -622,13 +634,28 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
       inp.value = synolo.toFixed(2);
       if (typeof calcFPA === 'function') calcFPA();
     }
-    if (analysi) {
-      const meri = analysi.split('|').map(function (t) {
+    function analyse(txt) {
+      return txt.split('|').map(function (t) {
         const i = t.lastIndexOf(':');
         return i < 0 ? t : t.slice(0, i) + ' ' + t.slice(i + 1) + ' €';
-      });
-      document.getElementById('inf-vasikes').textContent = meri.join('  ·  ');
+      }).join('  ·  ');
+    }
+    if (analysi) {
+      document.getElementById('inf-vasikes').textContent = analyse(analysi);
       document.getElementById('row-vasikes').style.display = '';
+    }
+    // ⚠️ ΠΡΩΤΗ ΕΠΙΣΚΕΨΗ: τότε το ποσό ΔΕΝ είναι οι βασικές αλλά η εφάπαξ χρέωση
+    // τοποθέτησης (π.χ. Α788: 200 € αντί 115 €). Η Access το στέλνει έτοιμο και
+    // εδώ αλλάζει μόνο η ετικέτα, για να μη διαβαστεί λάθος.
+    if (p.get('proti') === '1') {
+      const lbl = document.getElementById('lbl-vasikes');
+      if (lbl) lbl.textContent = 'ΠΡΩΤΗ ΕΠΙΣΚΕΨΗ';
+    }
+    // ο τιμοκατάλογος ΕΞΤΡΑ του πελάτη -- υπενθύμιση, δεν αθροίζεται πουθενά
+    const extres = decodeURIComponent(p.get('extres') || '').trim();
+    if (extres) {
+      document.getElementById('inf-extres').textContent = analyse(extres);
+      document.getElementById('row-extres').style.display = '';
     }
   })();
 
@@ -1168,6 +1195,21 @@ function parExei(p) {
 }
 
 // ---- ΦΠΑ + ΥΠΟΛΟΙΠΟ ----
+// ---- ΕΞΤΡΑ -> προστίθεται στη ΧΡΕΩΣΗ ----
+// ⚠️ Κρατάμε το ΠΡΟΗΓΟΥΜΕΝΟ έξτρα και προσθέτουμε μόνο τη ΔΙΑΦΟΡΑ. Έτσι:
+//  * δεν διπλοπροστίθεται σε κάθε πάτημα πλήκτρου,
+//  * και αν ο τεχνικός διορθώσει με το χέρι τη ΧΡΕΩΣΗ, η διόρθωσή του επιβιώνει.
+let lastExtra = 0;
+function applyExtra() {
+  const el = document.getElementById('extra');
+  const nea = parseFloat(el.value) || 0;
+  const x = document.getElementById('xrewsi');
+  const trexon = parseFloat(x.value) || 0;
+  x.value = (trexon + nea - lastExtra).toFixed(2);
+  lastExtra = nea;
+  calcFPA();
+}
+
 function calcFPA() {
   const x   = parseFloat(document.getElementById('xrewsi').value) || 0;
   const pct = parseFloat(document.getElementById('fpa_pct').value) || 0;
@@ -1280,6 +1322,10 @@ async function submitForm() {
   const kat    = document.querySelector('[data-group="kat"].active')?.dataset.val || '—';
   const trop   = document.querySelector('[data-group="trop"].active')?.dataset.val || '—';
   const xrew   = document.getElementById('xrewsi').value || '—';
+  // Το έξτρα είναι ΗΔΗ μέσα στο xrew. Γράφεται και χωριστά στο κείμενο, ώστε το
+  // γραφείο να ξέρει γιατί το ποσό διαφέρει από τις βασικές χρεώσεις.
+  const extraVal = parseFloat(document.getElementById('extra').value) || 0;
+  const extraTxt = extraVal > 0 ? ` (περιλαμβάνει έξτρα ${extraVal.toFixed(2)} €)` : '';
   const fpaPct = document.getElementById('fpa_pct').value || '—';
   const katharo= document.getElementById('katharo').value || '—';
   const fpaPoso= document.getElementById('fpa_poso').value || '—';
@@ -1307,7 +1353,7 @@ ${skLines.length ? skLines.join('\n') : '(κανένα)'}
 --- ΠΛΗΡΩΜΗ ---
 ΚΑΤΗΓΟΡΙΑ: ${kat}
 ΤΡΟΠΟΣ: ${trop}
-ΧΡΕΩΣΗ: ${xrew} €
+ΧΡΕΩΣΗ: ${xrew} €${extraTxt}
 % ΦΠΑ: ${fpaPct}
 ΚΑΘΑΡΟ ΠΟΣΟ: ${katharo} €
 ΠΟΣΟ ΦΠΑ: ${fpaPoso} €
