@@ -345,7 +345,50 @@ function submitForm() {
 
 function buildStandaloneHtml() {
   const styleText = document.querySelector('style').textContent;
-  const pageClone = document.querySelector('.page').cloneNode(true);
+  const page = document.querySelector('.page');
+  const pageClone = page.cloneNode(true);
+
+  // ⚠️⚠️ ΤΟ cloneNode ΑΝΤΙΓΡΑΦΕΙ ΤΟ HTML, ΟΧΙ ΟΣΑ ΠΛΗΚΤΡΟΛΟΓΗΘΗΚΑΝ.
+  // 11/09/2026: στο PDF των κοριών έλειπαν ΟΛΑ τα κείμενα του τεχνικού --
+  // Δωμάτιο, Κρεβάτι, ΣΥΣΤΑΣΗ, Σημειώσεις -- και η ημερομηνία έβγαινε κενή.
+  // Η έκθεση έφευγε στον πελάτη χωρίς τη σύσταση, που είναι και το ζουμί της.
+  // Ίδια λογική με το form_autopsia.html: περνάμε κάθε τιμή ρητά.
+  const srcEls = page.querySelectorAll('input, textarea, select');
+  const dstEls = pageClone.querySelectorAll('input, textarea, select');
+  srcEls.forEach(function (el, i) {
+    const c = dstEls[i];
+    if (!c) return;
+    if (el.type === 'checkbox' || el.type === 'radio') {
+      if (el.checked) c.setAttribute('checked', 'checked');
+      else c.removeAttribute('checked');
+    } else if (el.tagName === 'SELECT') {
+      Array.prototype.forEach.call(c.options, function (o, j) {
+        if (j === el.selectedIndex) o.setAttribute('selected', 'selected');
+        else o.removeAttribute('selected');
+      });
+    } else if (el.tagName === 'TEXTAREA') {
+      c.textContent = el.value;
+    } else if (el.type === 'date') {
+      // Ο μετατροπέας HTML->PDF δείχνει το <input type=date> με τη ΔΙΚΗ ΤΟΥ
+      // τοπική μορφή (μήνας/ημέρα). Κείμενο ηη/μμ/εεεε αντ' αυτού.
+      var pr = (el.value || '').split('-');
+      var span = document.createElement('span');
+      span.textContent = (pr.length === 3) ? (pr[2] + '/' + pr[1] + '/' + pr[0])
+                                           : (el.value || '');
+      var cs = getComputedStyle(el);
+      span.setAttribute('style',
+        'display:inline-block;text-align:center;'
+        + 'font-size:' + cs.fontSize + ';font-weight:' + cs.fontWeight + ';'
+        + 'font-family:' + cs.fontFamily + ';color:' + cs.color + ';'
+        + 'background:' + cs.backgroundColor + ';border:' + cs.border + ';'
+        + 'border-radius:' + cs.borderRadius + ';padding:' + cs.padding + ';'
+        + 'min-width:' + cs.width + ';');
+      if (c.parentNode) c.parentNode.replaceChild(span, c);
+    } else {
+      c.setAttribute('value', el.value);
+    }
+  });
+
   const base = location.href.replace(/[^\/]*$/, '');
   pageClone.querySelectorAll('img').forEach(function(img) {
     const src = img.getAttribute('src');

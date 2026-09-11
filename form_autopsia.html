@@ -686,6 +686,25 @@ function buildStandaloneHtml() {
       });
     } else if (el.tagName === 'TEXTAREA') {
       c.textContent = el.value;
+    } else if (el.type === 'date') {
+      // ⚠️ ΑΜΕΡΙΚΑΝΙΚΗ ΗΜΕΡΟΜΗΝΙΑ ΣΤΟ PDF (χρήστης 11/09/2026).
+      // Το <input type="date"> κρατάει ISO τιμή (2026-09-11) και ο μετατροπέας
+      // HTML->PDF την εμφανίζει με τη ΔΙΚΗ ΤΟΥ τοπική μορφή -- μήνας/ημέρα.
+      // Το αντικαθιστούμε με απλό κείμενο ηη/μμ/εεεε, όπως ήδη κάνει το
+      // form_ecert.html.
+      var p = (el.value || '').split('-');
+      var span = document.createElement('span');
+      span.textContent = (p.length === 3) ? (p[2] + '/' + p[1] + '/' + p[0])
+                                          : (el.value || '');
+      var cs = getComputedStyle(el);
+      span.setAttribute('style',
+        'display:inline-block;text-align:center;'
+        + 'font-size:' + cs.fontSize + ';font-weight:' + cs.fontWeight + ';'
+        + 'font-family:' + cs.fontFamily + ';color:' + cs.color + ';'
+        + 'background:' + cs.backgroundColor + ';border:' + cs.border + ';'
+        + 'border-radius:' + cs.borderRadius + ';padding:' + cs.padding + ';'
+        + 'min-width:' + cs.width + ';');
+      if (c.parentNode) c.parentNode.replaceChild(span, c);
     } else {
       c.setAttribute('value', el.value);
     }
