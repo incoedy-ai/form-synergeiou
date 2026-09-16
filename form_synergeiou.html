@@ -54,7 +54,7 @@
     display: grid; grid-template-columns: 1fr 1fr; gap: 0;
   }
   .skevasma-header {
-    display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1.4fr) minmax(0,2.4fr) minmax(0,1fr) 48px 48px;
+    display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1.4fr) minmax(0,2.4fr) minmax(0,1fr) 56px;
     gap: 6px; padding: 0 0 6px 0;
     border-bottom: 1px solid #e0e0e0; margin-bottom: 6px;
   }
@@ -71,7 +71,7 @@
   }
 
   .sk-row {
-    display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1.4fr) minmax(0,2.4fr) minmax(0,1fr) 48px 48px;
+    display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1.4fr) minmax(0,2.4fr) minmax(0,1fr) 56px;
     gap: 6px; margin-bottom: 7px; align-items: center;
   }
   .sk-select {
@@ -312,7 +312,7 @@
   <div class="section-body">
     <div class="skevasma-single">
       <div class="skevasma-header">
-        <span>Εφαρμογή</span><span>Μέθοδος</span><span>Σκεύασμα / Υλικό</span><span>Συσκευασία</span><span>!</span><span>@</span>
+        <span>Εφαρμογή</span><span>Μέθοδος</span><span>Σκεύασμα / Υλικό</span><span>Συσκευασία</span><span>!</span>
       </div>
       <div id="sk-rows"></div>
     </div>
@@ -1113,10 +1113,9 @@ for (let i = 0; i < ROWS; i++) {
   const q1 = document.createElement('input');
   q1.className = 'sk-qty'; q1.type = 'number'; q1.placeholder = '!'; q1.min = '0';
   q1.id = `sk-q1-${i}`;
-  const q2 = document.createElement('input');
-  q2.className = 'sk-qty'; q2.type = 'number'; q2.placeholder = '@'; q2.min = '0';
-  q2.id = `sk-q2-${i}`;
-  row.appendChild(sel); row.appendChild(pak); row.appendChild(q1); row.appendChild(q2);
+  // ⚠️ 16/09/2026: αφαιρέθηκε το «@» (ποσότητα πελάτη/ΔΑ). Τα ΔΑ ανά πελάτη κόβονται
+  // πλέον στην Epsilon· το απόθεμα βγαίνει ΜΟΝΟ από το «!». Το q2 στέλνεται κενό.
+  row.appendChild(sel); row.appendChild(pak); row.appendChild(q1);
   document.getElementById('sk-rows').appendChild(row);
 }
 
@@ -1160,7 +1159,6 @@ for (let i = 0; i < ROWS; i++) {
     }
     if (it.pak) selPak.value = it.pak;
     if (it.q1 != null && it.q1 !== '') document.getElementById(`sk-q1-${i}`).value = it.q1;
-    if (it.q2 != null && it.q2 !== '') document.getElementById(`sk-q2-${i}`).value = it.q2;
   });
 })();
 
@@ -1297,13 +1295,12 @@ async function submitForm() {
     const pak = document.getElementById(`sk-pak-${i}`).value;
     if (typ || met || sel) {
       const q1 = document.getElementById(`sk-q1-${i}`).value || '—';
-      const q2 = document.getElementById(`sk-q2-${i}`).value || '—';
-      skLines.push(`  [${typ || '—'}]  [${met || '—'}]  ${sel || '—'}${pak ? ' (' + pak + ')' : ''}  |  ! ${q1}  |  @ ${q2}`);
+      skLines.push(`  [${typ || '—'}]  [${met || '—'}]  ${sel || '—'}${pak ? ' (' + pak + ')' : ''}  |  ! ${q1}`);
       // Αν διαλέχτηκε συσκευασία, ο κωδικός της μπαίνει στην παρένθεση του
       // σκευάσματος — από εκεί τον διαβάζει η Access. Χωρίς αυτό, η επιλογή
       // συσκευασίας χανόταν εντελώς.
       const selOut = (pak && sel) ? sel.replace(/\s*\([^)]*\)\s*$/, '') + ' (' + pak + ')' : sel;
-      skData.push({ typ, met, sel: selOut, pak, q1: q1 === '—' ? '' : q1, q2: q2 === '—' ? '' : q2 });
+      skData.push({ typ, met, sel: selOut, pak, q1: q1 === '—' ? '' : q1, q2: '' });
     }
   }
 
