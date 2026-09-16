@@ -1337,12 +1337,20 @@ async function submitForm() {
 
   const simSyn = document.getElementById('sim-synergeiou').value || '—';
 
+  // 16/09/2026: ο χρήστης θέλει στο email της εντολής ΚΑΙ τα δύο email του πελάτη
+  // (επικοινωνίας + e-τιμολογίου), όπως ήρθαν από την Access στον σύνδεσμο.
+  const emailTxt = t => { const v = (document.getElementById(t)?.textContent || '').trim(); return v && v !== '—' ? v : '—'; };
+  const emailEpik = emailTxt('inf-email');
+  const emailEtim = emailTxt('inf-etim');
+
   const body =
 `ΕΝΤΟΛΗ ΕΦΑΡΜΟΓΗΣ - INCO
 ========================
 ΚΩΔΙΚΟΣ: ${kod}
 ΠΕΛΑΤΗΣ: ${pelatis}
 ${afmLine}ΔΙΕΥΘΥΝΣΗ: ${diey}
+EMAIL ΕΠΙΚΟΙΝΩΝΙΑΣ: ${emailEpik}
+EMAIL E-ΤΙΜΟΛΟΓΙΟΥ: ${emailEtim}
 ΔΙΕΥΘ. ΕΦΑΡΜΟΓΗΣ: ${dieyEf}
 ΗΜΕΡΟΜΗΝΙΑ: ${imer}  ΩΡΑ: ${ora}
 
