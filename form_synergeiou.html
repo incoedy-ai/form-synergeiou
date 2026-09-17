@@ -150,11 +150,28 @@
     font-weight: bold; font-family: Verdana, sans-serif; cursor: pointer;
   }
   .btn-submit:active { background: #287B9B; }
+  .btn-submit.sent { background: #27ae60; }
 
-  .toast {
-    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-    background: #27ae60; color: white; padding: 12px 24px;
-    border-radius: 8px; font-size: 14px; display: none; z-index: 999;
+  /* ⚠️ 17/09/2026: ΠΑΡΑΘΥΡΟ ΕΠΙΒΕΒΑΙΩΣΗΣ αντί για toast. Το παλιό toast έσβηνε σε 3",
+     ο τεχνικός δεν ήξερε αν στάλθηκε και ξανάστελνε (Α305: 2 υποβολές, 1 email).
+     Μένει στην οθόνη μέχρι να πατηθεί ΟΚ. */
+  .sent-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 1000;
+    display: none; align-items: center; justify-content: center; padding: 16px;
+  }
+  .sent-overlay.show { display: flex; }
+  .sent-box {
+    background: white; border-radius: 14px; padding: 24px 22px; max-width: 420px; width: 100%;
+    text-align: center; font-family: Verdana, sans-serif; color: #2D3A4D;
+    box-shadow: 0 10px 40px rgba(0,0,0,.3);
+  }
+  .sent-box .sent-icon { font-size: 46px; color: #27ae60; line-height: 1; }
+  .sent-box h2 { margin: 10px 0 6px; font-size: 20px; color: #27ae60; }
+  .sent-box p { margin: 8px 0; font-size: 14px; line-height: 1.45; }
+  .sent-box .sent-warn { background: #fff4d6; border-radius: 8px; padding: 10px; font-weight: bold; }
+  .sent-box button {
+    margin-top: 14px; width: 100%; padding: 14px; font-size: 18px; font-weight: bold;
+    background: #27ae60; color: white; border: none; border-radius: 10px; cursor: pointer;
   }
 
   /* Οικονομικά: ΧΡΕΩΣΗ | ΠΛΗΡΩΜΗ | ΠΑΡΑΣΤΑΤΙΚΑ δίπλα-δίπλα (και σε ταμπλέτα) */
@@ -440,8 +457,16 @@
 
 </div><!-- /bill-row -->
 
-<button class="btn-submit" onclick="submitForm()">ΑΠΟΣΤΟΛΗ ΦΟΡΜΑΣ</button>
-<div class="toast" id="toast">Η φόρμα στάλθηκε επιτυχώς!</div>
+<button class="btn-submit" id="btn-submit" onclick="submitForm()">ΑΠΟΣΤΟΛΗ ΦΟΡΜΑΣ</button>
+<div class="sent-overlay" id="sent-overlay">
+  <div class="sent-box">
+    <div class="sent-icon">✔</div>
+    <h2>Η ΕΝΤΟΛΗ ΣΤΑΛΘΗΚΕ</h2>
+    <p id="sent-when"></p>
+    <p class="sent-warn">ΜΗΝ την ξαναστείλετε.<br>Πατήστε «Αποστολή» στο email που άνοιξε.</p>
+    <button onclick="document.getElementById('sent-overlay').classList.remove('show')">ΟΚ</button>
+  </div>
+</div>
 
 <script>
 // Global — το χρησιμοποιούν και οι openECert/openAutopsia (εκτός του IIFE φόρτωσης).
@@ -1282,8 +1307,11 @@ function getSignatureDataURL() {
 }
 
 // ---- SUBMIT ----
+let sentAt = '';   // ώρα της αποστολής — αν υπάρχει, η εντολή έχει ήδη φύγει
 async function submitForm() {
   if (!hasSig) { alert('Απαιτείται υπογραφή πελάτη'); return; }
+  if (sentAt && !confirm('Η εντολή έχει ΗΔΗ σταλεί στις ' + sentAt + '.\n\n' +
+                         'Να σταλεί ΞΑΝΑ; (μόνο αν διορθώσατε κάτι)')) return;
 
   // Συλλογη σκευασματων (κειμενο για email + δομημενα δεδομενα για αποθηκευση)
   const skLines = [];
@@ -1417,11 +1445,17 @@ ${simSyn}
   // ---- EMAIL (ασφαλεια) ----
   const subject = `ΕΦΑΡΜΟΓΗ: ${pelatis} — ${imer}`;
   const mailto = `mailto:sales@in-co.gr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = mailto;
 
-  const toast = document.getElementById('toast');
-  toast.style.display = 'block';
-  setTimeout(() => toast.style.display = 'none', 3000);
+  // Το παράθυρο ανοίγει ΠΡΙΝ το mailto, ώστε να είναι εκεί όταν ο τεχνικός
+  // γυρίσει από την εφαρμογή του email.
+  sentAt = new Date().toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const btn = document.getElementById('btn-submit');
+  btn.textContent = '✔ ΣΤΑΛΘΗΚΕ ' + sentAt;
+  btn.classList.add('sent');
+  document.getElementById('sent-when').textContent = 'Ώρα αποστολής: ' + sentAt;
+  document.getElementById('sent-overlay').classList.add('show');
+
+  window.location.href = mailto;
 }
 </script>
 </body>
