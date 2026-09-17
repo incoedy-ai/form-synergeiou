@@ -370,7 +370,7 @@ const SCRIPT=P.get("script"), KOD=P.get("kod"), PELATIS=P.get("pelatis");
 if(SCRIPT && KOD){
   const badge=document.querySelector(".demo"); if(badge) badge.textContent="LIVE DATA";
   setCustHeader(P, KOD, PELATIS ? decodeURIComponent(PELATIS) : "");
-  const sub=document.querySelector(".head .sub"); if(sub) sub.innerHTML='Έντυπο Ε-Ε06 · live data';
+  const sub=document.querySelector(".head .sub"); if(sub) sub.innerHTML='Έντυπο Ε-Ε06 · <b style="color:#8fd4e6">Πίνακας διαρκούς ενημέρωσης</b>';
   fetch(SCRIPT+"?type=entomo-data&kod="+encodeURIComponent(KOD)).then(r=>r.json()).then(rows=>{
     if(!rows||rows.length<2){ if(badge)badge.textContent="ΧΩΡΙΣ ΚΑΤΑΓΡΑΦΕΣ ΑΚΟΜΑ"; buildDemo(); renderAll(); return; }
     buildReal(rows);
