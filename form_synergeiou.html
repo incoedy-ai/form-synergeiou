@@ -173,6 +173,10 @@
     margin-top: 14px; width: 100%; padding: 14px; font-size: 18px; font-weight: bold;
     background: #27ae60; color: white; border: none; border-radius: 10px; cursor: pointer;
   }
+  .sent-box.fail .sent-icon, .sent-box.fail h2 { color: #c0392b; }
+  .sent-box.fail .sent-warn { background: #fde2df; }
+  .sent-box.fail button { background: #c0392b; }
+  .btn-submit:disabled { opacity: .6; cursor: wait; }
 
   /* Οικονομικά: ΧΡΕΩΣΗ | ΠΛΗΡΩΜΗ | ΠΑΡΑΣΤΑΤΙΚΑ δίπλα-δίπλα (και σε ταμπλέτα) */
   .bill-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px; align-items: stretch; }
@@ -460,11 +464,11 @@
 <button class="btn-submit" id="btn-submit" onclick="submitForm()">ΑΠΟΣΤΟΛΗ ΦΟΡΜΑΣ</button>
 <div class="sent-overlay" id="sent-overlay">
   <div class="sent-box">
-    <div class="sent-icon">✔</div>
-    <h2>Η ΕΝΤΟΛΗ ΣΤΑΛΘΗΚΕ</h2>
+    <div class="sent-icon" id="sent-icon">✔</div>
+    <h2 id="sent-title">Η ΕΝΤΟΛΗ ΣΤΑΛΘΗΚΕ</h2>
     <p id="sent-when"></p>
-    <p class="sent-warn">ΜΗΝ την ξαναστείλετε.<br>Πατήστε «Αποστολή» στο email που άνοιξε.</p>
-    <button onclick="document.getElementById('sent-overlay').classList.remove('show')">ΟΚ</button>
+    <p class="sent-warn" id="sent-warn"></p>
+    <button id="sent-ok" onclick="document.getElementById('sent-overlay').classList.remove('show')">ΟΚ</button>
   </div>
 </div>
 
@@ -1427,35 +1431,63 @@ ${simSyn}
     simSyn,
     signature: getSignatureDataURL()
   };
-  if (ORDERS_SCRIPT && ORDERS_SCRIPT !== 'PENDING_DEPLOY') {
-    try {
-      await fetch(ORDERS_SCRIPT, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(order),
-        keepalive: true
-      });
-    } catch (err) {
-      console.error('Order save failed:', err);
-      // Δεν μπλοκαρουμε — το email παρακατω λειτουργει ως ασφαλεια.
-    }
+  const subject = `ΕΦΑΡΜΟΓΗ: ${pelatis} — ${imer}`;
+  // ⚠️ 17/09/2026: το email το στέλνει ΤΟ APPS SCRIPT μαζί με την αποθήκευση,
+  // ώστε email και Access να έχουν ΠΑΝΤΑ τα ίδια (και οι διορθώσεις να φτάνουν).
+  order.emailSubject = subject;
+  order.emailBody = body;
+
+  // ⚠️ ΟΧΙ no-cors / keepalive: θέλουμε να ΔΙΑΒΑΣΟΥΜΕ το ok του Apps Script
+  // (επιστρέφει CORS κανονικά, βλ. apodoxi.html). Το keepalive κόβει σώματα
+  // > 64KB και η υπογραφή μπορεί να τα ξεπεράσει.
+  const btn = document.getElementById('btn-submit');
+  const btnText = btn.textContent;
+  btn.disabled = true; btn.textContent = 'ΑΠΟΣΤΟΛΗ…';
+  let res = null;
+  try {
+    const r = await fetch(ORDERS_SCRIPT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(order)
+    });
+    res = await r.json();
+  } catch (err) {
+    console.error('Order save failed:', err);
+  }
+  btn.disabled = false;
+
+  if (!res || !res.ok) {
+    // ΔΕΝ καταγράφηκε -> κανένα «στάλθηκε», η φόρμα μένει γεμάτη για νέα προσπάθεια.
+    btn.textContent = btnText;
+    showSent(false, '',
+      'ΔΕΝ ΣΤΑΛΘΗΚΕ',
+      'Ελέγξτε ότι υπάρχει ίντερνετ και πατήστε ξανά «ΑΠΟΣΤΟΛΗ ΦΟΡΜΑΣ».<br>Τα στοιχεία δεν χάθηκαν.');
+    return;
   }
 
-  // ---- EMAIL (ασφαλεια) ----
-  const subject = `ΕΦΑΡΜΟΓΗ: ${pelatis} — ${imer}`;
-  const mailto = `mailto:sales@in-co.gr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-  // Το παράθυρο ανοίγει ΠΡΙΝ το mailto, ώστε να είναι εκεί όταν ο τεχνικός
-  // γυρίσει από την εφαρμογή του email.
   sentAt = new Date().toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit', hour12: false });
-  const btn = document.getElementById('btn-submit');
   btn.textContent = '✔ ΣΤΑΛΘΗΚΕ ' + sentAt;
   btn.classList.add('sent');
-  document.getElementById('sent-when').textContent = 'Ώρα αποστολής: ' + sentAt;
-  document.getElementById('sent-overlay').classList.add('show');
 
-  window.location.href = mailto;
+  if (res.mailed) {
+    showSent(true, sentAt, 'Η ΕΝΤΟΛΗ ΣΤΑΛΘΗΚΕ',
+      'Το email στάλθηκε αυτόματα στο γραφείο.<br>ΜΗΝ την ξαναστείλετε.');
+  } else {
+    // Εφεδρεία: σώθηκε αλλά το Apps Script δεν έστειλε email (παλιά έκδοση ή
+    // σφάλμα Gmail) -> ανοίγει το email στο κινητό όπως πριν.
+    showSent(true, sentAt, 'Η ΕΝΤΟΛΗ ΣΤΑΛΘΗΚΕ',
+      'ΜΗΝ την ξαναστείλετε.<br>Πατήστε «Αποστολή» στο email που άνοιξε.');
+    window.location.href = `mailto:sales@in-co.gr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
+}
+
+function showSent(ok, when, title, warnHtml) {
+  document.querySelector('#sent-overlay .sent-box').classList.toggle('fail', !ok);
+  document.getElementById('sent-icon').textContent = ok ? '✔' : '✖';
+  document.getElementById('sent-title').textContent = title;
+  document.getElementById('sent-when').textContent = when ? 'Ώρα αποστολής: ' + when : '';
+  document.getElementById('sent-warn').innerHTML = warnHtml;
+  document.getElementById('sent-overlay').classList.add('show');
 }
 </script>
 </body>
