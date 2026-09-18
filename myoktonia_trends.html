@@ -1,4 +1,14 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
 <title>Μυοκτονία · InCo</title>
+<style>
+  /* Κουμπί δελτίου μέσα στη γραμμή της επίσκεψης (18/09/2026) */
+  .btnDeltio{background:#287B9B;color:#fff;border:none;border-radius:5px;padding:5px 12px;
+             font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;}
+  .btnDeltio:hover{background:#2DAFCE;}
+  .btnDeltio[disabled]{background:#4a5560;cursor:default;opacity:.5;}
+</style>
+<script src="deltio_view.js"></script>
 <style>
   :root{
     --bg:#e9eff3; --surface:#ffffff; --surface-2:#f5f8fa;
@@ -262,7 +272,7 @@ const DEMO_SE = [
   {id:"Σ/Ε 02", vals:[0,0,0,1,0,0,1,0,0,0,0,0]},
   {id:"Σ/Ε 03", vals:[6,5,4,2,1,0,2,1,0,0,0,0]},
 ];
-let DATES=[], DS=[], SE=[], TECH=[], OBS={};
+let DATES=[], DS=[], SE=[], TECH=[], OBS={}, RAW=[], TECHM={};
 
 const SYM = {"-":"Απών","x":"Κατεστραμμένος","?":"Μη προσβάσιμος","!":"Νέος / αντικατάσταση"};
 function sev(v,type){
@@ -342,7 +352,15 @@ function applyVisits(rows){
 function renderVisits(){
   let hv="<thead><tr><th class='stn'>Επίσκεψη</th>";DATES.forEach(d=>hv+=`<th>${d}</th>`);hv+="</tr></thead><tbody>";
   hv+="<tr><th>Τεχνικός</th>";TECH.forEach(t=>hv+=`<td><div class="vcell">${t}</div></td>`);hv+="</tr>";
+  /* Ένα δελτίο ανά επίσκεψη — το ίδιο έγγραφο που αρχειοθετείται ως PDF. */
+  hv+="<tr><th>Δελτίο</th>";
+  DATES.forEach(d=>hv+=`<td><button class="btnDeltio" data-d="${d}">ΔΕΛΤΙΟ</button></td>`);
+  hv+="</tr>";
   hv+="</tbody>";document.getElementById("tblV").innerHTML=hv;
+  document.getElementById("tblV").querySelectorAll(".btnDeltio").forEach(b=>{
+    if(!RAW.length){ b.disabled=true; b.title="Χωρίς καταγραφές"; return; }
+    b.onclick=()=>anoixeDeltio(b.dataset.d);
+  });
 }
 /* ── «Ημέρες χωρίς εύρημα» ────────────────────────────────────────────────
    Ο αριθμός που δείχνει ο πελάτης σε επιθεωρητή. Εύρημα = οποιαδήποτε
@@ -414,6 +432,14 @@ function showEmptyState(minima){
   host.appendChild(d);
 }
 
+function anoixeDeltio(d){
+  const tis=RAW.filter(r=>fmtDate(r.timestamp)===d)
+               .map(r=>({stathmos:r.stathmos, typos:r.typos, timi:r.timi}));
+  const t=DELTIO.pinakasMyoktonia(tis);
+  DELTIO.anoixe({titlos:"ΕΛΕΓΧΟΣ ΜΥΟΚΤΟΝΙΑΣ", prothema:"ΜΥΟ", kod:KOD, d:d,
+                 pinakas:t.pinakas, synopsi:t.synopsi, texnikos:TECHM[d]||"",
+                 par:(OBS[d]&&OBS[d].par)||"", dio:(OBS[d]&&OBS[d].dio)||"", P:P});
+}
 function renderObs(){
   const card=document.getElementById("cardObs"), body=document.getElementById("obsBody");
   if(!card||!body) return;
@@ -450,7 +476,9 @@ function buildFromReal(rows){
   DS=build(r=>isDS(r)); SE=build(r=>!isDS(r)); TECH=DATES.map(()=>"—");
   /* Παρατήρηση και διορθωτική ενέργεια γράφονται ΜΙΑ φορά για όλη την επίσκεψη,
      άρα επαναλαμβάνονται σε κάθε γραμμή της — κρατάμε την πρώτη μη κενή. */
-  OBS={};
+  OBS={}; RAW=rows; TECHM={};
+  rows.forEach(r=>{ const k=fmtDate(r.timestamp), t=String(r.technikos||"").trim();
+                    if(t && !TECHM[k]) TECHM[k]=t; });
   rows.forEach(r=>{
     const k=fmtDate(r.timestamp), par=String(r.paratiriseis||"").trim(),
           dio=String(r.diorthotikes||"").trim();

@@ -1,4 +1,14 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
 <title>Ηλεκτρικές Εντομοπαγίδες · InCo</title>
+<style>
+  /* Κουμπί δελτίου μέσα στη γραμμή της επίσκεψης (18/09/2026) */
+  .btnDeltio{background:#287B9B;color:#fff;border:none;border-radius:5px;padding:5px 12px;
+             font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;}
+  .btnDeltio:hover{background:#2DAFCE;}
+  .btnDeltio[disabled]{background:#4a5560;cursor:default;opacity:.5;}
+</style>
+<script src="deltio_view.js"></script>
 <style>
   :root{
     --bg:#e9eff3;--surface:#fff;--surface-2:#f5f8fa;--ink:#22303c;--ink-2:#4a5b67;--muted:#7a8b95;--line:#dde6ec;
@@ -194,7 +204,7 @@ const DEMO_COVER=[[15,28,42,58,20,35,50,64,24,40,20,32],[10,20,32,46,16,30,42,55
 const DEMO_LAMP_I=5, DEMO_SERVICE_EV={0:[7],2:[6]};
 const DEMO_TECH=["ΓΠ","ΓΠ","ΔΤ","ΓΠ","ΔΤ","ΓΠ","ΓΠ","ΔΤ","ΓΠ","ΔΤ","ΓΠ","ΓΠ"];
 
-let DATES=[], TRAPS=[], TECH=[], OBS=[], GG={}, COV={}, MNT={};
+let DATES=[], TRAPS=[], TECH=[], OBS=[], RAWK=[], RAWD=[], TECHM={}, GG={}, COV={}, MNT={};
 function covSev(v){return v<25?0:v<40?1:v<55?3:4;}
 function cnt2grade(c){c=Number(c)||0; return c===0?0:c<5?1:c<=20?2:c<=49?3:4;}
 function pad2(n){return String(n).padStart(2,"0");}
@@ -221,6 +231,10 @@ function buildReal(rows){
   TRAPS=traps.map(id=>({id})); TECH=DATES.map(()=>"—");
   /* Οι παρατηρήσεις εδώ είναι ΑΝΑ ΘΕΣΗ (μία παγίδα τη φορά), σε αντίθεση
      με τη μυοκτονία όπου είναι μία για όλη την επίσκεψη. */
+  RAWK=header; RAWD=data; TECHM={};
+  { const cT=col("ΤΕΧΝΙΚΟΣ");
+    if(cT>=0) data.forEach(r=>{ const k=fmtDate(r[cDate]), t=String(r[cT]||"").trim();
+                                if(t && !TECHM[k]) TECHM[k]=t; }); }
   OBS=[]; { const cPar=col("Παρατηρήσεις"), cDio=col("ΔΙΟΡΘΩΤΙΚΕΣ");
     data.forEach(r=>{ const t=cPar>=0?String(r[cPar]||"").trim():"",
                             u=cDio>=0?String(r[cDio]||"").trim():"";
@@ -261,7 +275,15 @@ function applyVisits(rows){
 function renderVisits(){
   let hv="<thead><tr><th class='stn'>Επίσκεψη</th>";DATES.forEach(d=>hv+=`<th>${d}</th>`);hv+="</tr></thead><tbody>";
   hv+="<tr><th>Τεχνικός</th>";TECH.forEach(t=>hv+=`<td><div class="vcell">${t}</div></td>`);hv+="</tr>";
+  /* Ένα δελτίο ανά επίσκεψη — το ίδιο έγγραφο που αρχειοθετείται ως PDF. */
+  hv+="<tr><th>Δελτίο</th>";
+  DATES.forEach(d=>hv+=`<td><button class="btnDeltio" data-d="${d}">ΔΕΛΤΙΟ</button></td>`);
+  hv+="</tr>";
   hv+="</tbody>";document.getElementById("tblV").innerHTML=hv;
+  document.getElementById("tblV").querySelectorAll(".btnDeltio").forEach(b=>{
+    if(!RAWD.length){ b.disabled=true; b.title="Χωρίς καταγραφές"; return; }
+    b.onclick=()=>anoixeDeltio(b.dataset.d);
+  });
 }
 function renderTraps(){
   document.getElementById("traps").innerHTML=TRAPS.map(t=>{
@@ -362,6 +384,15 @@ function showEmptyState(minima){
   host.appendChild(d);
 }
 
+function anoixeDeltio(d){
+  const tis=RAWD.filter(r=>fmtDate(r[0])===d);
+  const t=DELTIO.pinakasPagides(RAWK, tis, 3, 13,
+      [[13,"Κολλητική"],[14,"Λαμπτήρες"],[15,"Κάλυψη %"],
+       [16,"Παρατηρήσεις"],[19,"Διορθωτικές ενέργειες"]], "Με σύλληψη");
+  DELTIO.anoixe({titlos:"ΕΛΕΓΧΟΣ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ", prothema:"ΗΛΕ",
+                 kod:KOD, d:d, pinakas:t.pinakas, synopsi:t.synopsi,
+                 texnikos:TECHM[d]||"", P:P});
+}
 function renderObs(){
   const card=document.getElementById("cardObs"), body=document.getElementById("obsBody");
   if(!card||!body) return;
