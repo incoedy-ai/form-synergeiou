@@ -192,15 +192,14 @@
     <div class="tscroll"><table id="tblSE"></table></div>
   </div>
 
-  <div class="card">
+  <!-- 18/09/2026: εδώ κάθονταν ΤΡΕΙΣ ΕΠΙΝΟΗΜΕΝΕΣ παρατηρήσεις με ψεύτικες
+       ημερομηνίες, ίδιες για ΚΑΘΕ πελάτη. Φαίνονταν σε όποιον δεν είχε ακόμα
+       καταγραφές ή όταν αποτύγχανε η φόρτωση. Τώρα γεμίζει μόνο από το φύλλο. -->
+  <div class="card" id="cardObs" style="display:none">
     <h2><span class="dot" style="background:#c98a12"></span>Παρατηρήσεις &amp; Διορθωτικές Ενέργειες</h2>
     <div class="tscroll"><table class="obstable">
-      <thead><tr><th>Ημ/νία</th><th>Παρατήρηση</th><th>Διορθωτική ενέργεια</th><th>Κατάσταση</th></tr></thead>
-      <tbody>
-        <tr><td class="odate">13/07/26</td><td class="oc">Αυξημένη κατανάλωση στον Δ/Σ 03 — πιθανή εστία περιμετρικά.</td><td>Αντικατάσταση δολώματος · έλεγχος σημείων εισόδου · σύσταση φραγής.</td><td><span class="stat pend">Εκκρεμεί</span></td></tr>
-        <tr><td class="odate">08/06/26</td><td class="oc">Σ/Ε 03: μειούμενες συλλήψεις, κατάσταση υπό έλεγχο.</td><td>Καθαρισμός &amp; αλλαγή κολλητικής επιφάνειας.</td><td><span class="stat done">✓ Ολοκληρώθηκε</span></td></tr>
-        <tr><td class="odate">11/05/26</td><td class="oc">Όλοι οι σταθμοί εντός ορίων — καμία δραστηριότητα.</td><td>—</td><td><span class="stat na">—</span></td></tr>
-      </tbody>
+      <thead><tr><th>Ημ/νία</th><th>Παρατήρηση</th><th>Διορθωτική ενέργεια</th></tr></thead>
+      <tbody id="obsBody"></tbody>
     </table></div>
   </div>
 
@@ -263,7 +262,7 @@ const DEMO_SE = [
   {id:"Σ/Ε 02", vals:[0,0,0,1,0,0,1,0,0,0,0,0]},
   {id:"Σ/Ε 03", vals:[6,5,4,2,1,0,2,1,0,0,0,0]},
 ];
-let DATES=[], DS=[], SE=[], TECH=[];
+let DATES=[], DS=[], SE=[], TECH=[], OBS={};
 
 const SYM = {"-":"Απών","x":"Κατεστραμμένος","?":"Μη προσβάσιμος","!":"Νέος / αντικατάσταση"};
 function sev(v,type){
@@ -399,8 +398,37 @@ function renderKPIs(){
   document.getElementById("kpis").innerHTML=kpis.map(k=>
     `<div class="kpi"><div class="lbl">${k.lbl}</div><div class="val">${k.val}${k.sub?`<small>${k.sub}</small>`:""}</div>${k.note?`<div class="note">${k.note}</div>`:""}</div>`).join("");
 }
+
+/* ── ΑΔΕΙΑ ΚΑΤΑΣΤΑΣΗ ────────────────────────────────────────────────────────
+   18/09/2026: όταν ο πελάτης ΔΕΝ έχει ακόμα καταγραφές, ή αποτύχει η φόρτωση,
+   η σελίδα έδειχνε τα ΕΠΙΔΕΙΚΤΙΚΑ δεδομένα — επινοημένες μετρήσεις και
+   ημερομηνίες, σε έντυπο που βλέπει πελάτης και μπορεί να φτάσει σε
+   επιθεωρητή. Τώρα λέει καθαρά τι συμβαίνει και δεν δείχνει τίποτα άλλο. */
+function showEmptyState(minima){
+  document.querySelectorAll(".card").forEach(c=>c.style.display="none");
+  const host=document.querySelector(".wrap")||document.querySelector("main")||document.body;
+  const d=document.createElement("div");
+  d.className="card";
+  d.style.cssText="display:block;padding:34px;text-align:center";
+  d.innerHTML='<h2 style="justify-content:center">'+minima+'</h2>';
+  host.appendChild(d);
+}
+
+function renderObs(){
+  const card=document.getElementById("cardObs"), body=document.getElementById("obsBody");
+  if(!card||!body) return;
+  const esc=t=>String(t).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  // νεότερη πρώτη -- αυτό ψάχνει κανείς σε έλεγχο
+  const meres=Object.keys(OBS).sort((a,b)=>parseVDate(b)-parseVDate(a));
+  if(!meres.length){ card.style.display="none"; return; }
+  body.innerHTML=meres.map(d=>
+    `<tr><td class="odate">${esc(d)}</td><td class="oc">${esc(OBS[d].par||"—")}</td>`+
+    `<td>${esc(OBS[d].dio||"—")}</td></tr>`).join("");
+  card.style.display="";
+}
 function renderAll(){
   renderVisits();
+  renderObs();
   renderTable(document.getElementById("tblDS"),DS,"ds");
   renderTable(document.getElementById("tblSE"),SE,"se");
   renderKPIs();
@@ -420,12 +448,23 @@ function buildFromReal(rows){
   };
   const isDS=r=>String(r.typos||"").indexOf("Δ")>=0;   // ΔΣ vs ΣΕ
   DS=build(r=>isDS(r)); SE=build(r=>!isDS(r)); TECH=DATES.map(()=>"—");
+  /* Παρατήρηση και διορθωτική ενέργεια γράφονται ΜΙΑ φορά για όλη την επίσκεψη,
+     άρα επαναλαμβάνονται σε κάθε γραμμή της — κρατάμε την πρώτη μη κενή. */
+  OBS={};
+  rows.forEach(r=>{
+    const k=fmtDate(r.timestamp), par=String(r.paratiriseis||"").trim(),
+          dio=String(r.diorthotikes||"").trim();
+    if(!par && !dio) return;
+    OBS[k]=OBS[k]||{par:"",dio:""};
+    if(par && !OBS[k].par) OBS[k].par=par;
+    if(dio && !OBS[k].dio) OBS[k].dio=dio;
+  });
 }
-function useDemo(){ DATES=DEMO_DATES.slice(); DS=DEMO_DS; SE=DEMO_SE; TECH=DEMO_TECH.slice(); }
+function useDemo(){ DATES=DEMO_DATES.slice(); DS=DEMO_DS; SE=DEMO_SE; TECH=DEMO_TECH.slice(); OBS={}; }
 function hideDemoOnlyCards(){
   document.querySelectorAll(".card").forEach(c=>{
     const h=c.querySelector("h2");
-    if(h && (h.textContent.indexOf("Διαχρονική")>=0 || h.textContent.indexOf("Παρατηρήσεις")>=0)) c.style.display="none";
+    if(h && h.textContent.indexOf("Διαχρονική")>=0) c.style.display="none";
   });
 }
 
@@ -457,14 +496,16 @@ if(SCRIPT && KOD){
   fetch(SCRIPT+"?type=measurements&kod="+encodeURIComponent(KOD))
     .then(r=>r.json())
     .then(rows=>{
-      if(!rows || !rows.length){ if(badge) badge.textContent="ΧΩΡΙΣ ΚΑΤΑΓΡΑΦΕΣ ΑΚΟΜΑ"; useDemo(); renderAll(); return; }
+      if(!rows || !rows.length){ if(badge) badge.textContent="ΧΩΡΙΣ ΚΑΤΑΓΡΑΦΕΣ";
+        showEmptyState("Δεν υπάρχουν ακόμα καταγραφές για αυτόν τον πελάτη."); return; }
       buildFromReal(rows);
       // οι επισκέψεις είναι συμπληρωματικές: αν αποτύχουν, ο πίνακας παίζει κανονικά
       return fetch(SCRIPT+"?type=visits-data&kod="+encodeURIComponent(KOD))
         .then(r=>r.json()).then(applyVisits).catch(()=>{})
         .then(()=>{ renderAll(); hideDemoOnlyCards(); });
     })
-    .catch(err=>{ if(badge) badge.textContent="ΣΦΑΛΜΑ ΦΟΡΤΩΣΗΣ — DEMO"; useDemo(); renderAll(); });
+    .catch(err=>{ if(badge) badge.textContent="ΣΦΑΛΜΑ ΦΟΡΤΩΣΗΣ";
+      showEmptyState("Τα δεδομένα δεν φορτώθηκαν. Δοκιμάστε ανανέωση της σελίδας."); });
 } else {
   useDemo(); renderAll();
 }

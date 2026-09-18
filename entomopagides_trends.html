@@ -134,14 +134,13 @@
     <div class="tscroll"><table id="tblM"></table></div>
   </div>
 
-  <div class="card">
-    <h2><span class="dot" style="background:#c98a12"></span>Παρατηρήσεις &amp; Διορθωτικές Ενέργειες</h2>
+  <!-- 18/09/2026: εδώ κάθονταν ΕΠΙΝΟΗΜΕΝΕΣ παρατηρήσεις, ίδιες για κάθε πελάτη.
+       Τώρα γεμίζει από τη στήλη «Παρατηρήσεις» του φύλλου, ανά θέση. -->
+  <div class="card" id="cardObs" style="display:none">
+    <h2><span class="dot" style="background:#c98a12"></span>Παρατηρήσεις</h2>
     <div class="tscroll"><table class="obstable">
-      <thead><tr><th>Ημ/νία</th><th>Παρατήρηση</th><th>Διορθωτική ενέργεια</th><th>Κατάσταση</th></tr></thead>
-      <tbody>
-        <tr><td class="odate">13/07/26</td><td class="oc">Καλοκαιρινή αιχμή — βαθμός 4 σε Οικ. Muscidae στις Η/Ε 01 &amp; Η/Ε 04.</td><td>Έλεγχος σημείων εισόδου · σύσταση σήτας στην εκφόρτωση εμπορευμάτων.</td><td><span class="stat pend">Εκκρεμεί</span></td></tr>
-        <tr><td class="odate">08/05/26</td><td class="oc">Παρουσία Οικ. Sarcophagidae — πιθανή εστία στον περιβάλλοντα χώρο.</td><td>Έλεγχος &amp; καθαρισμός εξωτερικού χώρου / κάδων απορριμμάτων.</td><td><span class="stat done">✓ Ολοκληρώθηκε</span></td></tr>
-      </tbody>
+      <thead><tr><th>Ημ/νία</th><th>Θέση</th><th>Παρατήρηση</th></tr></thead>
+      <tbody id="obsBody"></tbody>
     </table></div>
   </div>
 
@@ -195,7 +194,7 @@ const DEMO_COVER=[[15,28,42,58,20,35,50,64,24,40,20,32],[10,20,32,46,16,30,42,55
 const DEMO_LAMP_I=5, DEMO_SERVICE_EV={0:[7],2:[6]};
 const DEMO_TECH=["ΓΠ","ΓΠ","ΔΤ","ΓΠ","ΔΤ","ΓΠ","ΓΠ","ΔΤ","ΓΠ","ΔΤ","ΓΠ","ΓΠ"];
 
-let DATES=[], TRAPS=[], TECH=[], GG={}, COV={}, MNT={};
+let DATES=[], TRAPS=[], TECH=[], OBS=[], GG={}, COV={}, MNT={};
 function covSev(v){return v<25?0:v<40?1:v<55?3:4;}
 function cnt2grade(c){c=Number(c)||0; return c===0?0:c<5?1:c<=20?2:c<=49?3:4;}
 function pad2(n){return String(n).padStart(2,"0");}
@@ -219,7 +218,12 @@ function buildReal(rows){
   DATES=[...dm.keys()].sort((a,b)=>dm.get(a)-dm.get(b));
   const di=d=>DATES.indexOf(d);
   const traps=[...new Set(data.map(r=>String(r[cThesi]).trim()))].filter(Boolean).sort();
-  TRAPS=traps.map(id=>({id})); TECH=DATES.map(()=>"—"); GG={};COV={};MNT={};
+  TRAPS=traps.map(id=>({id})); TECH=DATES.map(()=>"—");
+  /* Οι παρατηρήσεις εδώ είναι ΑΝΑ ΘΕΣΗ (μία παγίδα τη φορά), σε αντίθεση
+     με τη μυοκτονία όπου είναι μία για όλη την επίσκεψη. */
+  OBS=[]; { const cPar=col("Παρατηρήσεις");
+    if(cPar>=0) data.forEach(r=>{ const t=String(r[cPar]||"").trim();
+      if(t) OBS.push({d:fmtDate(r[cDate]), thesi:String(r[cThesi]||"").trim(), par:t}); }); } GG={};COV={};MNT={};
   traps.forEach(id=>{ GG[id]=GNAMES.map(()=>DATES.map(()=>0)); COV[id]=DATES.map(()=>null); MNT[id]=DATES.map(()=>({s:false,k:false,l:false})); });
   data.forEach(r=>{
     const id=String(r[cThesi]).trim(); const i=di(fmtDate(r[cDate])); if(i<0||!id)return;
@@ -341,9 +345,35 @@ function renderDiachronic(){
   const SEASONS=[["2023-24",2.8],["2024-25",2.3],["2025-26",1.8],["2026-27",1.4]];
   document.getElementById("years").innerHTML=SEASONS.map((s,i)=>{const cur=i===SEASONS.length-1;return `<div class="yr"><span class="yl${cur?' cur':''}">${s[0]}</span><div class="ybar${cur?' cur':''}"><i style="width:${Math.round(s[1]/4*100)}%"></i></div><span class="yv">${s[1].toFixed(1)}</span></div>`;}).join("");
 }
-function renderAll(){ renderVisits(); renderTraps(); renderCover(); renderMaint(); renderKPIs(); renderDiachronic(); }
+
+/* ── ΑΔΕΙΑ ΚΑΤΑΣΤΑΣΗ ────────────────────────────────────────────────────────
+   18/09/2026: όταν ο πελάτης ΔΕΝ έχει ακόμα καταγραφές, ή αποτύχει η φόρτωση,
+   η σελίδα έδειχνε τα ΕΠΙΔΕΙΚΤΙΚΑ δεδομένα — επινοημένες μετρήσεις και
+   ημερομηνίες, σε έντυπο που βλέπει πελάτης και μπορεί να φτάσει σε
+   επιθεωρητή. Τώρα λέει καθαρά τι συμβαίνει και δεν δείχνει τίποτα άλλο. */
+function showEmptyState(minima){
+  document.querySelectorAll(".card").forEach(c=>c.style.display="none");
+  const host=document.querySelector(".wrap")||document.querySelector("main")||document.body;
+  const d=document.createElement("div");
+  d.className="card";
+  d.style.cssText="display:block;padding:34px;text-align:center";
+  d.innerHTML='<h2 style="justify-content:center">'+minima+'</h2>';
+  host.appendChild(d);
+}
+
+function renderObs(){
+  const card=document.getElementById("cardObs"), body=document.getElementById("obsBody");
+  if(!card||!body) return;
+  const esc=t=>String(t).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  if(!OBS.length){ card.style.display="none"; return; }
+  const seira=OBS.slice().sort((a,b)=>parseVDate(b.d)-parseVDate(a.d));   // νεότερη πρώτη
+  body.innerHTML=seira.map(o=>`<tr><td class="odate">${esc(o.d)}</td>`+
+    `<td>${esc(o.thesi)}</td><td class="oc">${esc(o.par)}</td></tr>`).join("");
+  card.style.display="";
+}
+function renderAll(){ renderVisits(); renderObs(); renderTraps(); renderCover(); renderMaint(); renderKPIs(); renderDiachronic(); }
 function hideDemoOnlyCards(){
-  document.querySelectorAll(".card").forEach(c=>{const h=c.querySelector("h2"); if(h && (h.textContent.indexOf("Διαχρονική")>=0 || h.textContent.indexOf("Παρατηρήσεις")>=0)) c.style.display="none";});
+  document.querySelectorAll(".card").forEach(c=>{const h=c.querySelector("h2"); if(h && h.textContent.indexOf("Διαχρονική")>=0) c.style.display="none";});
 }
 
 const P=new URLSearchParams(location.search);
@@ -372,7 +402,8 @@ if(SCRIPT && KOD){
   setCustHeader(P, KOD, PELATIS ? decodeURIComponent(PELATIS) : "");
   const sub=document.querySelector(".head .sub"); if(sub) sub.innerHTML='Έντυπο Ε-Ε06 · <b style="color:#8fd4e6">Πίνακας διαρκούς ενημέρωσης καταγραφών</b>';
   fetch(SCRIPT+"?type=entomo-data&kod="+encodeURIComponent(KOD)).then(r=>r.json()).then(rows=>{
-    if(!rows||rows.length<2){ if(badge)badge.textContent="ΧΩΡΙΣ ΚΑΤΑΓΡΑΦΕΣ ΑΚΟΜΑ"; buildDemo(); renderAll(); return; }
+    if(!rows||rows.length<2){ if(badge)badge.textContent="ΧΩΡΙΣ ΚΑΤΑΓΡΑΦΕΣ";
+      showEmptyState("Δεν υπάρχουν ακόμα καταγραφές για αυτόν τον πελάτη."); return; }
     buildReal(rows);
     // οι επισκέψεις είναι συμπληρωματικές: αν αποτύχουν, ο πίνακας παίζει κανονικά
     return fetch(SCRIPT+"?type=visits-data&kod="+encodeURIComponent(KOD))
