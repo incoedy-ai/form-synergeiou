@@ -290,15 +290,31 @@ if(SCRIPT && KOD){
   setCustHeader(P, KOD, PELATIS ? decodeURIComponent(PELATIS) : "");
   const sub=document.querySelector(".head .sub"); if(sub) sub.innerHTML='Έντυπο <b style="color:#8fd4e6">CIMEX</b> · <i>Cimex lectularius</i> · <b style="color:#8fd4e6">Πίνακας διαρκούς ενημέρωσης καταγραφών</b>';
   fetch(SCRIPT+"?type=koroi-data&kod="+encodeURIComponent(KOD)).then(r=>r.json()).then(rows=>{
-    if(!rows||rows.length<2){ if(badge)badge.textContent="ΧΩΡΙΣ ΚΑΤΑΓΡΑΦΕΣ ΑΚΟΜΑ"; buildDemo(); renderAll(); return; }
+    if(!rows||rows.length<2){ if(badge)badge.textContent="ΧΩΡΙΣ ΚΑΤΑΓΡΑΦΕΣ";
+      showEmptyState("Δεν υπάρχουν ακόμα καταγραφές για αυτόν τον πελάτη."); return; }
     buildReal(rows); renderAll();
-  }).catch(e=>{ if(badge)badge.textContent="ΣΦΑΛΜΑ — DEMO"; buildDemo(); renderAll(); });
+  }).catch(e=>{ if(badge)badge.textContent="ΣΦΑΛΜΑ ΦΟΡΤΩΣΗΣ";
+    showEmptyState("Τα δεδομένα δεν φορτώθηκαν. Δοκιμάστε ανανέωση της σελίδας."); });
 } else { buildDemo(); renderAll(); }
 
 const tip=document.getElementById("tip");
 document.addEventListener("mouseover",e=>{const c=e.target.closest("[data-tip]");if(!c)return;const[s,d,v]=c.dataset.tip.split("|");tip.innerHTML=`<b>${s}</b> · ${d}${v?"<br>"+v:""}`;tip.style.opacity="1";});
 document.addEventListener("mousemove",e=>{if(tip.style.opacity==="1"){tip.style.left=Math.min(e.clientX+14,innerWidth-260)+"px";tip.style.top=(e.clientY+16)+"px";}});
 document.addEventListener("mouseout",e=>{if(e.target.closest("[data-tip]"))tip.style.opacity="0";});
+
+
+/* ── ΑΔΕΙΑ ΚΑΤΑΣΤΑΣΗ (18/09/2026) ──────────────────────────────────────────
+   Χωρίς δεδομένα, ή σε αποτυχία φόρτωσης, η σελίδα έδειχνε ΕΠΙΔΕΙΚΤΙΚΑ
+   δεδομένα σε έντυπο που βλέπει πελάτης. Ποτέ ξανά: ή αληθινά ή τίποτα. */
+function showEmptyState(minima){
+  document.querySelectorAll(".card").forEach(c=>c.style.display="none");
+  const host=document.querySelector(".wrap")||document.querySelector("main")||document.body;
+  const d=document.createElement("div");
+  d.className="card";
+  d.style.cssText="display:block;padding:34px;text-align:center";
+  d.innerHTML='<h2 style="justify-content:center">'+minima+'</h2>';
+  host.appendChild(d);
+}
 
 // ---- Κεφαλίδα πελάτη (κοινή σε όλα τα ζωντανά έντυπα) ----
 // Σειρά που ζήτησε ο χρήστης: κωδικός, επωνυμία, διακριτικός τίτλος,

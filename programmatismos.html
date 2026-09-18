@@ -1,4 +1,4 @@
-<title>Προγραμματισμός Εφαρμογών 2026-27 — PORCANOVA · InCo</title>
+<title>Πρόγραμμα Εφαρμογών · InCo</title>
 <style>
   :root{
     --bg:#e9eff3;--surface:#fff;--surface-2:#f5f8fa;--ink:#22303c;--ink-2:#4a5b67;--muted:#7a8b95;--line:#dde6ec;
@@ -86,8 +86,8 @@
       </div>
     </div>
     <div class="cust">
-      <div class="name" id="custname">Α720 · PORCANOVA</div>
-      <div class="meta" id="custmeta">Αυθεντική Γουρουνοπούλα Ι.Κ.Ε · Εστίαση<br>Ροδοπόλεως 82, Ελληνικό · 210.96.44.310</div>
+      <div class="name" id="custname"></div>
+      <div class="meta" id="custmeta"></div>
       <span class="demo" id="badge">Ενδεικτικά δεδομένα</span>
     </div>
   </div>
@@ -237,8 +237,8 @@ if(SCRIPT && KOD){
     .then(r=>r.json())
     .then(values=>{
       if(!values || values.length<2){
-        if(badge) badge.textContent="ΧΩΡΙΣ ΠΡΟΓΡΑΜΜΑ ΑΚΟΜΑ";
-        renderAll(DEMO_APPS,6,"Δίμηνη");
+        if(badge) badge.textContent="ΧΩΡΙΣ ΠΡΟΓΡΑΜΜΑ";
+        showEmptyState("Δεν έχει καταχωρηθεί ακόμα πρόγραμμα για αυτόν τον πελάτη.");
         return;
       }
       const R=buildReal(values);
@@ -246,9 +246,24 @@ if(SCRIPT && KOD){
       if(badge) badge.textContent="LIVE DATA";
       renderAll(R.apps,R.perYear,R.freq);
     })
-    .catch(()=>{ if(badge) badge.textContent="ΣΦΑΛΜΑ ΦΟΡΤΩΣΗΣ — ΕΝΔΕΙΚΤΙΚΑ"; renderAll(DEMO_APPS,6,"Δίμηνη"); });
+    .catch(()=>{ if(badge) badge.textContent="ΣΦΑΛΜΑ ΦΟΡΤΩΣΗΣ";
+      showEmptyState("Τα δεδομένα δεν φορτώθηκαν. Δοκιμάστε ανανέωση της σελίδας."); });
 }else{
   renderAll(DEMO_APPS,6,"Δίμηνη");
+}
+
+
+/* ── ΑΔΕΙΑ ΚΑΤΑΣΤΑΣΗ (18/09/2026) ──────────────────────────────────────────
+   Χωρίς δεδομένα, ή σε αποτυχία φόρτωσης, η σελίδα έδειχνε ΕΠΙΔΕΙΚΤΙΚΑ
+   δεδομένα σε έντυπο που βλέπει πελάτης. Ποτέ ξανά: ή αληθινά ή τίποτα. */
+function showEmptyState(minima){
+  document.querySelectorAll(".card").forEach(c=>c.style.display="none");
+  const host=document.querySelector(".wrap")||document.querySelector("main")||document.body;
+  const d=document.createElement("div");
+  d.className="card";
+  d.style.cssText="display:block;padding:34px;text-align:center";
+  d.innerHTML='<h2 style="justify-content:center">'+minima+'</h2>';
+  host.appendChild(d);
 }
 
 // ---- Κεφαλίδα πελάτη (κοινή σε όλα τα ζωντανά έντυπα) ----
@@ -274,5 +289,9 @@ function setCustHeader(P, kod, pelatis) {
   const mt = document.getElementById('custmeta') || document.querySelector('.cust .meta');
   if (nm) nm.textContent = parts.join(' \u00b7 ');
   if (mt) mt.textContent = addr;
+  // 18/09/2026: ο τίτλος της καρτέλας ακολουθεί τον πελάτη (ήταν καρφωμένος «PORCANOVA»).
+  const _t = parts.join(' · ');
+  document.title = _t ? 'Πρόγραμμα Εφαρμογών — ' + _t + ' · InCo'
+                      : 'Πρόγραμμα Εφαρμογών · InCo';
 }
 </script>
