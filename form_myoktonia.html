@@ -47,6 +47,12 @@
   <div id="seList"></div>
 </div>
 
+<h2>ΠΑΡΑΤΗΡΗΣΕΙΣ &amp; ΔΙΟΡΘΩΤΙΚΕΣ ΕΝΕΡΓΕΙΕΣ</h2>
+<!-- Μία φορά για ΟΛΗ την επίσκεψη, όχι ανά σταθμό: ό,τι είδε ο τεχνικός και τι
+     πρέπει να γίνει. Γράφεται αυτούσιο στο δελτίο επίσκεψης. -->
+<textarea id="paratiriseis" rows="4" placeholder="π.χ. ανοιχτή πόρτα αποθήκης, σκισμένος σάκος, να τοποθετηθεί σήτα"
+          style="width:100%; padding:9px; font-size:15px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px;"></textarea>
+
 <h2>ΤΕΧΝΙΚΟΣ &amp; ΥΠΟΓΡΑΦΗ</h2>
 <div class="row" style="border-bottom:none">
   <label for="technikos">Τεχνικός</label>
@@ -219,7 +225,8 @@ function submitForm() {
     method: 'POST',
     mode: 'no-cors',
     body: JSON.stringify({ kod: kod, pelatis: pelatis, entries: entries,
-                          technikos: technikos, signature: sigData() })
+                          technikos: technikos, signature: sigData(),
+                          paratiriseis: document.getElementById('paratiriseis').value })
   })
   .then(() => {
     __release();
@@ -227,6 +234,7 @@ function submitForm() {
     msg.style.color = 'green';
     // επαναφορά στην προεπιλογή 0, όχι σε κενό
     document.querySelectorAll('input.stationInput').forEach(i => i.value = '0');
+    document.getElementById('paratiriseis').value = '';
   })
   .catch(() => {
     __release();

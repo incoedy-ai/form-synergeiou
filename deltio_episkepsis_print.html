@@ -47,13 +47,19 @@
   .sum .b .t { font-size: 7px; color: #888; text-transform: uppercase; }
   .sum .b.hi .n { color: #b45309; }
 
-  .sig-row { display: flex; gap: 10px; align-items: stretch; }
-  .sig-row .who { flex: 0 0 200px; }
-  .sig-row .pad { flex: 1; border: 1px dashed #cbd5e0; border-radius: 5px;
-                  display: flex; align-items: center; justify-content: center; min-height: 80px; }
-  .sig-row .pad img { max-height: 76px; max-width: 100%; }
-  .sig-row .pad .empty { color: #bbb; font-style: italic; font-size: 9px; }
+  .sig-row { display: flex; gap: 14px; align-items: flex-start; }
+  .sig-row .who { flex: 1; }
+  /* Σφραγίδα + υπογραφή του υπεύθυνου επιστήμονα, ίδια με τα πιστοποιητικά
+     εφαρμογών. Το πλάτος αφορά ΟΛΗ την εικόνα ώστε η σφραγίδα μέσα της να
+     βγαίνει σε φυσικό μέγεθος — μη το αλλάξεις σε max-width. */
+  .sig-row .stamp { flex: 0 0 auto; text-align: center; }
+  .sig-row .stamp .cap { font-size: 7px; color: #888; font-weight: bold;
+                         text-transform: uppercase; margin-bottom: 2px; }
+  .sig-row .stamp img { width: 6.6cm; height: auto; display: block; }
 
+  .keimeno { font-size: 9px; color: #2D3A4D; background: #f4f8fc; border-radius: 3px;
+              padding: 5px 6px; min-height: 30px; white-space: pre-wrap; line-height: 1.5; }
+  .keimeno.empty { color: #bbb; font-style: italic; }
   .legal { margin-top: 10px; padding-top: 6px; border-top: 1px solid #ddd;
            font-size: 7px; line-height: 1.5; color: #777; text-align: center; }
   .foot { margin-top: 6px; font-size: 7px; color: #999; text-align: right; }
@@ -66,7 +72,7 @@
     {{LOGO_IMG}}
     <div class="ttl">
       <h1>{{TITLOS}}</h1>
-      <div class="sub">ΔΕΛΤΙΟ ΕΠΙΣΚΕΨΗΣ · ΕΛΕΓΧΟΣ ΠΑΡΑΚΟΛΟΥΘΗΣΗΣ (EN 16636 / HACCP)</div>
+      <div class="sub">ΔΕΛΤΙΟ ΕΠΙΣΚΕΨΗΣ · ΕΛΕΓΧΟΣ ΠΑΡΑΚΟΛΟΥΘΗΣΗΣ</div>
     </div>
     <div class="kod-box">
       <div class="lbl">ΑΡ. ΔΕΛΤΙΟΥ</div>
@@ -94,14 +100,18 @@
     <div class="sb">{{PINAKAS}}</div>
   </div>
 
+  {{PARATIRISEIS}}
+
   <div class="section">
-    <div class="st">ΤΕΧΝΙΚΟΣ ΕΦΑΡΜΟΓΗΣ</div>
+    <div class="st">ΤΕΧΝΙΚΟΣ ΚΑΙ ΥΠΟΓΡΑΦΗ</div>
     <div class="sb"><div class="sig-row">
       <div class="who">
-        <div class="item"><div class="l">Ονοματεπώνυμο</div><div class="v">{{TEXNIKOS}}</div></div>
-        <div class="item" style="margin-top:4px"><div class="l">Υπογραφή</div><div class="v">{{YPOGRAFI_STATUS}}</div></div>
+        <div class="item"><div class="l">Τεχνικός εφαρμογής</div><div class="v">{{TEXNIKOS}}</div></div>
       </div>
-      <div class="pad">{{YPOGRAFI}}</div>
+      <div class="stamp">
+        <div class="cap">Ο Υπεύθυνος Επιστήμονας</div>
+        {{SFRAGIDA}}
+      </div>
     </div></div>
   </div>
 
