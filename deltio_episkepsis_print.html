@@ -41,6 +41,12 @@
   table.mat caption { caption-side: top; text-align: left; font-size: 8px; font-weight: bold;
                       color: #287B9B; padding: 4px 0 3px; }
 
+  /* Μεγάλες λίστες σταθμών σε δύο στήλες: με 30 δολωματικούς σταθμούς ο πίνακας
+     μιας στήλης έπιανε δύο σελίδες με μισές άδειες. */
+  .omada + .omada { margin-top: 7px; }
+  .omada-t { font-size: 8px; font-weight: bold; color: #287B9B; padding: 0 0 3px; }
+  .duo { display: flex; gap: 8px; align-items: flex-start; }
+  .duo > div { flex: 1; min-width: 0; }
   .sum { display: flex; gap: 8px; }
   .sum .b { flex: 1; border: 1px solid #d6e2ec; border-radius: 5px; padding: 4px 6px; text-align: center; }
   .sum .b .n { font-size: 15px; font-weight: bold; color: #2D3A4D; }

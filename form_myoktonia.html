@@ -47,10 +47,15 @@
   <div id="seList"></div>
 </div>
 
-<h2>ΠΑΡΑΤΗΡΗΣΕΙΣ &amp; ΔΙΟΡΘΩΤΙΚΕΣ ΕΝΕΡΓΕΙΕΣ</h2>
-<!-- Μία φορά για ΟΛΗ την επίσκεψη, όχι ανά σταθμό: ό,τι είδε ο τεχνικός και τι
-     πρέπει να γίνει. Γράφεται αυτούσιο στο δελτίο επίσκεψης. -->
-<textarea id="paratiriseis" rows="4" placeholder="π.χ. ανοιχτή πόρτα αποθήκης, σκισμένος σάκος, να τοποθετηθεί σήτα"
+<h2>ΠΑΡΑΤΗΡΗΣΕΙΣ</h2>
+<!-- Μία φορά για ΟΛΗ την επίσκεψη, όχι ανά σταθμό. Χωριστά τα ΔΥΟ: τι είδε ο
+     τεχνικός (παρατήρηση) και τι πρέπει να γίνει (διορθωτική ενέργεια) — σε
+     έλεγχο ζητούνται ξεχωριστά. Γράφονται αυτούσια στο δελτίο επίσκεψης. -->
+<textarea id="paratiriseis" rows="3" placeholder="τι είδε ο τεχνικός — π.χ. ανοιχτή πόρτα αποθήκης, σκισμένος σάκος"
+          style="width:100%; padding:9px; font-size:15px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px;"></textarea>
+
+<h2>ΔΙΟΡΘΩΤΙΚΕΣ ΕΝΕΡΓΕΙΕΣ</h2>
+<textarea id="diorthotikes" rows="3" placeholder="τι πρέπει να γίνει — π.χ. να τοποθετηθεί σήτα, να κλείνει η πόρτα"
           style="width:100%; padding:9px; font-size:15px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px;"></textarea>
 
 <h2>ΤΕΧΝΙΚΟΣ &amp; ΥΠΟΓΡΑΦΗ</h2>
@@ -226,7 +231,8 @@ function submitForm() {
     mode: 'no-cors',
     body: JSON.stringify({ kod: kod, pelatis: pelatis, entries: entries,
                           technikos: technikos, signature: sigData(),
-                          paratiriseis: document.getElementById('paratiriseis').value })
+                          paratiriseis: document.getElementById('paratiriseis').value,
+                          diorthotikes: document.getElementById('diorthotikes').value })
   })
   .then(() => {
     __release();
@@ -235,6 +241,7 @@ function submitForm() {
     // επαναφορά στην προεπιλογή 0, όχι σε κενό
     document.querySelectorAll('input.stationInput').forEach(i => i.value = '0');
     document.getElementById('paratiriseis').value = '';
+    document.getElementById('diorthotikes').value = '';
   })
   .catch(() => {
     __release();
