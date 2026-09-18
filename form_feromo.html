@@ -76,10 +76,50 @@
 <label for="paratiriseis">Παρατηρήσεις</label>
 <textarea id="paratiriseis" rows="3" style="width:100%; padding:9px; font-size:15px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px;"></textarea>
 
+<h2>ΤΕΧΝΙΚΟΣ &amp; ΥΠΟΓΡΑΦΗ</h2>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 4px">
+  <label for="technikos" style="font-weight:bold">Τεχνικός</label>
+  <select id="technikos" style="width:200px;padding:8px;font-size:15px;border:1px solid #ccc;border-radius:4px">
+    <option value="">— Επίλεξε —</option>
+    <option>ΑΡΧΙΜΗΔΗΣ</option>
+    <option>ΒΑΓΓΕΛΗΣ</option>
+  </select>
+</div>
+<!-- Υπογραφή: κάθε επίσκεψη αρχειοθετείται και ως υπογεγραμμένο PDF (EN 16636 / HACCP). -->
+<canvas id="sig" width="440" height="140"
+        style="width:100%;height:140px;border:1px dashed #9bb;border-radius:6px;background:#fff;touch-action:none"></canvas>
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#777;margin-top:4px">
+  <span>Υπογραφή τεχνικού</span>
+  <button type="button" onclick="sigClear()"
+          style="width:auto;margin:0;padding:4px 10px;font-size:12px;background:#eee;color:#444;border:1px solid #ccc;border-radius:4px">Καθάρισμα</button>
+</div>
+
 <button class="submitBtn myincoBtn" onclick="submitForm()" title="Ανεβάζει τις μετρήσεις στο My InCo"><span>Ανέβασμα στο</span><img src="myinco_word.png" alt="My InCo"></button>
 <div id="msg"></div>
 
 <script>
+// ── Υπογραφή τεχνικού (ίδιο μοτίβο με τη φόρμα εντολής) ─────────────────────
+const sigCv = document.getElementById('sig');
+const sigCtx = sigCv.getContext('2d');
+let sigDraw = false, sigUsed = false;
+function sigPos(e) {
+  const r = sigCv.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  return { x: (t.clientX - r.left) * sigCv.width / r.width,
+           y: (t.clientY - r.top) * sigCv.height / r.height };
+}
+function sigStart(e) { e.preventDefault(); sigDraw = true; sigUsed = true;
+  const p = sigPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); }
+function sigMove(e) { if (!sigDraw) return; e.preventDefault();
+  const p = sigPos(e); sigCtx.lineTo(p.x, p.y); sigCtx.lineWidth = 2;
+  sigCtx.lineCap = 'round'; sigCtx.strokeStyle = '#16305c'; sigCtx.stroke(); }
+function sigEnd() { sigDraw = false; }
+['mousedown','touchstart'].forEach(ev => sigCv.addEventListener(ev, sigStart));
+['mousemove','touchmove'].forEach(ev => sigCv.addEventListener(ev, sigMove));
+['mouseup','mouseleave','touchend'].forEach(ev => sigCv.addEventListener(ev, sigEnd));
+function sigClear() { sigCtx.clearRect(0, 0, sigCv.width, sigCv.height); sigUsed = false; }
+function sigData() { return sigUsed ? sigCv.toDataURL('image/png') : ''; }
+
 const qs = new URLSearchParams(window.location.search);
 const URL = qs.get('script') || "https://script.google.com/macros/s/AKfycby0DVDdrddETKpizq8JQgGQs3SDRyRNhypnFA7--Q2XtsT6qmisLiR93Gc4b2MkuHcG/exec";
 const pelatis = qs.get('pelatis') || '';
@@ -203,6 +243,14 @@ function submitForm() {
     __release(); return;
   }
 
+  const technikos = document.getElementById('technikos').value;
+  if (!technikos) {
+    msg.textContent = 'Διάλεξε τεχνικό.'; msg.style.color = 'red'; __release(); return;
+  }
+  if (!sigUsed) {
+    msg.textContent = 'Λείπει η υπογραφή του τεχνικού.'; msg.style.color = 'red'; __release(); return;
+  }
+
   msg.textContent = 'Αποστολή...';
   msg.style.color = 'black';
 
@@ -212,7 +260,8 @@ function submitForm() {
     body: JSON.stringify({
       form: 'feromo', kod: kod, pelatis: pelatis, thesi: thesi, typosPagidas: typosPagidas, species: species,
       kollitiki: kollitiki, antikatastasi: antikatastasi,
-      paratiriseis: document.getElementById('paratiriseis').value
+      paratiriseis: document.getElementById('paratiriseis').value,
+      technikos: technikos, signature: sigData()
     })
   })
   .then(() => {
