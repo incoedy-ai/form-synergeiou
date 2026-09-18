@@ -11,6 +11,17 @@
   .row { display: flex; align-items: center; justify-content: space-between; padding: 10px 4px; border-bottom: 1px solid #ddd; }
   .row label { font-weight: bold; font-size: 15px; }
   input { width: 90px; padding: 8px; font-size: 16px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
+
+  /* 18/09/2026: με 30 δολωματικούς σταθμούς η λίστα μιας στήλης ήταν ατελείωτο
+     μακρινάρι στο tablet — ο τεχνικός κυλούσε συνέχεια. Δύο στήλες τη μισεύουν.
+     Σε πολύ στενή οθόνη γυρίζει σε μία, αλλιώς δεν χωράει το κουτί της τιμής. */
+  #dsList, #seList { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; }
+  #dsList .row, #seList .row { padding: 9px 2px; }
+  #dsList input, #seList input { width: 74px; padding: 7px; }
+  @media (max-width: 390px) {
+    #dsList, #seList { grid-template-columns: 1fr; }
+    #dsList input, #seList input { width: 90px; }
+  }
   button { width: 100%; margin-top: 24px; padding: 14px; font-size: 16px; background: #6b6f72; color: white; border: none; border-radius: 6px; }
   #msg { margin-top: 16px; font-weight: bold; text-align: center; }
   #loading { text-align: center; color: #888; margin-top: 20px; }
