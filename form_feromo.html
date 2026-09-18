@@ -74,7 +74,14 @@
 </div>
 
 <label for="paratiriseis">Παρατηρήσεις</label>
-<textarea id="paratiriseis" rows="3" style="width:100%; padding:9px; font-size:15px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px;"></textarea>
+<textarea id="paratiriseis" rows="3" placeholder="τι είδε ο τεχνικός σε ΑΥΤΗ τη θέση"
+          style="width:100%; padding:9px; font-size:15px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px;"></textarea>
+
+<!-- 18/09/2026: όπως στη μυοκτονία και στις ηλεκτρικές. ⚠️ ΑΝΑ ΘΕΣΗ, όχι μία για όλη
+     την επίσκεψη: το έντυπο υποβάλλεται μία παγίδα τη φορά. -->
+<label for="diorthotikes">Διορθωτικές ενέργειες</label>
+<textarea id="diorthotikes" rows="3" placeholder="τι πρέπει να γίνει — π.χ. αντικατάσταση φερομόνης, μετακίνηση παγίδας"
+          style="width:100%; padding:9px; font-size:15px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px;"></textarea>
 
 <h2>ΤΕΧΝΙΚΟΣ &amp; ΥΠΟΓΡΑΦΗ</h2>
 <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 4px">
@@ -211,6 +218,7 @@ function resetForm() {
   document.getElementById('kollitiki').value = '';
   document.getElementById('antikatastasi').value = '';
   document.getElementById('paratiriseis').value = '';
+  document.getElementById('diorthotikes').value = '';
   refreshPicker();
 }
 
@@ -261,6 +269,7 @@ function submitForm() {
       form: 'feromo', kod: kod, pelatis: pelatis, thesi: thesi, typosPagidas: typosPagidas, species: species,
       kollitiki: kollitiki, antikatastasi: antikatastasi,
       paratiriseis: document.getElementById('paratiriseis').value,
+      diorthotikes: document.getElementById('diorthotikes').value,
       technikos: technikos, signature: sigData()
     })
   })

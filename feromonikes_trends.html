@@ -121,9 +121,9 @@
   <!-- 18/09/2026: εδώ κάθονταν ΕΠΙΝΟΗΜΕΝΕΣ παρατηρήσεις, ίδιες για κάθε πελάτη.
        Τώρα γεμίζει από τη στήλη «Παρατηρήσεις» του φύλλου, ανά θέση. -->
   <div class="card" id="cardObs" style="display:none">
-    <h2><span class="dot" style="background:#c98a12"></span>Παρατηρήσεις</h2>
+    <h2><span class="dot" style="background:#c98a12"></span>Παρατηρήσεις &amp; Διορθωτικές Ενέργειες</h2>
     <div class="tscroll"><table class="obstable">
-      <thead><tr><th>Ημ/νία</th><th>Θέση</th><th>Παρατήρηση</th></tr></thead>
+      <thead><tr><th>Ημ/νία</th><th>Θέση</th><th>Παρατήρηση</th><th>Διορθωτική ενέργεια</th></tr></thead>
       <tbody id="obsBody"></tbody>
     </table></div>
   </div>
@@ -216,9 +216,10 @@ function buildReal(rows){
   TRAPS=traps.map(id=>({id})); TECH=DATES.map(()=>"—");
   /* Οι παρατηρήσεις εδώ είναι ΑΝΑ ΘΕΣΗ (μία παγίδα τη φορά), σε αντίθεση
      με τη μυοκτονία όπου είναι μία για όλη την επίσκεψη. */
-  OBS=[]; { const cPar=col("Παρατηρήσεις");
-    if(cPar>=0) data.forEach(r=>{ const t=String(r[cPar]||"").trim();
-      if(t) OBS.push({d:fmtDate(r[cDate]), thesi:String(r[cThesi]||"").trim(), par:t}); }); } GG={};MNT={};
+  OBS=[]; { const cPar=col("Παρατηρήσεις"), cDio=col("ΔΙΟΡΘΩΤΙΚΕΣ");
+    data.forEach(r=>{ const t=cPar>=0?String(r[cPar]||"").trim():"",
+                            u=cDio>=0?String(r[cDio]||"").trim():"";
+      if(t||u) OBS.push({d:fmtDate(r[cDate]), thesi:String(r[cThesi]||"").trim(), par:t, dio:u}); }); } GG={};MNT={};
   traps.forEach(id=>{ GG[id]=GROUPS.map(()=>DATES.map(()=>0)); MNT[id]=DATES.map(()=>({k:false,p:false})); });
   data.forEach(r=>{
     const id=String(r[cThesi]).trim(); const i=di(fmtDate(r[0])); if(i<0||!id)return;
@@ -352,7 +353,8 @@ function renderObs(){
   if(!OBS.length){ card.style.display="none"; return; }
   const seira=OBS.slice().sort((a,b)=>parseVDate(b.d)-parseVDate(a.d));   // νεότερη πρώτη
   body.innerHTML=seira.map(o=>`<tr><td class="odate">${esc(o.d)}</td>`+
-    `<td>${esc(o.thesi)}</td><td class="oc">${esc(o.par)}</td></tr>`).join("");
+    `<td>${esc(o.thesi)}</td><td class="oc">${esc(o.par||"—")}</td>`+
+    `<td>${esc(o.dio||"—")}</td></tr>`).join("");
   card.style.display="";
 }
 function renderAll(){ renderVisits(); renderObs(); renderTraps(); renderMaint(); renderKPIs(); renderDiachronic(); }
