@@ -27,6 +27,7 @@
 
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; }
   .item { display: flex; flex-direction: column; }
+  .item.olo { grid-column: 1 / -1; }
   .item .l { font-size: 7px; color: #888; font-weight: bold; text-transform: uppercase; }
   .item .v { font-size: 9px; color: #2D3A4D; font-weight: bold; background: #f4f8fc;
              border-radius: 3px; padding: 2px 5px; min-height: 14px; }
@@ -91,8 +92,7 @@
     <div class="sb"><div class="grid2">
       <div class="item"><div class="l">Κωδικός / Επωνυμία</div><div class="v">{{PEL_KOD}} · {{PEL_EPON}}</div></div>
       <div class="item"><div class="l">Ημερομηνία επίσκεψης</div><div class="v">{{IMEROMINIA}}</div></div>
-      <div class="item"><div class="l">Διεύθυνση εφαρμογής</div><div class="v">{{PEL_DIEY}}</div></div>
-      <div class="item"><div class="l">Ώρα καταχώρησης</div><div class="v">{{ORA}}</div></div>
+      <div class="item olo"><div class="l">Διεύθυνση εφαρμογής</div><div class="v">{{PEL_DIEY}}</div></div>
     </div></div>
   </div>
 
