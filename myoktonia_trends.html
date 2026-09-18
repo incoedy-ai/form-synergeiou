@@ -1,4 +1,4 @@
-<title>Μυοκτονία 2026-27 — PORCANOVA · InCo</title>
+<title>Μυοκτονία · InCo</title>
 <style>
   :root{
     --bg:#e9eff3; --surface:#ffffff; --surface-2:#f5f8fa;
@@ -169,8 +169,8 @@
       </div>
     </div>
     <div class="cust">
-      <div class="name">Α720 · PORCANOVA</div>
-      <div class="meta">Αυθεντική Γουρουνοπούλα Ι.Κ.Ε<br>Ροδοπόλεως 82, Ελληνικό</div>
+      <div class="name"></div>
+      <div class="meta"></div>
       <span class="demo">Ενδεικτικά δεδομένα</span>
     </div>
   </div>
@@ -504,5 +504,8 @@ function setCustHeader(P, kod, pelatis) {
   const mt = document.getElementById('custmeta') || document.querySelector('.cust .meta');
   if (nm) nm.textContent = parts.join(' \u00b7 ');
   if (mt) mt.textContent = addr;
+  // 18/09/2026: ο τίτλος της καρτέλας ακολουθεί τον πελάτη (ήταν καρφωμένος «PORCANOVA»).
+  const _t = parts.join(' · ');
+  document.title = _t ? 'Μυοκτονία — ' + _t + ' · InCo' : 'Μυοκτονία · InCo';
 }
 </script>

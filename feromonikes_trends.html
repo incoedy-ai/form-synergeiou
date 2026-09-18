@@ -1,4 +1,4 @@
-<title>Φερομονικές Παγίδες 2026-27 — PORCANOVA · InCo</title>
+<title>Φερομονικές Παγίδες · InCo</title>
 <style>
   :root{
     --bg:#e9eff3;--surface:#fff;--surface-2:#f5f8fa;--ink:#22303c;--ink-2:#4a5b67;--muted:#7a8b95;--line:#dde6ec;
@@ -98,8 +98,8 @@
       </div>
     </div>
     <div class="cust">
-      <div class="name">Α720 · PORCANOVA</div>
-      <div class="meta">Αυθεντική Γουρουνοπούλα Ι.Κ.Ε<br>Ροδοπόλεως 82, Ελληνικό</div>
+      <div class="name"></div>
+      <div class="meta"></div>
       <span class="demo">Ενδεικτικά δεδομένα</span>
     </div>
   </div>
@@ -393,5 +393,8 @@ function setCustHeader(P, kod, pelatis) {
   const mt = document.getElementById('custmeta') || document.querySelector('.cust .meta');
   if (nm) nm.textContent = parts.join(' \u00b7 ');
   if (mt) mt.textContent = addr;
+  // 18/09/2026: ο τίτλος της καρτέλας ακολουθεί τον πελάτη (ήταν καρφωμένος «PORCANOVA»).
+  const _t = parts.join(' · ');
+  document.title = _t ? 'Φερομονικές Παγίδες — ' + _t + ' · InCo' : 'Φερομονικές Παγίδες · InCo';
 }
 </script>
