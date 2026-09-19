@@ -40,6 +40,18 @@ textarea.v{min-height:70px;resize:vertical}
 .tbl th{font-size:11px;color:#555;text-align:left;padding:6px 4px;border-bottom:1px solid #e0e0e0}
 .tbl td{padding:4px}
 .tbl input,.tbl select{width:100%;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:8px;min-height:40px}
+/* Πλάτη ανάλογα με το τι γράφεται μέσα (ρητό 19/09/2026): ο όροφος να μην κόβεται,
+   οι αριθμοί να μην πιάνουν χώρο, τα «νούμερα δωματίων» να έχουν άπλα. */
+#orofoi th:nth-child(1),#orofoi td:nth-child(1){width:110px}
+#orofoi th:nth-child(2),#orofoi td:nth-child(2){width:110px}
+#orofoi th:nth-child(4),#orofoi td:nth-child(4),
+#orofoi th:nth-child(5),#orofoi td:nth-child(5){width:150px}
+#orofoi th:last-child,#orofoi td:last-child{width:46px}
+#pos th:nth-child(3),#pos td:nth-child(3){width:110px}
+#pos th:nth-child(4),#pos td:nth-child(4){width:170px}
+#pos th:last-child,#pos td:last-child,#leg th:last-child,#leg td:last-child{width:46px}
+#leg th:nth-child(5),#leg td:nth-child(5){width:70px}
+#leg th:nth-child(6),#leg td:nth-child(6){width:70px}
 .add{margin-top:8px;border:1px dashed var(--blue);background:#fff;color:var(--blue);font-weight:bold;padding:10px;border-radius:6px;width:100%;font-family:inherit;cursor:pointer}
 .star{width:44px;height:40px;border:1px solid var(--line);border-radius:6px;background:var(--soft);font-size:20px;color:#bbb;cursor:pointer}
 .star.on{background:#FFF4D6;color:var(--gold);border-color:var(--gold)}
