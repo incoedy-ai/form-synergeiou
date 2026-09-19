@@ -177,6 +177,7 @@ function addRow(d){
     '<td><input data-c="ΠΑΡΑΤΗΡΗΣΕΙΣ" value="' + esc(d['ΠΑΡΑΤΗΡΗΣΕΙΣ']) + '"></td>' +
     '<td><button type="button" class="del" title="Διαγραφή">✕</button></td>';
   if (d['ΣΗΜΕΙΟ_ID']) tr.dataset.sid = d['ΣΗΜΕΙΟ_ID'];
+  clOff(tr);
   renumber();
   if (fresh) draft();
 }
@@ -227,6 +228,17 @@ function hint(){
   document.getElementById('paramHint').textContent = e ? ('Παράμετροι: ' + PARAM[e]) : '';
   // Το «Νερό» (Κ.Α/Ζ.Ε…) αφορά μόνο τη Legionella.
   document.querySelectorAll('#deig [data-c="ΕΙΔΟΣ_ΝΕΡΟΥ"]').forEach(s => s.disabled = (e !== 'LEGIONELLA'));
+  document.querySelectorAll('#deig tr').forEach(clOff);
+}
+// ⚠️ Στο ΖΕΣΤΟ νερό (Ζ.Α / Ζ.Ε) ΔΕΝ μετράμε χλώριο (ρητό χρήστη 19/09/2026).
+function clOff(tr){
+  const nero = tr.querySelector('[data-c="ΕΙΔΟΣ_ΝΕΡΟΥ"]');
+  const cl = tr.querySelector('[data-c="ΧΛΩΡΙΟ"]');
+  if (!nero || !cl) return;
+  const zesto = /^Ζ\./.test(nero.value || '');
+  cl.disabled = zesto;
+  cl.placeholder = zesto ? '—' : '';
+  if (zesto) cl.value = '';
 }
 async function save(){
   const d = collect();
@@ -261,7 +273,10 @@ document.addEventListener('click', e => {
   }
 });
 document.addEventListener('input', draft);
-document.addEventListener('change', draft);
+document.addEventListener('change', e => {
+  if (e.target.dataset && e.target.dataset.c === 'ΕΙΔΟΣ_ΝΕΡΟΥ') clOff(e.target.closest('tr'));
+  draft();
+});
 (function init(){
   let d = null;
   try { d = JSON.parse(localStorage.getItem(DRAFT) || 'null'); } catch (e) {}
