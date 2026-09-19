@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="el"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Αυτοψία Water Safety</title>
+<style>
+:root{--navy:#2D3A4D;--blue:#287B9B;--cyan:#2DAFCE;--sky:#6FB7D6;--bg:#f0f0f0;--card:#fff;--soft:#f4f8fc;--line:#d0e0f0;--txt:#222;--muted:#888;--gold:#E0A000}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Verdana,sans-serif;font-size:14px;background:var(--bg);color:var(--txt)}
+input,select,textarea{font-weight:bold;font-family:inherit;font-size:14px;color:var(--navy)}
+.header{background:var(--navy);color:#fff;padding:10px 16px;position:sticky;top:0;z-index:5;display:flex;justify-content:center;align-items:center;gap:14px}
+.header .logo{height:64px;width:auto;background:#fff;border-radius:6px;padding:3px}
+.htxt{text-align:center}
+.header h1{font-size:15px;letter-spacing:.5px}
+.header p{font-size:11px;margin-top:4px;opacity:.8}
+.stripe{height:4px;background:linear-gradient(90deg,var(--sky),var(--cyan))}
+.wrap{max-width:1100px;margin:0 auto;padding-bottom:90px}
+.section{background:var(--card);margin:10px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.12);overflow:hidden}
+.section-title{background:var(--blue);color:#fff;padding:9px 14px;font-size:12px;font-weight:bold;letter-spacing:.5px;display:flex;justify-content:space-between;align-items:center}
+.section-title small{font-weight:normal;opacity:.85}
+.section-body{padding:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.full{grid-column:1/-1}
+.w2{grid-column:span 2}
+.toprow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.toprow .srch{width:340px;max-width:60%}
+.toprow .dt{width:200px}
+@media(max-width:560px){.w2{grid-column:1/-1}}
+.item{display:flex;flex-direction:column}
+label.l{font-size:10px;color:var(--muted);font-weight:bold;text-transform:uppercase;margin-bottom:3px}
+input.v,select.v,textarea.v{background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:9px 10px;min-height:42px;width:100%}
+textarea.v{min-height:70px;resize:vertical}
+.seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;min-height:42px}
+.seg button{flex:1;border:0;background:var(--soft);font-weight:bold;font-family:inherit;font-size:13px;color:var(--navy);cursor:pointer}
+.seg button.on{background:var(--blue);color:#fff}
+.seg button+button{border-left:1px solid var(--line)}
+.yn{display:grid;grid-template-columns:150px 150px 1fr;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid #eef3f7}
+.yn:last-child{border-bottom:0}
+.yn b{font-size:13px}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:11px;color:#555;text-align:left;padding:6px 4px;border-bottom:1px solid #e0e0e0}
+.tbl td{padding:4px}
+.tbl input,.tbl select{width:100%;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:8px;min-height:40px}
+.add{margin-top:8px;border:1px dashed var(--blue);background:#fff;color:var(--blue);font-weight:bold;padding:10px;border-radius:6px;width:100%;font-family:inherit;cursor:pointer}
+.star{width:44px;height:40px;border:1px solid var(--line);border-radius:6px;background:var(--soft);font-size:20px;color:#bbb;cursor:pointer}
+.star.on{background:#FFF4D6;color:var(--gold);border-color:var(--gold)}
+.del{width:36px;height:40px;border:1px solid var(--line);border-radius:6px;background:#fff;color:#b33;font-size:16px;cursor:pointer}
+.maxmin{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;background:#E3F4FA;padding:10px;border-radius:6px}
+.maxmin label.l{color:var(--navy)}
+.hint{font-size:11px;color:var(--muted);margin-top:6px}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #ccd;padding:10px;display:flex;gap:10px;justify-content:center;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
+.bar button{border:0;border-radius:6px;padding:12px 22px;font-weight:bold;font-family:inherit;font-size:13px;color:#fff;background:var(--blue);cursor:pointer;min-width:150px}
+.bar button.pri{background:var(--navy)}
+.bar button:disabled{background:#9fb3c2;cursor:not-allowed}
+.scroll{overflow-x:auto}
+@media(max-width:700px){.yn{grid-template-columns:1fr 1fr}.yn input{grid-column:1/-1}.bar button{min-width:0;flex:1;padding:12px 6px}}
+.chips{display:flex;gap:4px}
+.chip{border:1px solid var(--line);background:var(--soft);color:#999;font-weight:bold;font-family:inherit;border-radius:6px;min-width:50px;min-height:40px;cursor:pointer;text-decoration:line-through}
+.chip.on{background:var(--blue);color:#fff;border-color:var(--blue);text-decoration:none}
+.onechip{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:6px;background:#E3F4FA;color:var(--navy);font-weight:bold;font-size:13px}
+td.cnt{text-align:center;font-weight:bold;color:var(--navy);font-size:16px}
+.total{margin-top:8px;font-size:13px;color:var(--navy)}
+.msg{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:6px;font-size:13px;display:none;z-index:9;max-width:90%;text-align:center}
+.msg.err{background:#C62828}
+.req{color:#C62828}
+</style></head><body>
+<div class="header"><img class="logo" src="hotelier.jpg" alt="InCo Hotelier Services"><div class="htxt"><h1>ΕΝΤΥΠΟ ΑΥΤΟΨΙΑΣ — WATER SAFETY (Ε-WS01)</h1><p>InCo · Δελφών 140, Γλυφάδα</p></div></div>
+<div class="stripe"></div>
+<div class="wrap">
+
+<div class="section">
+  <div class="section-title">1 · ΠΕΛΑΤΗΣ <small>υπάρχων ή υποψήφιος</small></div>
+  <div class="section-body grid">
+    <div class="toprow full"><div class="item srch"><label class="l">Κωδικός υπάρχοντος πελάτη</label><input class="v" data-k="ΚΩΔΙΚΟΣ_ΠΕΛΑΤΗ" placeholder="π.χ. Α627 — κενό για υποψήφιο"><div class="hint">Αν δεν υπάρχει, συμπληρώνεις τα στοιχεία από κάτω.</div></div><div class="item dt"><label class="l">Ημερομηνία αυτοψίας <span class="req">*</span></label><input class="v" type="date" data-k="ΗΜΕΡΟΜΗΝΙΑ"></div></div>
+    <div class="item w2"><label class="l">Επωνυμία <span class="req">*</span></label><input class="v" data-k="ΕΠΩΝΥΜΙΑ"></div>
+    <div class="item w2"><label class="l">Διακριτικός τίτλος</label><input class="v" data-k="ΔΙΑΚΡΙΤΙΚΟΣ_ΤΙΤΛΟΣ"></div>
+    <div class="item"><label class="l">Δραστηριότητα</label><input class="v" data-k="ΔΡΑΣΤΗΡΙΟΤΗΤΑ"></div>
+    <div class="item"><label class="l">ΑΦΜ</label><input class="v" inputmode="numeric" data-k="ΑΦΜ"></div>
+    <div class="item"><label class="l">ΔΟΥ</label><input class="v" data-k="ΔΟΥ"></div>
+    <div class="item"><label class="l">Διεύθυνση</label><input class="v" data-k="ΔΙΕΥΘΥΝΣΗ"></div>
+    <div class="item"><label class="l">Τηλέφωνο</label><input class="v" inputmode="tel" data-k="ΤΗΛΕΦΩΝΟ"></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">2 · ΚΑΤΑΛΥΜΑ</div>
+  <div class="section-body grid">
+    <div class="item"><label class="l">Έτος αδειοδότησης</label><input class="v" inputmode="numeric" data-k="ΕΤΟΣ_ΑΔΕΙΟΔΟΤΗΣΗΣ"></div>
+    <div class="item"><label class="l">Τύπος καταλύματος</label><select class="v" data-k="ΤΥΠΟΣ_ΚΑΤΑΛΥΜΑΤΟΣ"><option></option><option>Ξενοδοχείο</option><option>Ενοικιαζόμενα δωμάτια</option><option>Τουριστικές κατοικίες</option><option>Σκάφος</option><option>Άλλο</option></select></div>
+    <div class="item"><label class="l">Αστέρια / Κλειδιά</label><div class="seg" data-one data-k="ΑΣΤΕΡΙΑ_ΚΛΕΙΔΙΑ"><button type="button">1</button><button type="button">2</button><button type="button">3</button><button type="button">4</button><button type="button">5</button></div></div>
+    <div class="item"><label class="l">Περίοδος λειτουργίας</label><div class="seg" data-one data-k="ΠΕΡΙΟΔΟΣ_ΛΕΙΤΟΥΡΓΙΑΣ"><button type="button">Όλο τον χρόνο</button><button type="button">Εποχικό</button></div></div>
+    <div class="item"><label class="l">Αρ. κτιρίων</label><input class="v" inputmode="numeric" data-k="ΑΡ_ΚΤΙΡΙΩΝ" data-n></div>
+    <div class="item"><label class="l">Αρ. δωματίων</label><input class="v" inputmode="numeric" data-k="ΑΡ_ΔΩΜΑΤΙΩΝ" data-n></div>
+    <div class="item"><label class="l">Αρ. κλινών</label><input class="v" inputmode="numeric" data-k="ΑΡ_ΚΛΙΝΩΝ" data-n></div>
+    <div class="item full"><label class="l">Δωμάτια που δεν χρησιμοποιούνται ή χρησιμοποιούνται σπάνια</label><input class="v" data-k="ΑΧΡΗΣΙΜΟΠΟΙΗΤΑ_ΔΩΜΑΤΙΑ"></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">3 · ΕΓΚΑΤΑΣΤΑΣΕΙΣ ΝΕΡΟΥ</div>
+  <div class="section-body">
+    <div class="grid">
+      <div class="item"><label class="l">Σύστημα ζεστού νερού</label><input class="v" data-k="ΣΥΣΤΗΜΑ_ΖΕΣΤΟΥ_ΝΕΡΟΥ"></div>
+      <div class="item"><label class="l">Σύστημα κεντρ. κλιματισμού</label><input class="v" data-k="ΣΥΣΤΗΜΑ_ΚΛΙΜΑΤΙΣΜΟΥ"></div>
+      <div class="item"><label class="l">Πιο κοντινό σημείο από boiler</label><input class="v" data-k="ΚΟΝΤΙΝΟ_ΣΗΜΕΙΟ_BOILER"></div>
+      <div class="item"><label class="l">Πιο μακρινό σημείο από boiler</label><input class="v" data-k="ΜΑΚΡΙΝΟ_ΣΗΜΕΙΟ_BOILER"></div>
+      <div class="item"><label class="l">Θερμ. νερού που φεύγει από boiler (°C)</label><input class="v" inputmode="decimal" data-k="ΘΕΡΜ_ΕΞΟΔΟΥ_BOILER" data-n></div>
+      <div class="item"><label class="l">Θερμ. νερού που επιστρέφει (°C)</label><input class="v" inputmode="decimal" data-k="ΘΕΡΜ_ΕΠΙΣΤΡΟΦΗΣ_BOILER" data-n></div>
+    </div>
+    <div style="margin-top:12px">
+      <div class="yn"><b>Κολυμβητικές δεξαμενές</b><div class="seg" data-one data-yn data-k="ΚΟΛΥΜΒΗΤΙΚΕΣ"><button type="button">ΝΑΙ</button><button type="button">ΟΧΙ</button></div><input class="v" placeholder="Σημειώσεις" data-k="ΚΟΛΥΜΒΗΤΙΚΕΣ_ΣΗΜ"></div>
+      <div class="yn"><b>Jacuzzi</b><div class="seg" data-one data-yn data-k="JACUZZI"><button type="button">ΝΑΙ</button><button type="button">ΟΧΙ</button></div><input class="v" placeholder="Σημειώσεις" data-k="JACUZZI_ΣΗΜ"></div>
+      <div class="yn"><b>SPA</b><div class="seg" data-one data-yn data-k="SPA"><button type="button">ΝΑΙ</button><button type="button">ΟΧΙ</button></div><input class="v" placeholder="Σημειώσεις" data-k="SPA_ΣΗΜ"></div>
+      <div class="yn"><b>Σιντριβάνια</b><div class="seg" data-one data-yn data-k="ΣΙΝΤΡΙΒΑΝΙΑ"><button type="button">ΝΑΙ</button><button type="button">ΟΧΙ</button></div><input class="v" placeholder="Σημειώσεις" data-k="ΣΙΝΤΡΙΒΑΝΙΑ_ΣΗΜ"></div>
+      <div class="yn"><b>Μπεκ</b><div class="seg" data-one data-yn data-k="ΜΠΕΚ"><button type="button">ΝΑΙ</button><button type="button">ΟΧΙ</button></div><input class="v" placeholder="Σημειώσεις" data-k="ΜΠΕΚ_ΣΗΜ"></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">4 · ΟΡΟΦΟΙ <small>μόνο όσοι υπάρχουν</small></div>
+  <div class="section-body scroll">
+    <table class="tbl" id="orofoi">
+      <tr><th>Όροφος</th><th>Αρ. δωματίων</th><th>Νούμερα</th><th>Πιο κοντά σε boiler</th><th>Πιο μακριά σε boiler</th><th>Αρ. δειγμάτων</th><th></th></tr>
+    </table>
+    <button class="add" type="button" onclick="addFloor()">＋ Προσθήκη ορόφου</button>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">5 · LEGIONELLA — ΣΗΜΕΙΑ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ <small>★ = κρίσιμο σημείο</small></div>
+  <div class="section-body scroll">
+    <table class="tbl" id="leg">
+      <tr><th>Κτίριο / Όροφος</th><th>Χώρος</th><th>Σημείο</th><th>Δείγματα</th><th>Σύνολο</th><th>Κρίσιμο</th><th></th></tr>
+    </table>
+    <div class="total">Σύνολο δειγμάτων Legionella: <b id="legsum">0</b> <span class="hint">— οι MAX / MIN από κάτω τα γράφεις εσύ</span></div>
+    <button class="add" type="button" onclick="addLeg()">＋ Προσθήκη σημείου</button>
+    <div class="item" style="margin-top:12px"><label class="l">Σημειώσεις — παρατηρήσεις</label><textarea class="v" data-k="ΣΗΜΕΙΩΣΕΙΣ_LEGIONELLA"></textarea></div>
+    <div class="maxmin">
+      <div class="item"><label class="l">Προτεινόμενα δείγματα MAX</label><input class="v" inputmode="numeric" data-k="LEG_ΔΕΙΓΜΑΤΑ_MAX" data-n></div>
+      <div class="item"><label class="l">Προτεινόμενα δείγματα MIN</label><input class="v" inputmode="numeric" data-k="LEG_ΔΕΙΓΜΑΤΑ_MIN" data-n></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">6 · ΠΟΣΙΜΟ / ΚΟΛΥΜΒΗΤΙΚΗ ΔΕΞΑΜΕΝΗ — ΜΙΚΡΟΒΙΟΛΟΓΙΚΑ</div>
+  <div class="section-body scroll">
+    <div class="grid"><div class="item"><label class="l">Αρ. σημείων υδροληψίας πόσιμου νερού</label><input class="v" inputmode="numeric" data-k="ΑΡ_ΣΗΜΕΙΩΝ_ΠΟΣΙΜΟΥ" data-n></div></div>
+    <table class="tbl" id="pos" style="margin-top:10px">
+      <tr><th>Σημείο — χώρος</th><th>Χρήση</th><th>Αρ. δειγμάτων</th><th>Είδος</th><th>Κρίσιμο</th><th></th></tr>
+    </table>
+    <button class="add" type="button" onclick="addPos()">＋ Προσθήκη σημείου</button>
+    <div class="item" style="margin-top:12px"><label class="l">Σημειώσεις — παρατηρήσεις</label><textarea class="v" data-k="ΣΗΜΕΙΩΣΕΙΣ_ΠΟΣΙΜΟΥ"></textarea></div>
+    <div class="maxmin">
+      <div class="item"><label class="l">Προτεινόμενα δείγματα MAX</label><input class="v" inputmode="numeric" data-k="ΠΟΣ_ΔΕΙΓΜΑΤΑ_MAX" data-n></div>
+      <div class="item"><label class="l">Προτεινόμενα δείγματα MIN</label><input class="v" inputmode="numeric" data-k="ΠΟΣ_ΔΕΙΓΜΑΤΑ_MIN" data-n></div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="msg" id="msg"></div>
+<div class="bar"><button class="pri" type="button" id="btnSave" onclick="save()">💾 ΑΠΟΘΗΚΕΥΣΗ</button><button type="button" disabled title="Επόμενο βήμα">📄 PDF / ΕΚΤΥΠΩΣΗ</button><button type="button" disabled title="Επόμενο βήμα">✉ EMAIL</button><button type="button" onclick="newForm()">🆕 ΝΕΑ ΑΥΤΟΨΙΑ</button></div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Αυτοψία Water Safety (Ε-WS01) — εγκεκριμένη μορφή 17/09/2026.
+// Αποθήκευση: POST JSON στο Apps Script (ENDPOINT, ή ?ep=...).
+// Πρόχειρο στο tablet (localStorage) σε κάθε αλλαγή: αν κλείσει η σελίδα
+// δεν χάνεται τίποτα. Μετά από επιτυχή αποστολή το πρόχειρο ΜΕΝΕΙ μέχρι να
+// πατηθεί «ΝΕΑ ΑΥΤΟΨΙΑ» (το no-cors fetch δεν επιβεβαιώνει την εγγραφή).
+// Προσυμπλήρωση από URL: ?kod=&eponymia=&dt=&drast=&afm=&doy=&diey=&til=
+// ---------------------------------------------------------------------------
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzpSMjnNmjvxXiAv8txlX8rQAqf61MIK7QPDIHTB0pvlDj_fz_gKjqkttIP9guWykY/exec';   // INCO WATER SAFETY web app (ws_config.json)
+const DRAFT = 'ws_aytopsia_draft_v1';
+const P = new URLSearchParams(location.search);
+const EP = P.get('ep') || ENDPOINT;
+
+const FLOORS = ['Υπόγειο','Ισόγειο','1ος','2ος','3ος','4ος','5ος','6ος','7ος','8ος','9ος','10ος'];
+const LEGTYP = ['Δίκτυο (ντους/βρύση)','Jacuzzi','Κολυμβητική δεξαμενή'];
+const POSTYP = ['Πόσιμο','Κολυμβητική','Επιφάνεια (swab)'];
+const SAMPLES = ['Ζ.Α','Ζ.Ε','Κ.Α','Κ.Ε'];
+const DEL = '<td><button type="button" class="del" title="Διαγραφή γραμμής">✕</button></td>';
+
+function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function newUid(){ return 'WSA-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,7); }
+let UID = null;
+
+// ---- γραμμές πινάκων ----
+function addFloor(d){
+  const fresh = !d; d = d || {};
+  const t = document.getElementById('orofoi');
+  const used = [...t.querySelectorAll('select.fl')].map(x => x.value);
+  const f = d['ΟΡΟΦΟΣ'] || FLOORS.find(x => !used.includes(x)) || FLOORS[0];
+  const tr = t.insertRow();
+  tr.innerHTML =
+    '<td><select class="fl">' + FLOORS.map(x => '<option' + (x === f ? ' selected' : '') + '>' + x + '</option>').join('') + '</select></td>' +
+    '<td><input inputmode="numeric" data-c="ΑΡ_ΔΩΜΑΤΙΩΝ" value="' + esc(d['ΑΡ_ΔΩΜΑΤΙΩΝ']) + '"></td>' +
+    '<td><input data-c="ΝΟΥΜΕΡΑ" value="' + esc(d['ΝΟΥΜΕΡΑ']) + '"></td>' +
+    '<td><input data-c="ΠΙΟ_ΚΟΝΤΑ_BOILER" value="' + esc(d['ΠΙΟ_ΚΟΝΤΑ_BOILER']) + '"></td>' +
+    '<td><input data-c="ΠΙΟ_ΜΑΚΡΙΑ_BOILER" value="' + esc(d['ΠΙΟ_ΜΑΚΡΙΑ_BOILER']) + '"></td>' +
+    '<td><input inputmode="numeric" data-c="ΑΡ_ΔΕΙΓΜΑΤΩΝ" value="' + esc(d['ΑΡ_ΔΕΙΓΜΑΤΩΝ']) + '"></td>' + DEL;
+  if (fresh) draft();
+}
+function chipsHtml(on){
+  return '<div class="chips">' + SAMPLES.map(s => '<button type="button" class="chip' + (on.includes(s) ? ' on' : '') + '">' + s + '</button>').join('') + '</div>';
+}
+const ONE = '<div class="chips"><span class="onechip">1 δείγμα</span></div>';
+function isSingle(v){ return /Jacuzzi|Κολυμβητική/.test(v); }
+function addLeg(d){
+  const fresh = !d; d = d || {};
+  const t = document.getElementById('leg');
+  const typ = d['ΣΗΜΕΙΟ'] || LEGTYP[0];
+  const on = d['ΔΕΙΓΜΑΤΑ'] != null ? String(d['ΔΕΙΓΜΑΤΑ']).split(',').filter(Boolean) : SAMPLES.slice();
+  const tr = t.insertRow();
+  tr.innerHTML =
+    '<td><input data-c="ΚΤΙΡΙΟ_ΟΡΟΦΟΣ" value="' + esc(d['ΚΤΙΡΙΟ_ΟΡΟΦΟΣ']) + '"></td>' +
+    '<td><input data-c="ΧΩΡΟΣ" value="' + esc(d['ΧΩΡΟΣ']) + '"></td>' +
+    '<td><select class="typ">' + LEGTYP.map(x => '<option' + (x === typ ? ' selected' : '') + '>' + x + '</option>').join('') + '</select></td>' +
+    '<td>' + (isSingle(typ) ? ONE : chipsHtml(on)) + '</td><td class="cnt">0</td>' +
+    '<td><button type="button" class="star' + (d['ΚΡΙΣΙΜΟ'] ? ' on' : '') + '">★</button></td>' + DEL;
+  recount();
+  if (fresh) draft();
+}
+function addPos(d){
+  const fresh = !d; d = d || {};
+  const t = document.getElementById('pos');
+  const typ = d['ΕΙΔΟΣ'] || POSTYP[0];
+  const tr = t.insertRow();
+  tr.innerHTML =
+    '<td><input data-c="ΧΩΡΟΣ" value="' + esc(d['ΧΩΡΟΣ']) + '"></td>' +
+    '<td><input data-c="ΧΡΗΣΗ" value="' + esc(d['ΧΡΗΣΗ']) + '"></td>' +
+    '<td><input inputmode="numeric" data-c="ΑΡ_ΔΕΙΓΜΑΤΩΝ" value="' + esc(d['ΑΡ_ΔΕΙΓΜΑΤΩΝ'] == null ? 1 : d['ΑΡ_ΔΕΙΓΜΑΤΩΝ']) + '"></td>' +
+    '<td><select class="ptyp">' + POSTYP.map(x => '<option' + (x === typ ? ' selected' : '') + '>' + x + '</option>').join('') + '</select></td>' +
+    '<td><button type="button" class="star' + (d['ΚΡΙΣΙΜΟ'] ? ' on' : '') + '">★</button></td>' + DEL;
+  if (fresh) draft();
+}
+function recount(){
+  let tot = 0;
+  document.querySelectorAll('#leg tr').forEach(tr => {
+    const c = tr.querySelector('td.cnt'); if (!c) return;
+    const ch = tr.querySelectorAll('.chip');
+    const n = ch.length ? [...ch].filter(x => x.classList.contains('on')).length : 1;
+    c.textContent = n; tot += n;
+  });
+  document.getElementById('legsum').textContent = tot;
+}
+
+// ---- συλλογή / επαναφορά ----
+function collect(){
+  const h = {};
+  document.querySelectorAll('[data-k]').forEach(el => {
+    const k = el.dataset.k; let v;
+    if (el.classList.contains('seg')) {
+      const on = el.querySelector('button.on'); v = on ? on.textContent : '';
+      if (el.hasAttribute('data-yn')) v = v === 'ΝΑΙ' ? true : (v === 'ΟΧΙ' ? false : null);
+    } else v = el.value.trim();
+    if (el.hasAttribute('data-n')) v = (v === '' || v == null) ? null : Number(String(v).replace(',', '.'));
+    h[k] = v;
+  });
+  const rows = id => [...document.querySelectorAll('#' + id + ' tr')].slice(1);
+  const cells = tr => { const o = {}; tr.querySelectorAll('[data-c]').forEach(i => o[i.dataset.c] = i.value.trim()); return o; };
+  const orofoi = rows('orofoi').map((tr, i) => Object.assign(cells(tr), { 'ΟΡΟΦΟΣ': tr.querySelector('select.fl').value, 'ΣΕΙΡΑ': i + 1 }));
+  const legionella = rows('leg').map((tr, i) => {
+    const typ = tr.querySelector('.typ').value;
+    const ch = [...tr.querySelectorAll('.chip.on')].map(x => x.textContent);
+    return Object.assign(cells(tr), {
+      'ΣΗΜΕΙΟ': typ, 'ΕΙΔΟΣ': 'LEGIONELLA',
+      'ΔΕΙΓΜΑΤΑ': isSingle(typ) ? '' : ch.join(','),
+      'ΑΡ_ΔΕΙΓΜΑΤΩΝ': isSingle(typ) ? 1 : ch.length,
+      'ΚΡΙΣΙΜΟ': tr.querySelector('.star').classList.contains('on'), 'ΣΕΙΡΑ': i + 1 });
+  });
+  const posimo = rows('pos').map((tr, i) => Object.assign(cells(tr), {
+      'ΕΙΔΟΣ': tr.querySelector('.ptyp').value,
+      'ΚΡΙΣΙΜΟ': tr.querySelector('.star').classList.contains('on'), 'ΣΕΙΡΑ': i + 1 }));
+  return { form: 'ws_aytopsia', uid: UID, sent_at: new Date().toISOString(), header: h, orofoi, legionella, posimo };
+}
+function restore(d){
+  const h = d.header || {};
+  document.querySelectorAll('[data-k]').forEach(el => {
+    const v = h[el.dataset.k]; if (v == null) return;
+    if (el.classList.contains('seg')) {
+      const t = el.hasAttribute('data-yn') ? (v === true ? 'ΝΑΙ' : v === false ? 'ΟΧΙ' : '') : String(v);
+      el.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.textContent === t));
+    } else el.value = v;
+  });
+  (d.orofoi || []).forEach(r => addFloor(r));
+  (d.legionella || []).forEach(r => addLeg(r));
+  (d.posimo || []).forEach(r => addPos(r));
+  UID = d.uid || newUid();
+  recount();
+}
+let tmr = null;
+function draft(){
+  clearTimeout(tmr);
+  tmr = setTimeout(() => { try { localStorage.setItem(DRAFT, JSON.stringify(collect())); } catch (e) {} }, 300);
+}
+function msg(t, err){
+  const m = document.getElementById('msg');
+  m.textContent = t; m.className = 'msg' + (err ? ' err' : ''); m.style.display = 'block';
+  clearTimeout(m._t); m._t = setTimeout(() => m.style.display = 'none', err ? 7000 : 4000);
+}
+
+async function save(){
+  const d = collect();
+  if (!d.header['ΗΜΕΡΟΜΗΝΙΑ']) return msg('Λείπει η ημερομηνία αυτοψίας', true);
+  if (!d.header['ΕΠΩΝΥΜΙΑ'] && !d.header['ΚΩΔΙΚΟΣ_ΠΕΛΑΤΗ']) return msg('Συμπλήρωσε κωδικό πελάτη ή επωνυμία', true);
+  try { localStorage.setItem(DRAFT, JSON.stringify(d)); } catch (e) {}
+  if (!EP) return msg('Η αποθήκευση στο cloud δεν έχει ενεργοποιηθεί ακόμα — κρατήθηκε ως πρόχειρο στο tablet', true);
+  const b = document.getElementById('btnSave');
+  b.disabled = true; b.textContent = '⏳ ΑΠΟΘΗΚΕΥΣΗ…';
+  try {
+    await fetch(EP, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(d) });
+    msg('✓ Η αυτοψία στάλθηκε για αποθήκευση');
+  } catch (e) {
+    msg('Δεν στάλθηκε (σύνδεση;) — κρατήθηκε ως πρόχειρο, ξαναπάτα ΑΠΟΘΗΚΕΥΣΗ', true);
+  } finally {
+    b.disabled = false; b.textContent = '💾 ΑΠΟΘΗΚΕΥΣΗ';
+  }
+}
+
+function newForm(){
+  if (!confirm('Να καθαρίσει η φόρμα για νέα αυτοψία;\n\nΑν δεν έχεις πατήσει ΑΠΟΘΗΚΕΥΣΗ, τα στοιχεία θα χαθούν.')) return;
+  try { localStorage.removeItem(DRAFT); } catch (e) {}
+  location.href = location.pathname + (P.get('ep') ? '?ep=' + encodeURIComponent(P.get('ep')) : '');
+}
+
+// ---- συμβάντα ----
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.classList.contains('del')) { b.closest('tr').remove(); recount(); draft(); return; }
+  if (b.classList.contains('chip')) { b.classList.toggle('on'); recount(); draft(); return; }
+  if (b.classList.contains('star')) { b.classList.toggle('on'); draft(); return; }
+  const seg = b.parentElement;
+  if (seg && seg.hasAttribute('data-one')) {
+    const was = b.classList.contains('on');
+    seg.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+    if (!was) b.classList.add('on');
+    draft();
+  }
+});
+document.addEventListener('input', draft);
+document.addEventListener('change', e => {
+  if (e.target.classList.contains('typ')) {
+    const td = e.target.closest('tr').children[3];
+    td.innerHTML = isSingle(e.target.value) ? ONE : chipsHtml(SAMPLES);
+    recount();
+  }
+  draft();
+});
+
+// ---- εκκίνηση ----
+(function init(){
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(DRAFT) || 'null'); } catch (e) {}
+  if (d && d.header) { restore(d); msg('Συνεχίζεις το πρόχειρο που είχε μείνει στο tablet'); return; }
+  UID = newUid();
+  const map = { kod:'ΚΩΔΙΚΟΣ_ΠΕΛΑΤΗ', eponymia:'ΕΠΩΝΥΜΙΑ', dt:'ΔΙΑΚΡΙΤΙΚΟΣ_ΤΙΤΛΟΣ', drast:'ΔΡΑΣΤΗΡΙΟΤΗΤΑ', afm:'ΑΦΜ', doy:'ΔΟΥ', diey:'ΔΙΕΥΘΥΝΣΗ', til:'ΤΗΛΕΦΩΝΟ' };
+  Object.entries(map).forEach(([p, k]) => { const v = P.get(p); if (v) { const el = document.querySelector('[data-k="' + k + '"]'); if (el) el.value = v; } });
+  document.querySelector('[data-k="ΗΜΕΡΟΜΗΝΙΑ"]').value = new Date().toISOString().slice(0, 10);
+  addFloor(); addLeg(); addPos();
+})();
+</script>
+</body></html>
