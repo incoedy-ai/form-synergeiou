@@ -120,7 +120,7 @@ td.cnt{text-align:center;font-weight:bold;color:var(--navy);font-size:16px}
   <div class="section-title">4 · ΟΡΟΦΟΙ <small>μόνο όσοι υπάρχουν</small></div>
   <div class="section-body scroll">
     <table class="tbl" id="orofoi">
-      <tr><th>Όροφος</th><th>Αρ. δωματίων</th><th>Νούμερα</th><th>Πιο κοντά σε boiler</th><th>Πιο μακριά σε boiler</th><th>Αρ. δειγμάτων</th><th></th></tr>
+      <tr><th>Όροφος</th><th>Αρ. δωματίων</th><th>Νούμερα</th><th>Πιο κοντά σε boiler</th><th>Πιο μακριά σε boiler</th><th></th></tr>
     </table>
     <button class="add" type="button" onclick="addFloor()">＋ Προσθήκη ορόφου</button>
   </div>
@@ -179,7 +179,8 @@ const EP = P.get('ep') || ENDPOINT;
 const FLOORS = ['Υπόγειο','Ισόγειο','1ος','2ος','3ος','4ος','5ος','6ος','7ος','8ος','9ος','10ος'];
 const LEGTYP = ['Δίκτυο (ντους/βρύση)','Jacuzzi','Κολυμβητική δεξαμενή'];
 const POSTYP = ['Πόσιμο','Κολυμβητική','Επιφάνεια (swab)'];
-const SAMPLES = ['Ζ.Α','Ζ.Ε','Κ.Α','Κ.Ε'];
+// Σειρά δειγμάτων: κρύο πρώτα (ρητό 19/09/2026).
+const SAMPLES = ['Κ.Α','Κ.Ε','Ζ.Α','Ζ.Ε'];
 const DEL = '<td><button type="button" class="del" title="Διαγραφή γραμμής">✕</button></td>';
 
 function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
@@ -198,8 +199,9 @@ function addFloor(d){
     '<td><input inputmode="numeric" data-c="ΑΡ_ΔΩΜΑΤΙΩΝ" value="' + esc(d['ΑΡ_ΔΩΜΑΤΙΩΝ']) + '"></td>' +
     '<td><input data-c="ΝΟΥΜΕΡΑ" value="' + esc(d['ΝΟΥΜΕΡΑ']) + '"></td>' +
     '<td><input data-c="ΠΙΟ_ΚΟΝΤΑ_BOILER" value="' + esc(d['ΠΙΟ_ΚΟΝΤΑ_BOILER']) + '"></td>' +
-    '<td><input data-c="ΠΙΟ_ΜΑΚΡΙΑ_BOILER" value="' + esc(d['ΠΙΟ_ΜΑΚΡΙΑ_BOILER']) + '"></td>' +
-    '<td><input inputmode="numeric" data-c="ΑΡ_ΔΕΙΓΜΑΤΩΝ" value="' + esc(d['ΑΡ_ΔΕΙΓΜΑΤΩΝ']) + '"></td>' + DEL;
+    '<td><input data-c="ΠΙΟ_ΜΑΚΡΙΑ_BOILER" value="' + esc(d['ΠΙΟ_ΜΑΚΡΙΑ_BOILER']) + '"></td>' + DEL;
+  // ⚠️ 19/09/2026: η στήλη «Αρ. δειγμάτων» ΒΓΗΚΕ από τους ορόφους — τα δείγματα
+  // μετριούνται ανά σημείο στην ενότητα 5 και το σύνολο βγαίνει μόνο του.
   if (fresh) draft();
 }
 function chipsHtml(on){
