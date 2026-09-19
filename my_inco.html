@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Τι είναι το My InCo</title>
+<!-- Η σελίδα υποδοχής του πελάτη στον φάκελό του (19/09/2026).
+     Μπαίνει ως συντόμευση στο 01.ΕΙΣΕΡΧΟΜΕΝΑ ΕΓΓΡΑΦΑ κάθε πελάτη με My InCo.
+     ⚠️ Είναι σελίδα και όχι PDF επίτηδες: όταν αλλάζει η δομή των φακέλων,
+     αλλάζει εδώ μία φορά και ενημερώνονται όλοι. Ένα PDF θα ξεπερνιόταν. -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --navy:#2D3A4D; --blue:#287B9B; --cyan:#2DAFCE;
+    --ink:#22303c; --ink-2:#4a5b67; --muted:#7a8b95;
+    --bg:#e9eff3; --surface:#ffffff; --surface-2:#f4f8fc; --line:#dde6ec;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.65 -apple-system,Segoe UI,Roboto,Arial,sans-serif;}
+  .wrap{max-width:860px;margin:0 auto;padding:18px 16px 56px;}
+
+  .head{background:var(--navy);color:#fff;border-radius:12px;padding:22px 24px;
+        display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+  .head img{height:58px;width:auto;background:#fff;border-radius:10px;padding:6px;}
+  .head h1{margin:0;font-size:23px;letter-spacing:.2px;}
+  .head .sub{color:#9fd2e4;font-size:13px;margin-top:3px;}
+  .head .who{margin-left:auto;text-align:right;font-size:13px;color:#cfe3ec;}
+  .head .who b{display:block;font-size:15px;color:#fff;}
+
+  .lead{font-size:17px;line-height:1.7;color:var(--ink-2);margin:22px 4px 26px;}
+  .lead b{color:var(--navy);}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+        padding:18px 20px;margin-bottom:14px;}
+  .card h2{margin:0 0 12px;font-size:15px;color:var(--blue);
+           display:flex;align-items:center;gap:9px;letter-spacing:.3px;}
+  .card h2 .dot{width:9px;height:9px;border-radius:50%;background:var(--cyan);flex:none;}
+
+  table{width:100%;border-collapse:collapse;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);
+        vertical-align:top;font-size:14px;}
+  th{color:var(--navy);font-size:12px;text-transform:uppercase;letter-spacing:.4px;
+     background:var(--surface-2);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  td.f{font-weight:700;color:var(--navy);white-space:nowrap;}
+
+  ul{margin:0;padding-left:20px;} li{margin:7px 0;}
+  li b{color:var(--navy);}
+
+  .note{background:var(--surface-2);border-left:4px solid var(--blue);
+        border-radius:0 8px 8px 0;padding:13px 16px;margin-top:14px;color:var(--ink-2);font-size:14px;}
+
+  .foot{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);
+        text-align:center;color:var(--muted);font-size:12px;line-height:1.7;}
+  .foot a{color:var(--blue);text-decoration:none;}
+
+  @media (max-width:560px){
+    .head{padding:18px}.head h1{font-size:19px}.head .who{margin-left:0;text-align:left}
+    th,td{padding:8px 6px;font-size:13px}
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="head">
+    <img src="assets/logo_entoli.png" alt="InCo">
+    <div>
+      <h1>My InCo</h1>
+      <div class="sub">Ο φάκελός σας για τον υγειονομικό έλεγχο</div>
+    </div>
+    <div class="who" id="who"></div>
+  </div>
+
+  <p class="lead">Το My InCo είναι ο <b>προσωπικός σας φάκελος</b>: εδώ βρίσκετε μόνοι σας,
+  όποτε τα χρειαστείτε, όλα τα έγγραφα και τις καταγραφές που αφορούν τη συνεργασία μας.
+  Δεν χρειάζεται να μας τηλεφωνήσετε και δεν χρειάζεται να κρατάτε ντοσιέ.</p>
+
+  <div class="card">
+    <h2><span class="dot"></span>Τι υπάρχει σε κάθε υποφάκελο</h2>
+    <table>
+      <thead><tr><th>Υποφάκελος</th><th>Τι θα βρείτε μέσα</th></tr></thead>
+      <tbody>
+        <tr><td class="f">01. ΕΙΣΕΡΧΟΜΕΝΑ<br>ΕΓΓΡΑΦΑ</td>
+            <td>Πιστοποιητικά εφαρμογών, εκθέσεις αυτοψίας, η πρόταση συνεργασίας,
+                η άδεια καταπολέμησης της εταιρείας μας και το πρόγραμμα των επισκέψεών σας.</td></tr>
+        <tr><td class="f">02. ΑΠΕΝΤΟΜΩΣΗ</td>
+            <td>Άδειες και δελτία δεδομένων ασφαλείας (MSDS) των σκευασμάτων,
+                η αποτύπωση των θέσεων των παγίδων, και τα δελτία κάθε επίσκεψης.</td></tr>
+        <tr><td class="f">03. ΜΥΟΚΤΟΝΙΑ</td>
+            <td>Άδειες και MSDS των τρωκτικοκτόνων, η κάτοψη με τους δολωματικούς
+                σταθμούς και τα σημεία ελέγχου, και τα δελτία κάθε επίσκεψης.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>Δύο είδη περιεχομένου</h2>
+    <ul>
+      <li><b>Έγγραφα (PDF).</b> Παγωμένα τη στιγμή που εκδόθηκαν — πιστοποιητικά,
+          εκθέσεις, δελτία επισκέψεων, άδειες. Τα κατεβάζετε, τα τυπώνετε, τα προωθείτε.</li>
+      <li><b>Πίνακες διαρκούς ενημέρωσης καταγραφών.</b> Δεν είναι αρχεία αλλά σελίδες:
+          τις ανοίγετε και βλέπετε πάντα την τελευταία εικόνα — μυοκτονία, ηλεκτρικές
+          εντομοπαγίδες, φερομονικές παγίδες, πρόγραμμα επισκέψεων.
+          Τις αναγνωρίζετε από την ένδειξη <b>(live data)</b> στο όνομα.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>Ενημερώνεται μόνος του</h2>
+    <ul>
+      <li>Κάθε έγγραφο που σας στέλνουμε με email <b>μπαίνει αυτόματα</b> στον φάκελό σας.
+          Δεν χρειάζεται να κάνετε τίποτα — και δεν χάνεται αν σβήσετε το email.</li>
+      <li>Μετά από κάθε επίσκεψη, το <b>δελτίο</b> με ό,τι μετρήθηκε μπαίνει μόνο του,
+          υπογεγραμμένο και σφραγισμένο από τον υπεύθυνο επιστήμονα.</li>
+      <li>Οι πίνακες καταγραφών ανανεώνονται <b>την ίδια μέρα</b> της επίσκεψης.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>Σε έλεγχο</h2>
+    <p style="margin:0">Ανοίγετε τον φάκελο και τα έχετε όλα μαζί: <b>ποιος</b> ήρθε,
+    <b>πότε</b>, <b>τι μέτρησε</b>, <b>τι χρησιμοποίησε</b> και <b>με ποια άδεια</b>.
+    Τα δελτία επισκέψεων δείχνουν την παρακολούθηση ανάμεσα στις εφαρμογές·
+    τα πιστοποιητικά αποδεικνύουν τις ίδιες τις εφαρμογές.</p>
+    <div class="note">Ο φάκελος είναι <b>δικός σας για ανάγνωση</b>. Δεν χρειάζεται να
+    προσθέσετε ή να διαγράψετε τίποτα — τα βάζουμε εμείς και μένουν εκεί.</div>
+  </div>
+
+  <div class="foot">
+    Για οτιδήποτε χρειαστείτε, είμαστε εδώ.<br>
+    <b>InCo</b> · Δελφών 140, Γλυφάδα 165 61 · 210.96.44.310 ·
+    <a href="mailto:sales@in-co.gr">sales@in-co.gr</a> ·
+    <a href="https://www.in-co.gr">www.in-co.gr</a>
+  </div>
+
+</div>
+
+<script>
+/* Το όνομα του πελάτη έρχεται ως παράμετρος από τη συντόμευση του φακέλου,
+   όπως και στα υπόλοιπα έντυπα. Αν λείπει, η σελίδα στέκει και χωρίς αυτό. */
+(function () {
+  var P = new URLSearchParams(location.search);
+  var dec = function (n) {
+    try { return decodeURIComponent(P.get(n) || '').trim(); } catch (e) { return ''; }
+  };
+  var epon = dec('pelatis'), kod = dec('kod');
+  if (!epon && !kod) return;
+  var el = document.getElementById('who');
+  el.innerHTML = (epon ? '<b>' + epon.replace(/[<>&]/g, '') + '</b>' : '') +
+                 (kod ? 'κωδικός ' + kod.replace(/[<>&]/g, '') : '');
+  if (epon) document.title = 'My InCo — ' + epon;
+})();
+</script>
