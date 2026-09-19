@@ -35,12 +35,14 @@ textarea.v{min-height:60px;resize:vertical}
 .tbl td{padding:4px}
 .tbl input,.tbl select{width:100%;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:8px;min-height:40px}
 .tbl td.kod{font-weight:bold;color:var(--blue);text-align:center;white-space:nowrap}
-#deig th:nth-child(1),#deig td:nth-child(1){width:78px}
-#deig th:nth-child(5),#deig td:nth-child(5){width:96px}
-#deig th:nth-child(6),#deig td:nth-child(6){width:86px}
-#deig th:nth-child(7),#deig td:nth-child(7),
+.tbl td.aa{text-align:center;color:var(--muted);font-weight:bold}
+#deig th:nth-child(1),#deig td:nth-child(1){width:46px}
+#deig th:nth-child(2),#deig td:nth-child(2){width:78px}
+#deig th:nth-child(6),#deig td:nth-child(6){width:96px}
+#deig th:nth-child(7),#deig td:nth-child(7){width:86px}
 #deig th:nth-child(8),#deig td:nth-child(8),
-#deig th:nth-child(9),#deig td:nth-child(9){width:82px}
+#deig th:nth-child(9),#deig td:nth-child(9),
+#deig th:nth-child(10),#deig td:nth-child(10){width:82px}
 #deig th:last-child,#deig td:last-child{width:46px}
 .add{margin-top:8px;border:1px dashed var(--blue);background:#fff;color:var(--blue);font-weight:bold;padding:10px;border-radius:6px;width:100%;font-family:inherit;cursor:pointer}
 .del{width:36px;height:40px;border:1px solid var(--line);border-radius:6px;background:#fff;color:#b33;font-size:16px;cursor:pointer}
@@ -89,11 +91,11 @@ textarea.v{min-height:60px;resize:vertical}
   <div class="section-title">2 · ΔΕΙΓΜΑΤΑ <small>ο κωδικός μπαίνει μόνος του</small></div>
   <div class="section-body scroll">
     <table class="tbl" id="deig">
-      <tr><th>Κωδικός</th><th>Περιγραφή δείγματος / χώρος</th><th>Σημείο</th><th>Χρήση</th>
+      <tr><th>Α/Α</th><th>Κωδικός</th><th>Περιγραφή δείγματος / χώρος</th><th>Σημείο</th><th>Χρήση</th>
           <th>Νερό</th><th>Ανάλυση</th><th>Τ °C</th><th>Cl</th><th>pH</th><th>Παρατηρήσεις</th><th></th></tr>
     </table>
     <div class="total">Σύνολο δειγμάτων: <b id="plithos">0</b></div>
-    <button class="add" type="button" onclick="addRow()">＋ Προσθήκη δείγματος</button>
+    <div style="display:flex;gap:8px"><button class="add" type="button" onclick="addPoint4()">＋ Σημείο με 4 δείγματα (Κ.Α · Κ.Ε · Ζ.Α · Ζ.Ε)</button><button class="add" type="button" onclick="addRow()">＋ Ένα δείγμα (τζακούζι / πισίνα)</button></div>
   </div>
 </div>
 
@@ -156,6 +158,7 @@ function renumber(){
   document.querySelectorAll('#deig tr').forEach(tr => {
     const k = tr.querySelector('td.kod'); if (!k) return;
     i++; k.textContent = kodikos(i);
+    tr.querySelector('td.aa').textContent = i;     // α/α δίπλα στον κωδικό
   });
   document.getElementById('plithos').textContent = i;
 }
@@ -165,7 +168,7 @@ function addRow(d){
   const tr = t.insertRow();
   const opt = (arr, v) => arr.map(x => '<option' + (x === v ? ' selected' : '') + '>' + x + '</option>').join('');
   tr.innerHTML =
-    '<td class="kod"></td>' +
+    '<td class="aa"></td><td class="kod"></td>' +
     '<td><input data-c="ΧΩΡΟΣ" value="' + esc(d['ΧΩΡΟΣ']) + '" placeholder="π.χ. ΔΩΜΑΤΙΟ 105"></td>' +
     '<td><input data-c="ΣΗΜΕΙΟ" value="' + esc(d['ΣΗΜΕΙΟ']) + '" placeholder="ντους / βρύση"></td>' +
     '<td><input data-c="ΧΡΗΣΗ" value="' + esc(d['ΧΡΗΣΗ']) + '"></td>' +
@@ -181,6 +184,29 @@ function addRow(d){
   renumber();
   if (fresh) draft();
 }
+// Κάθε σημείο θέλει 4 δείγματα για Legionella — εξαίρεση τζακούζι και
+// κολυμβητική δεξαμενή, που παίρνουν ΕΝΑ (ρητό χρήστη 17 & 19/09/2026).
+let GRP = 0;
+function addPoint4(){
+  const g = ++GRP;
+  ['Κ.Α', 'Κ.Ε', 'Ζ.Α', 'Ζ.Ε'].forEach(nero => {
+    addRow({ 'ΕΙΔΟΣ_ΝΕΡΟΥ': nero });
+    const tr = document.querySelector('#deig tr:last-child');
+    tr.dataset.grp = g;
+  });
+  const first = document.querySelector('#deig tr[data-grp="' + g + '"] [data-c="ΧΩΡΟΣ"]');
+  if (first) first.focus();
+}
+// Χώρος και σημείο γράφονται ΜΙΑ φορά και ακολουθούν τα άλλα 3 δείγματα του σημείου.
+function spreadGroup(el){
+  const tr = el.closest('tr'); const g = tr && tr.dataset.grp;
+  if (!g) return;
+  const c = el.dataset.c;
+  if (c !== 'ΧΩΡΟΣ' && c !== 'ΣΗΜΕΙΟ' && c !== 'ΧΡΗΣΗ') return;
+  document.querySelectorAll('#deig tr[data-grp="' + g + '"] [data-c="' + c + '"]')
+    .forEach(x => { if (x !== el) x.value = el.value; });
+}
+
 function collect(){
   const h = {};
   document.querySelectorAll('[data-k]').forEach(el => {
@@ -272,7 +298,7 @@ document.addEventListener('click', e => {
     hint(); renumber(); draft();
   }
 });
-document.addEventListener('input', draft);
+document.addEventListener('input', e => { if (e.target.dataset && e.target.dataset.c) spreadGroup(e.target); draft(); });
 document.addEventListener('change', e => {
   if (e.target.dataset && e.target.dataset.c === 'ΕΙΔΟΣ_ΝΕΡΟΥ') clOff(e.target.closest('tr'));
   draft();
