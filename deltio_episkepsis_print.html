@@ -9,7 +9,17 @@
   html, body { margin: 0; padding: 0; }
   body { font-family: Verdana, Arial, sans-serif; color: #222; font-size: 10px;
          -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .wrap { width: 100%; }
+  /* Υδατογράφημα — το ίδιο «μεγάλο» με το πιστοποιητικό εφαρμογών.
+     ⚠️ Το πλάτος είναι ΑΝΑΛΟΓΙΚΟ: σταθερά 780px ξεπερνούσαν το τυπώσιμο πλάτος
+     του Α4 και κόβονταν δεξιά (μάθημα από το form_ecert.html). */
+  .wrap { width: 100%; position: relative; overflow: hidden; }
+  /* ⚠️ ΠΑΝΩ από το περιεχόμενο, όχι από κάτω: στο πιστοποιητικό η σελίδα είναι
+     αραιή και το υδατογράφημα φαίνεται πίσω· εδώ οι πίνακες είναι συμπαγείς και
+     το έκρυβαν εντελώς — φαινόταν μόνο στα κενά ανάμεσα στις ενότητες. */
+  .watermark { position: absolute; z-index: 5; pointer-events: none;
+               width: 62%; max-width: 480px; left: 50%; top: 50%;
+               transform: translate(-50%, -50%); opacity: .13; }
+  .wrap > *:not(.watermark) { position: relative; z-index: 1; }
   .topbar { border-bottom: 3px solid #2D3A4D; padding: 4px 6px 8px;
             display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
   .topbar .logo { height: 80px; width: auto; }
@@ -78,6 +88,8 @@
 </head>
 <body>
 <div class="wrap">
+
+  {{YDATOGRAFIMA}}
 
   <div class="topbar">
     {{LOGO_IMG}}

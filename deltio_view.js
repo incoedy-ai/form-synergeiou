@@ -168,6 +168,7 @@ const DELTIO = (function () {
                 EPISTIMONES[PROEPILOGI];
       const antik = {
         '{{LOGO_IMG}}': '<img class="logo" src="' + RIZA + 'assets/logo_entoli.png" alt="InCo">',
+        '{{YDATOGRAFIMA}}': '<img class="watermark" src="' + RIZA + 'watermark_icon.png" alt="">',
         '{{TITLOS}}': esc(cfg.titlos),
         '{{ARITHMOS}}': cfg.prothema + '-' + kod + '-' + im.arith,
         '{{IMEROMINIA}}': im.imera,
