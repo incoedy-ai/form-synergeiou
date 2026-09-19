@@ -19,7 +19,13 @@
 
   .head{background:var(--navy);color:#fff;border-radius:12px;padding:22px 24px;
         display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
-  .head img{height:58px;width:auto;background:#fff;border-radius:10px;padding:6px;}
+  /* ⚠️ Το λογότυπο είναι navy σε διάφανο φόντο: πάνω στη navy κεφαλίδα
+     εξαφανίζεται. Μπαίνει σε λευκό πλαίσιο για να διαβάζεται. */
+  /* display:block + width:max-content: το inline-block άφηνε κενό γραμμής
+     κάτω από το λογότυπο και ο υπότιτλος έπεφτε μακριά. */
+  .head .mark{background:#fff;border-radius:12px;padding:10px 18px;
+              display:block;width:max-content;}
+  .head .mark img{height:40px;width:auto;display:block;}
   .head h1{margin:0;font-size:23px;letter-spacing:.2px;}
   .head .sub{color:#9fd2e4;font-size:13px;margin-top:3px;}
   .head .who{margin-left:auto;text-align:right;font-size:13px;color:#cfe3ec;}
@@ -61,10 +67,9 @@
 <div class="wrap">
 
   <div class="head">
-    <img src="assets/logo_entoli.png" alt="InCo">
     <div>
-      <h1>My InCo</h1>
-      <div class="sub">Ο φάκελός σας για τον υγειονομικό έλεγχο</div>
+      <span class="mark"><img src="myinco_word.png" alt="My InCo"></span>
+      <div class="sub" style="margin-top:7px">Ο φάκελός σας για τον υγειονομικό έλεγχο</div>
     </div>
     <div class="who" id="who"></div>
   </div>
