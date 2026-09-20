@@ -204,6 +204,8 @@ const EP = P.get('ep') || ENDPOINT;
 const SAMPLES = ['Κ.Α', 'Κ.Ε', 'Ζ.Α', 'Ζ.Ε'];
 const ANAL = ['Μ', 'Χ', 'Μ + Χ'];
 const XRISI = ['Πόσιμο', 'Μαγειρική', 'Ντους / λουτρό', 'Πλύση σκευών', 'Κολύμβηση', 'Καθαρισμός', 'Άλλη'];
+// Κωδικοί εντύπων (εγκρίθηκαν 20/09/2026) — ίδιοι με τα πρότυπα του φακέλου.
+const KOD_ENT = { 'LEGIONELLA': 'Ε-Λ01', 'ΠΟΣΙΜΟ': 'Ε-Ν01', 'ΚΟΛΥΜΒΗΤΙΚΗ': 'Ε-Κ01', 'ΕΠΙΦΑΝΕΙΕΣ': 'Ε-ΕΠ01' };
 const PARAM = {
   'LEGIONELLA': 'Legionella spp. — 4 δείγματα ανά σημείο δικτύου (Κ.Α, Κ.Ε, Ζ.Α, Ζ.Ε) · 1 δείγμα σε jacuzzi/πισίνα',
   'ΠΟΣΙΜΟ': 'Αερόβιοι 22 °C & 37 °C · Κολοβακτηριοειδή · E. coli · Intestinal Enterococci · Clostridium perfringens',
@@ -493,7 +495,8 @@ function msg(t, err){
 }
 function hint(){
   const e = eidos();
-  document.getElementById('paramHint').textContent = e ? ('Παράμετροι: ' + PARAM[e]) : '';
+  document.getElementById('paramHint').textContent = e
+    ? ('Έντυπο ' + KOD_ENT[e] + ' · Παράμετροι: ' + PARAM[e]) : '';
   const leg = isLeg();
   document.getElementById('addsL').style.display = leg ? '' : 'none';
   document.getElementById('addsS').style.display = leg ? 'none' : '';
