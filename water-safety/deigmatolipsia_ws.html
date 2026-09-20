@@ -56,11 +56,23 @@ textarea.v{min-height:60px;resize:vertical}
 .msg.err{background:#C62828}
 .req{color:#C62828}
 .scroll{overflow-x:auto}
+.drafts{display:flex;flex-wrap:wrap;gap:8px}
+.draft{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-left:5px solid var(--blue);
+       background:var(--soft);border-radius:6px;padding:8px 10px;font-size:12px;color:var(--navy);cursor:pointer}
+.draft.cur{border-left-color:var(--gold);background:#FFF8E6}
+.draft b{font-size:12.5px}
+.draft small{color:var(--muted)}
+.draft .x{border:0;background:transparent;color:#b33;font-size:14px;cursor:pointer;padding:0 2px}
 .lab{background:#FFF4E0;border:1px solid #E0A000;border-radius:6px;padding:6px 10px;font-size:11.5px;color:#7a4b00;margin-top:8px}
 </style></head><body>
 <div class="header"><img class="logo" src="hotelier.jpg" alt="InCo Hotelier Services"><div class="htxt"><h1>ΔΕΛΤΙΟ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ</h1><p>InCo · Δελφών 140, 16561 Γλυφάδα · 210 9644310</p></div></div>
 <div class="stripe"></div>
 <div class="wrap">
+
+<div class="section" id="secDrafts" style="display:none">
+  <div class="section-title">ΠΡΟΧΕΙΡΑ ΔΕΛΤΙΑ <small>διάλεξε για να συνεχίσεις</small></div>
+  <div class="section-body"><div id="drafts" class="drafts"></div></div>
+</div>
 
 <div class="section">
   <div class="section-title">1 · ΣΤΟΙΧΕΙΑ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ</div>
@@ -75,8 +87,8 @@ textarea.v{min-height:60px;resize:vertical}
     <div class="item"><label class="l">Κωδικός πελάτη</label><input class="v" data-k="ΚΩΔΙΚΟΣ_ΠΕΛΑΤΗ" placeholder="π.χ. Α627"></div>
     <div class="item w2"><label class="l">Πελάτης <span class="req">*</span></label><input class="v" data-k="ΕΠΩΝΥΜΙΑ"></div>
     <div class="item w2"><label class="l">Εγκατάσταση</label><input class="v" data-k="ΕΓΚΑΤΑΣΤΑΣΗ"></div>
-    <div class="item"><label class="l">Ημερομηνία <span class="req">*</span></label><input class="v" type="date" data-k="ΗΜΕΡΟΜΗΝΙΑ"></div>
-    <div class="item"><label class="l">Ώρα</label><input class="v" type="time" data-k="ΩΡΑ"></div>
+    <div class="item"><label class="l">Ημ. λήψης δειγμάτων <span class="req">*</span></label><input class="v" type="date" data-k="ΗΜΕΡΟΜΗΝΙΑ"></div>
+    <div class="item"><label class="l">Ώρα λήψης</label><input class="v" type="time" data-k="ΩΡΑ"></div>
     <div class="item w2"><label class="l">Σειρά ξενοδοχείου της ημέρας <span class="req">*</span></label>
       <div class="seg" data-one data-k="ΣΕΙΡΑ_ΗΜΕΡΑΣ" id="segSeira">
         <button type="button">1ο (01, 02…)</button><button type="button">2ο (1, 2…)</button><button type="button">3ο (-1-, -2-…)</button>
@@ -122,12 +134,17 @@ textarea.v{min-height:60px;resize:vertical}
 // Προσυμπλήρωση από URL: ?kod=&eponymia=&egk=&eidos=&seira=&pts=<base64 JSON σημείων>
 // ---------------------------------------------------------------------------
 const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzpSMjnNmjvxXiAv8txlX8rQAqf61MIK7QPDIHTB0pvlDj_fz_gKjqkttIP9guWykY/exec';   // INCO WATER SAFETY web app (ws_config.json)
-const DRAFT = 'ws_deigmatolipsia_draft_v1';
+// ⚠️ ΠΟΛΛΑ πρόχειρα μαζί: σε μια μέρα γίνονται ως 3 ξενοδοχεία και το ένα
+// δελτίο ΔΕΝ πρέπει να σβήνει το άλλο (ρητό χρήστη 20/09/2026).
+// Κάθε δελτίο σώζεται με δικό του κλειδί· το «ws_deig_index» κρατά τη λίστα.
+const DRAFT = 'ws_deig_draft_';          // + uid
+const INDEX = 'ws_deig_index';
 const P = new URLSearchParams(location.search);
 const EP = P.get('ep') || ENDPOINT;
 
 const NERO = ['', 'Κ.Α', 'Κ.Ε', 'Ζ.Α', 'Ζ.Ε'];
 const ANAL = ['Μ', 'Χ', 'Μ + Χ'];
+const XRISI = ['Πόσιμο', 'Μαγειρική', 'Ντους / λουτρό', 'Πλύση σκευών', 'Κολύμβηση', 'Καθαρισμός', 'Άλλη'];
 const PARAM = {
   'LEGIONELLA': 'Legionella spp. — 4 δείγματα ανά σημείο δικτύου (Κ.Α, Κ.Ε, Ζ.Α, Ζ.Ε) · 1 δείγμα σε jacuzzi/πισίνα',
   'ΠΟΣΙΜΟ': 'Αερόβιοι 22 °C & 37 °C · Κολοβακτηριοειδή · E. coli · Intestinal Enterococci · Clostridium perfringens',
@@ -171,7 +188,7 @@ function addRow(d){
     '<td class="aa"></td><td class="kod"></td>' +
     '<td><input data-c="ΧΩΡΟΣ" value="' + esc(d['ΧΩΡΟΣ']) + '" placeholder="π.χ. ΔΩΜΑΤΙΟ 105"></td>' +
     '<td><input data-c="ΣΗΜΕΙΟ" value="' + esc(d['ΣΗΜΕΙΟ']) + '" placeholder="ντους / βρύση"></td>' +
-    '<td><input data-c="ΧΡΗΣΗ" value="' + esc(d['ΧΡΗΣΗ']) + '"></td>' +
+    '<td><select data-c="ΧΡΗΣΗ">' + opt(XRISI, d['ΧΡΗΣΗ'] || 'Πόσιμο') + '</select></td>' +
     '<td><select data-c="ΕΙΔΟΣ_ΝΕΡΟΥ">' + opt(NERO, d['ΕΙΔΟΣ_ΝΕΡΟΥ'] || '') + '</select></td>' +
     '<td><select data-c="ΑΝΑΛΥΣΗ">' + opt(ANAL, d['ΑΝΑΛΥΣΗ'] || 'Μ') + '</select></td>' +
     '<td><input inputmode="decimal" data-c="ΘΕΡΜΟΚΡΑΣΙΑ" value="' + esc(d['ΘΕΡΜΟΚΡΑΣΙΑ']) + '"></td>' +
@@ -240,9 +257,44 @@ function restore(d){
   hint(); renumber();
 }
 let tmr = null;
-function draft(){
-  clearTimeout(tmr);
-  tmr = setTimeout(() => { try { localStorage.setItem(DRAFT, JSON.stringify(collect())); } catch (e) {} }, 300);
+function idx(){ try { return JSON.parse(localStorage.getItem(INDEX) || '[]'); } catch (e) { return []; } }
+function idxSave(list){ try { localStorage.setItem(INDEX, JSON.stringify(list)); } catch (e) {} }
+function saveNow(){
+  const d = collect();
+  try {
+    localStorage.setItem(DRAFT + UID, JSON.stringify(d));
+    const list = idx().filter(x => x.uid !== UID);
+    list.push({ uid: UID, pelatis: d.header['ΕΠΩΝΥΜΙΑ'] || '(χωρίς πελάτη)',
+                eidos: d.header['ΕΙΔΟΣ'] || '', plithos: d.deigmata.length,
+                stalthike: !!d.stalthike, when: new Date().toISOString() });
+    idxSave(list);
+  } catch (e) {}
+  drawDrafts();
+  return d;
+}
+function draft(){ clearTimeout(tmr); tmr = setTimeout(saveNow, 300); }
+
+function drawDrafts(){
+  const list = idx();
+  const box = document.getElementById('drafts');
+  document.getElementById('secDrafts').style.display = list.length > 1 ? '' : 'none';
+  box.innerHTML = list.map(x =>
+    '<div class="draft' + (x.uid === UID ? ' cur' : '') + '" data-uid="' + x.uid + '">' +
+    '<span><b>' + (x.pelatis || '') + '</b><br><small>' + (x.eidos || '') + ' · ' +
+    x.plithos + ' δείγματα' + (x.stalthike ? ' · ✓ στάλθηκε' : '') + '</small></span>' +
+    '<button type="button" class="x" title="Διαγραφή">✕</button></div>').join('');
+}
+function openDraft(uid){
+  if (uid === UID) return;
+  saveNow();
+  location.href = location.pathname + '?draft=' + encodeURIComponent(uid);
+}
+function delDraft(uid){
+  if (!confirm('Να διαγραφεί αυτό το πρόχειρο δελτίο;')) return;
+  try { localStorage.removeItem(DRAFT + uid); } catch (e) {}
+  idxSave(idx().filter(x => x.uid !== uid));
+  if (uid === UID) { location.href = location.pathname; return; }
+  drawDrafts();
 }
 function msg(t, err){
   const m = document.getElementById('msg');
@@ -272,7 +324,7 @@ async function save(){
   if (!d.header['ΗΜΕΡΟΜΗΝΙΑ']) return msg('Λείπει η ημερομηνία', true);
   if (!d.header['ΕΠΩΝΥΜΙΑ']) return msg('Λείπει ο πελάτης', true);
   if (!d.deigmata.length) return msg('Δεν υπάρχει κανένα δείγμα', true);
-  try { localStorage.setItem(DRAFT, JSON.stringify(d)); } catch (e) {}
+  saveNow();
   if (!EP) return msg('Η αποθήκευση στο cloud δεν έχει ενεργοποιηθεί ακόμα — κρατήθηκε ως πρόχειρο στο tablet', true);
   const b = document.getElementById('btnSave');
   b.disabled = true; b.textContent = '⏳ ΑΠΟΘΗΚΕΥΣΗ…';
@@ -283,10 +335,11 @@ async function save(){
     msg('Δεν στάλθηκε (σύνδεση;) — κρατήθηκε ως πρόχειρο, ξαναπάτα ΑΠΟΘΗΚΕΥΣΗ', true);
   } finally { b.disabled = false; b.textContent = '💾 ΑΠΟΘΗΚΕΥΣΗ'; }
 }
+// ΝΕΟ ΔΕΛΤΙΟ: ΔΕΝ σβήνει τίποτα — το τωρινό μένει στα πρόχειρα και ανοίγει άδειο.
 function newForm(){
-  if (!confirm('Να καθαρίσει η φόρμα για νέο δελτίο;\n\nΑν δεν έχεις πατήσει ΑΠΟΘΗΚΕΥΣΗ, τα στοιχεία θα χαθούν.')) return;
-  try { localStorage.removeItem(DRAFT); } catch (e) {}
-  location.href = location.pathname + (P.get('ep') ? '?ep=' + encodeURIComponent(P.get('ep')) : '');
+  saveNow();
+  // ⚠️ ΧΩΡΙΣ το «new=1» η σελίδα ξανάνοιγε το τελευταίο πρόχειρο και το έγραφε από πάνω.
+  location.href = location.pathname + '?new=1' + (P.get('ep') ? '&ep=' + encodeURIComponent(P.get('ep')) : '');
 }
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -303,10 +356,32 @@ document.addEventListener('change', e => {
   if (e.target.dataset && e.target.dataset.c === 'ΕΙΔΟΣ_ΝΕΡΟΥ') clOff(e.target.closest('tr'));
   draft();
 });
+// Κλικ στη μπάρα πρόχειρων: άνοιγμα ή διαγραφή δελτίου.
+document.addEventListener('click', e => {
+  const x = e.target.closest('.draft .x');
+  if (x) { delDraft(x.closest('.draft').dataset.uid); return; }
+  const dd = e.target.closest('.draft');
+  if (dd) openDraft(dd.dataset.uid);
+});
+
 (function init(){
+  // Άνοιγμα συγκεκριμένου πρόχειρου (από τη μπάρα) ή του τελευταίου που δούλευες.
+  const want = P.get('draft');
   let d = null;
-  try { d = JSON.parse(localStorage.getItem(DRAFT) || 'null'); } catch (e) {}
-  if (d && d.header) { restore(d); msg('Συνεχίζεις το πρόχειρο που είχε μείνει στο tablet'); return; }
+  try {
+    if (P.get('new')) d = null;                       // ρητά νέο δελτίο
+    else if (want) d = JSON.parse(localStorage.getItem(DRAFT + want) || 'null');
+    else {
+      const list = JSON.parse(localStorage.getItem(INDEX) || '[]');
+      const last = list.filter(x => !x.stalthike).pop();
+      if (last) d = JSON.parse(localStorage.getItem(DRAFT + last.uid) || 'null');
+    }
+  } catch (e) {}
+  if (d && d.header) {
+    restore(d); drawDrafts();
+    msg('Συνεχίζεις το δελτίο: ' + (d.header['ΕΠΩΝΥΜΙΑ'] || ''));
+    return;
+  }
   UID = newUid();
   const map = { kod: 'ΚΩΔΙΚΟΣ_ΠΕΛΑΤΗ', eponymia: 'ΕΠΩΝΥΜΙΑ', egk: 'ΕΓΚΑΤΑΣΤΑΣΗ' };
   Object.entries(map).forEach(([p, k]) => { const v = P.get(p); if (v) { const el = document.querySelector('[data-k="' + k + '"]'); if (el) el.value = v; } });
@@ -325,7 +400,7 @@ document.addEventListener('change', e => {
   try { if (raw) pts = JSON.parse(decodeURIComponent(escape(atob(raw)))) || []; }
   catch (e) { msg('Τα σημεία του πελάτη δεν διαβάστηκαν — συμπλήρωσέ τα με το χέρι', true); }
   if (pts.length) pts.forEach(p => addRow(p)); else addRow();
-  hint();
+  hint(); drawDrafts();
 })();
 </script>
 </body></html>
