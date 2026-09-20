@@ -56,6 +56,13 @@ textarea.v{min-height:60px;resize:vertical}
 .msg.err{background:#C62828}
 .req{color:#C62828}
 .scroll{overflow-x:auto}
+.ptlist{display:flex;flex-wrap:wrap;gap:8px}
+.pt{border:1px solid var(--line);border-left:5px solid var(--blue);background:var(--soft);border-radius:6px;
+    padding:8px 10px;font-size:12.5px;color:var(--navy);cursor:pointer;font-weight:bold}
+.pt small{display:block;color:var(--muted);font-weight:normal}
+.pt.krit{border-left-color:var(--navy)}
+.pt.on{background:#e7ecf0;border-color:var(--navy)}
+.pt.on:after{content:' ✓';color:var(--blue)}
 .drafts{display:flex;flex-wrap:wrap;gap:8px}
 .draft{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-left:5px solid var(--blue);
        background:var(--soft);border-radius:6px;padding:8px 10px;font-size:12px;color:var(--navy);cursor:pointer}
@@ -96,6 +103,13 @@ textarea.v{min-height:60px;resize:vertical}
     </div>
     <div class="item w2"><label class="l">Υπεύθυνος δειγματοληψίας</label><input class="v" data-k="ΥΠΕΥΘΥΝΟΣ" value="InCo (Αρχιμήδης Τρυφωνίδης)"></div>
     <div class="item w2"><label class="l">Εργαστήριο</label><input class="v" data-k="ΕΡΓΑΣΤΗΡΙΟ" value="Α. ΤΣΑΚΑΛΙΔΗΣ Ε.Ε."></div>
+  </div>
+</div>
+
+<div class="section" id="secPts" style="display:none">
+  <div class="section-title">ΣΗΜΕΙΑ ΤΟΥ ΠΕΛΑΤΗ <small>πάτα όποια θα δειγματίσεις σήμερα</small></div>
+  <div class="section-body"><div id="pts" class="ptlist"></div>
+    <div class="hint">Κάθε σημείο δικτύου μπαίνει με 4 δείγματα (Κ.Α · Κ.Ε · Ζ.Α · Ζ.Ε). Τζακούζι και πισίνα με ένα.</div>
   </div>
 </div>
 
@@ -204,6 +218,41 @@ function addRow(d){
 // Κάθε σημείο θέλει 4 δείγματα για Legionella — εξαίρεση τζακούζι και
 // κολυμβητική δεξαμενή, που παίρνουν ΕΝΑ (ρητό χρήστη 17 & 19/09/2026).
 let GRP = 0;
+let PTS = [];
+function ptKey(p){ return [p['ΧΩΡΟΣ'] || '', p['ΣΗΜΕΙΟ'] || '', p['ΣΗΜΕΙΟ_ID'] || ''].join('|'); }
+function ptChosen(p){
+  const k = (p['ΧΩΡΟΣ'] || '') + '|' + (p['ΣΗΜΕΙΟ'] || '');
+  return [...document.querySelectorAll('#deig tr')].slice(1).some(tr => {
+    const x = tr.querySelector('[data-c="ΧΩΡΟΣ"]'), y = tr.querySelector('[data-c="ΣΗΜΕΙΟ"]');
+    return x && ((x.value || '') + '|' + (y ? y.value : '')) === k;
+  });
+}
+function drawPts(){
+  const box = document.getElementById('pts');
+  document.getElementById('secPts').style.display = PTS.length ? '' : 'none';
+  if (!PTS.length) return;
+  box.innerHTML = PTS.map((p, i) =>
+    '<div class="pt' + (p['ΚΡΙΣΙΜΟ'] ? ' krit' : '') + (ptChosen(p) ? ' on' : '') + '" data-i="' + i + '">' +
+    (p['ΚΡΙΣΙΜΟ'] ? '★ ' : '') + (p['ΧΩΡΟΣ'] || '(χωρίς χώρο)') +
+    '<small>' + (p['ΣΗΜΕΙΟ'] || '') + (p['ΤΕΛΕΥΤΑΙΑ'] ? ' · τελευταία: ' + p['ΤΕΛΕΥΤΑΙΑ'] : '') + '</small></div>').join('');
+}
+// Πάτημα σημείου: μπαίνει με 4 δείγματα (ή 1 σε τζακούζι/πισίνα).
+function pickPt(i){
+  const p = PTS[i]; if (!p) return;
+  const one = /jacuzzi|τζακούζι|πισίν|κολυμβ/i.test((p['ΣΗΜΕΙΟ'] || '') + ' ' + (p['ΧΩΡΟΣ'] || ''));
+  const base = { 'ΧΩΡΟΣ': p['ΧΩΡΟΣ'], 'ΣΗΜΕΙΟ': p['ΣΗΜΕΙΟ'], 'ΧΡΗΣΗ': p['ΧΡΗΣΗ'], 'ΣΗΜΕΙΟ_ID': p['ΣΗΜΕΙΟ_ID'] };
+  if (one) addRow(base);
+  else {
+    const g = ++GRP;
+    ['Κ.Α', 'Κ.Ε', 'Ζ.Α', 'Ζ.Ε'].forEach(nero => {
+      addRow(Object.assign({}, base, { 'ΕΙΔΟΣ_ΝΕΡΟΥ': nero }));
+      document.querySelector('#deig tr:last-child').dataset.grp = g;
+    });
+  }
+  drawPts();
+}
+
+
 function addPoint4(){
   const g = ++GRP;
   ['Κ.Α', 'Κ.Ε', 'Ζ.Α', 'Ζ.Ε'].forEach(nero => {
@@ -358,6 +407,8 @@ document.addEventListener('change', e => {
 });
 // Κλικ στη μπάρα πρόχειρων: άνοιγμα ή διαγραφή δελτίου.
 document.addEventListener('click', e => {
+  const pt = e.target.closest('.pt');
+  if (pt) { pickPt(Number(pt.dataset.i)); return; }
   const x = e.target.closest('.draft .x');
   if (x) { delDraft(x.closest('.draft').dataset.uid); return; }
   const dd = e.target.closest('.draft');
@@ -399,7 +450,10 @@ document.addEventListener('click', e => {
   const raw = (P.get('pts') || '').replace(/ /g, '+').replace(/-/g, '+').replace(/_/g, '/');
   try { if (raw) pts = JSON.parse(decodeURIComponent(escape(atob(raw)))) || []; }
   catch (e) { msg('Τα σημεία του πελάτη δεν διαβάστηκαν — συμπλήρωσέ τα με το χέρι', true); }
-  if (pts.length) pts.forEach(p => addRow(p)); else addRow();
+  // ⚠️ ΔΕΝ μπαίνουν όλα τα σημεία ως δείγματα: ο χρήστης διαλέγει ΕΠΙ ΤΟΠΟΥ
+  // ποια δωμάτια θα δειγματίσει σήμερα (ρητό 20/09/2026).
+  PTS = pts; drawPts();
+  if (!pts.length) addRow();
   hint(); drawDrafts();
 })();
 </script>
