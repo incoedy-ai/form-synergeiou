@@ -88,6 +88,14 @@ textarea.v{min-height:60px;resize:vertical}
 .row input{width:88px;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:8px;min-height:40px;text-align:center}
 .row input.par{flex:1;min-width:150px;text-align:left;width:auto}
 .row .na{width:88px;text-align:center;color:#bbb;font-weight:bold}
+/* --- απλή γραμμή: πόσιμο / κολυμβητικές / επιφάνειες (πρότυπα 2025) --- */
+.srow{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px;flex-wrap:wrap}
+.srow .kod{background:var(--navy);color:#fff;border-radius:5px;padding:5px 9px;font-size:12px;font-weight:bold;white-space:nowrap}
+.srow input.desc{flex:2;min-width:280px;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:8px;min-height:40px}
+.srow select{width:150px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px;min-height:40px}
+.srow select.anal{width:86px}
+.srow input.par{flex:1;min-width:170px;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:8px;min-height:40px}
+.srow .x{border:1px solid var(--line);background:#fff;color:#b33;border-radius:6px;width:42px;height:40px;font-size:16px;cursor:pointer}
 .adds{display:flex;gap:8px;flex-wrap:wrap}
 .add{margin-top:4px;border:1px dashed var(--blue);background:#fff;color:var(--blue);font-weight:bold;padding:10px;border-radius:6px;font-family:inherit;cursor:pointer;flex:1;min-width:230px}
 .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #ccd;padding:10px;display:flex;gap:10px;justify-content:center;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
@@ -148,13 +156,16 @@ textarea.v{min-height:60px;resize:vertical}
 </div>
 
 <div class="section">
-  <div class="section-title">2 · ΔΕΙΓΜΑΤΑ <small>ο κωδικός μπαίνει μόνος του</small></div>
+  <div class="section-title">2 · ΔΕΙΓΜΑΤΑ <small id="secHint">ο κωδικός μπαίνει μόνος του</small></div>
   <div class="section-body">
     <div id="cards"></div>
     <div class="total">Σύνολο δειγμάτων: <b id="plithos">0</b></div>
-    <div class="adds">
+    <div class="adds" id="addsL">
       <button class="add" type="button" onclick="addCard({}, true)">＋ Σημείο με 4 δείγματα (Κ.Α · Κ.Ε · Ζ.Α · Ζ.Ε)</button>
       <button class="add" type="button" onclick="addCard({}, false)">＋ Ένα δείγμα (τζακούζι / πισίνα)</button>
+    </div>
+    <div class="adds" id="addsS" style="display:none">
+      <button class="add" type="button" onclick="addSimple({})">＋ Δείγμα</button>
     </div>
   </div>
 </div>
@@ -223,6 +234,10 @@ function eidos(){
   const on = document.querySelector('#segEidos button.on');
   return on ? on.textContent : '';
 }
+// ⚠️ ΜΟΝΟ η Legionella έχει 4 δείγματα ανά σημείο με Τ/Cl/pH. Τα άλλα τρία δελτία
+// (πόσιμο · κολυμβητικές · επιφάνειες) είναι απλά: Α/Α · Περιγραφή δείγματος · Χρήση ·
+// Αιτούμενες αναλύσεις · Κωδικός · Παρατηρήσεις (πρότυπα ΤΡΟΠΟΠΟΙΗΜΕΝΑ 2025, 20/09/2026).
+function isLeg(){ return eidos() === 'LEGIONELLA'; }
 
 // --- κάρτες ---------------------------------------------------------------
 // ⚠️ Στο ΖΕΣΤΟ νερό (Ζ.Α / Ζ.Ε) ΔΕΝ μετράμε χλώριο (ρητό χρήστη 19/09/2026).
@@ -261,12 +276,34 @@ function addCard(d, four){
   const first = el.querySelector('[data-c="ΧΩΡΟΣ"]');
   if (!d['ΧΩΡΟΣ'] && first) first.focus();
 }
+function addSimple(d){
+  d = d || {};
+  const opt = (arr, v) => arr.map(x => '<option' + (x === v ? ' selected' : '') + '>' + x + '</option>').join('');
+  const prokat = eidos() === 'ΚΟΛΥΜΒΗΤΙΚΗ' ? 'Κολύμβηση' : (eidos() === 'ΕΠΙΦΑΝΕΙΕΣ' ? 'Καθαρισμός' : 'Πόσιμο');
+  const el = document.createElement('div');
+  el.className = 'srow';
+  if (d['ΣΗΜΕΙΟ_ID']) el.dataset.sid = d['ΣΗΜΕΙΟ_ID'];
+  el.innerHTML = '<span class="kod"></span>' +
+    '<input class="desc" data-c="ΧΩΡΟΣ" placeholder="Περιγραφή δείγματος" value="' + esc(d['ΧΩΡΟΣ']) + '">' +
+    '<select data-c="ΧΡΗΣΗ">' + opt(XRISI, d['ΧΡΗΣΗ'] || prokat) + '</select>' +
+    '<select class="anal" data-c="ΑΝΑΛΥΣΗ" title="Αιτούμενες αναλύσεις">' + opt(ANAL, d['ΑΝΑΛΥΣΗ'] || 'Μ') + '</select>' +
+    '<input class="par" data-c="ΠΑΡΑΤΗΡΗΣΕΙΣ" placeholder="Παρατηρήσεις" value="' + esc(d['ΠΑΡΑΤΗΡΗΣΕΙΣ']) + '">' +
+    '<button type="button" class="x" title="Διαγραφή δείγματος">✕</button>';
+  document.getElementById('cards').appendChild(el);
+  renumber(); drawPts(); draft();
+  if (!d['ΧΩΡΟΣ']) el.querySelector('.desc').focus();
+}
 function renumber(){
   let i = 0;
-  document.querySelectorAll('#cards .card').forEach(card => {
+  [...document.getElementById('cards').children].forEach(card => {
+    if (card.classList.contains('srow')) {          // απλό δελτίο: μία γραμμή = ένα δείγμα
+      i++;
+      card.querySelector('.kod').textContent = 'α/α ' + i + ' · ' + kodikos(i);
+      return;
+    }
     const rows = card.querySelectorAll('.row');
     const from = i + 1;
-    rows.forEach((r, j) => { i++; r.querySelector('.aa').textContent = 'α/α ' + i + ' · ' + kodikos(i); });
+    rows.forEach(r => { i++; r.querySelector('.aa').textContent = 'α/α ' + i + ' · ' + kodikos(i); });
     card.querySelector('.kod').textContent = rows.length > 1 ? (kodikos(from) + '–' + kodikos(i)) : kodikos(i);
   });
   document.getElementById('plithos').textContent = i;
@@ -286,9 +323,12 @@ function tag(p){
 }
 function ptChosen(p){
   const k = (p['ΧΩΡΟΣ'] || '') + '|' + (p['ΣΗΜΕΙΟ'] || '');
-  return [...document.querySelectorAll('#cards .card')].some(c =>
-    (c.querySelector('[data-c="ΧΩΡΟΣ"]').value || '') + '|' +
-    (c.querySelector('[data-c="ΣΗΜΕΙΟ"]').value || '') === k);
+  const k2 = [p['ΧΩΡΟΣ'], p['ΣΗΜΕΙΟ']].filter(Boolean).join(' · ');
+  return [...document.getElementById('cards').children].some(c => {
+    const x = c.querySelector('[data-c="ΧΩΡΟΣ"]'), y = c.querySelector('[data-c="ΣΗΜΕΙΟ"]');
+    if (!x) return false;
+    return y ? ((x.value || '') + '|' + (y.value || '')) === k : (x.value || '') === k2;
+  });
 }
 function drawPts(){
   document.getElementById('secPts').style.display = PTS.length ? '' : 'none';
@@ -319,6 +359,11 @@ function drawHist(){
 }
 function pickPt(i){
   const p = PTS[i]; if (!p) return;
+  if (!isLeg()) {
+    addSimple({ 'ΧΩΡΟΣ': [p['ΧΩΡΟΣ'], p['ΣΗΜΕΙΟ']].filter(Boolean).join(' · '),
+                'ΧΡΗΣΗ': p['ΧΡΗΣΗ'], 'ΣΗΜΕΙΟ_ID': p['ΣΗΜΕΙΟ_ID'] });
+    return;
+  }
   const one = /jacuzzi|τζακούζ|πισίν|κολυμβ|δεξαμεν/i.test((p['ΣΗΜΕΙΟ'] || '') + ' ' + (p['ΧΩΡΟΣ'] || ''));
   addCard({ 'ΧΩΡΟΣ': p['ΧΩΡΟΣ'], 'ΣΗΜΕΙΟ': p['ΣΗΜΕΙΟ'], 'ΧΡΗΣΗ': p['ΧΡΗΣΗ'], 'ΣΗΜΕΙΟ_ID': p['ΣΗΜΕΙΟ_ID'] }, !one);
 }
@@ -335,7 +380,18 @@ function collect(){
   });
   const deigmata = [], cards = [];
   let i = 0;
-  document.querySelectorAll('#cards .card').forEach(card => {
+  [...document.getElementById('cards').children].forEach(card => {
+    if (card.classList.contains('srow')) {
+      i++;
+      const v = {};
+      card.querySelectorAll('[data-c]').forEach(el => v[el.dataset.c] = el.value.trim());
+      const o = Object.assign({ 'ΣΕΙΡΑ': i, 'ΚΩΔΙΚΟΣ_ΔΕΙΓΜΑΤΟΣ': kodikos(i), 'ΕΙΔΟΣ_ΝΕΡΟΥ': '' }, v);
+      if (card.dataset.sid) o['ΣΗΜΕΙΟ_ID'] = Number(card.dataset.sid);
+      deigmata.push(o);
+      cards.push(Object.assign({ apli: true,
+        'ΣΗΜΕΙΟ_ID': card.dataset.sid ? Number(card.dataset.sid) : null }, v));
+      return;
+    }
     const top = {};
     card.querySelectorAll('.top [data-c]').forEach(el => top[el.dataset.c] = el.value.trim());
     const rows = [];
@@ -380,7 +436,7 @@ function restore(d){
       map[k].rows.push(r);
     });
   }
-  cards.forEach(c => addCard(c, false));
+  cards.forEach(c => (c.apli || (!isLeg() && (!c.rows || c.rows.length <= 1))) ? addSimple(c) : addCard(c, false));
   hint(); renumber();
 }
 
@@ -438,6 +494,24 @@ function msg(t, err){
 function hint(){
   const e = eidos();
   document.getElementById('paramHint').textContent = e ? ('Παράμετροι: ' + PARAM[e]) : '';
+  const leg = isLeg();
+  document.getElementById('addsL').style.display = leg ? '' : 'none';
+  document.getElementById('addsS').style.display = leg ? 'none' : '';
+  document.getElementById('secHint').textContent = leg
+    ? 'ο κωδικός μπαίνει μόνος του'
+    : 'περιγραφή · χρήση · ανάλυση — ο κωδικός μπαίνει μόνος του';
+}
+// Αλλαγή είδους: αν τα δείγματα που υπάρχουν είναι λάθος μορφής ΚΑΙ κενά, γίνονται
+// σωστής μορφής. Αν έχουν γραμμένα στοιχεία ΔΕΝ πειράζονται — μόνο ειδοποίηση.
+function fixLayout(){
+  const box = document.getElementById('cards');
+  const wrong = [...box.children].filter(el => el.classList.contains('srow') === isLeg());
+  if (!wrong.length) return;
+  const adeia = wrong.every(el => [...el.querySelectorAll('input')].every(x => !x.value.trim()));
+  if (!adeia) { msg('Άλλαξες είδος δελτίου — τα δείγματα που έγραψες έμειναν όπως ήταν', true); return; }
+  wrong.forEach(el => el.remove());
+  if (!box.children.length) { if (isLeg()) addCard({}, true); else addSimple({}); }
+  renumber();
 }
 async function save(){
   const d = collect();
@@ -479,17 +553,17 @@ document.addEventListener('click', e => {
   if (dx) { delDraft(dx.closest('.draft').dataset.uid); return; }
   const dr = e.target.closest('.draft');
   if (dr) { openDraft(dr.dataset.uid); return; }
-  const x = e.target.closest('.card .x');
-  if (x) { x.closest('.card').remove(); renumber(); drawPts(); draft(); return; }
+  const x = e.target.closest('.card .x, .srow .x');
+  if (x) { x.closest('.card, .srow').remove(); renumber(); drawPts(); draft(); return; }
   const seg = e.target.closest('.seg button');
   if (seg) {
     seg.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('on'));
     seg.classList.add('on');
-    hint(); renumber(); draft();
+    hint(); fixLayout(); renumber(); draft();
   }
 });
 document.addEventListener('input', e => {
-  if (e.target.closest('.card .top')) drawPts();     // ✓ στα διαλεγμένα σημεία
+  if (e.target.closest('.card .top') || e.target.closest('.srow')) drawPts();   // ✓ στα διαλεγμένα σημεία
   draft();
 });
 document.addEventListener('change', draft);
@@ -525,7 +599,7 @@ document.addEventListener('change', draft);
   document.querySelector('[data-k="ΗΜΕΡΟΜΗΝΙΑ"]').value = now.toISOString().slice(0, 10);
   document.querySelector('[data-k="ΩΡΑ"]').value = now.toTimeString().slice(0, 5);
   hint(); drawPts(); drawDrafts();
-  if (!PTS.length) addCard({}, true);      // χωρίς σημεία: ξεκινάς με μία κάρτα
+  if (!PTS.length) { if (isLeg()) addCard({}, true); else addSimple({}); }   // χωρίς σημεία: μία έτοιμη εγγραφή
 })();
 </script>
 </body></html>
