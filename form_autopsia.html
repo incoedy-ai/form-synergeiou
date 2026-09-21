@@ -727,7 +727,15 @@ function buildStandaloneHtml() {
     + 'box-sizing:border-box;border:1.4px solid #2D3A4D;border-radius:2px;'
     + 'vertical-align:-1px;overflow:hidden;font-size:0;line-height:0;'
     + 'flex:none;margin-right:2px;}'
-    + '\n.pdfbox.on{background:#2D3A4D;}\n';
+    + '\n.pdfbox.on{background:#2D3A4D;}\n'
+    // ⚠️ 21/09/2026: ΜΙΑ ΣΕΛΙΔΑ. Ο μετατροπέας του Google έσπρωχνε τη γραμμή
+    // «ΣΥΝΤΑΞΗ / ΕΓΚΡΙΣΗ» σε 2η σελίδα (σελ.1 γεμάτη ως 818/842pt, Α536).
+    // Κόβουμε ΜΟΝΟ κενά, και ΜΟΝΟ στο PDF — η φόρμα στην οθόνη μένει ίδια.
+    + '\nbody{padding:0 !important;margin:0 !important;}'
+    + '\n.page{margin:0 !important;padding:8px 10px !important;box-shadow:none !important;border-radius:0 !important;}'
+    + '\n.twoColGrid{margin-top:6px !important;}'
+    + '\n.legal{margin-top:3px !important;padding-top:3px !important;}'
+    + '\n.docCtrl{margin-top:1px !important;padding-top:1px !important;}\n';
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + styleText + pdfCss
     + '</style></head><body>' + pageClone.outerHTML + '</body></html>';
 }
