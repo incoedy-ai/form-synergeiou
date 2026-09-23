@@ -98,7 +98,9 @@ function render(d){
     // ⚠️ Το SPA είναι ΣΤΟ ΥΠΟΓΕΙΟ, ξεχωριστός χώρος — όχι ισόγειο (ρητό χρήστη
     // 23/09/2026). Τα «SPA ΝΤΟΥΣ ΔΩΜΑΤΙΟ 1ο» έχουν αριθμό μέσα τους και αλλιώς θα
     // έπεφταν λάθος στον 1ο όροφο ή στο ισόγειο.
-    if (x.indexOf('SPA') >= 0 || x.indexOf('ΥΠΟΓΕΙ') >= 0) g = 'ΥΠΟΓΕΙΟ · SPA';
+    // Το JACUZZI ανήκει στο SPA, άρα και αυτό στο υπόγειο (ρητό χρήστη 23/09/2026).
+    if (x.indexOf('SPA') >= 0 || x.indexOf('ΥΠΟΓΕΙ') >= 0 || x.indexOf('JACUZZI') >= 0 ||
+        x.indexOf('ΤΖΑΚΟΥΖ') >= 0) g = 'ΥΠΟΓΕΙΟ · SPA';
     else if (n === null) g = 'ΚΟΙΝΟΧΡΗΣΤΟΙ ΧΩΡΟΙ';
     else if (!exei3psifia) g = 'ΔΩΜΑΤΙΑ';
     else if (n < 100) g = 'ΙΣΟΓΕΙΟ';
@@ -151,7 +153,10 @@ function render(d){
     // εύρος αριθμών δωματίων του ορόφου, σε παρένθεση (ρητό χρήστη 23/09/2026)
     const nums = lista.map(s => arithmos(s['ΧΩΡΟΣ'])).filter(n => n !== null)
                       .sort((a, b) => a - b);
-    const evros = nums.length ? ' (' + (nums[0] === nums[nums.length - 1] ? nums[0]
+    // Το εύρος έχει νόημα μόνο σε ορόφους/δωμάτια — όχι στο υπόγειο ή στους
+    // κοινόχρηστους, όπου οι αριθμοί είναι μέσα σε ονόματα («SPA ΝΤΟΥΣ ΔΩΜΑΤΙΟ 1ο»).
+    const arithmitiko = /ΟΡΟΦΟΣ|ΙΣΟΓΕΙΟ|ΔΩΜΑΤΙΑ/.test(g);
+    const evros = (arithmitiko && nums.length) ? ' (' + (nums[0] === nums[nums.length - 1] ? nums[0]
                   : nums[0] + '–' + nums[nums.length - 1]) + ')' : '';
     html += '<div class="card"><h2>' + esc(g) + evros + '<small>ελέγχθηκαν ' + n_ok + ' από ' +
             lista.length + '</small></h2><div class="body">' + mesa + '</div></div>';
