@@ -227,13 +227,24 @@ function enotites(rows, st, metriseis){
    Απαντά στο «τι έδειξε ΑΥΤΟ το σημείο όλα αυτά τα χρόνια».
    Όπου η ανάλυση είναι μία (λεγεωνέλλα) το κελί δείχνει την ΤΙΜΗ· όπου είναι
    πολλές (πόσιμο, swab) δείχνει ✓ / ✗ και οι τιμές φαίνονται στο δείκτη. */
-function anaSimeio(rows, st, metriseis){
+function anaSimeio(rows, st, metriseis, SIM){
   const imerominies = [...new Set(rows.map(x => x['ΗΜΕΡΟΜΗΝΙΑ']))].sort().reverse();
   const gram = new Map();
+  // ⚠️ Ομαδοποίηση με το ΣΗΜΕΙΟ ΤΟΥ ΠΛΑΝΟΥ (ΣΗΜΕΙΟ_ID), όχι με το κείμενο: ο τεχνικός
+  // έγραφε το ίδιο σημείο αλλιώς κάθε χρονιά («ΝΤΟΥΣ» / «ΝΤΟΥΣ / ΤΗΛΕΦΩΝΟ») και το
+  // δωμάτιο έβγαινε σε δύο γραμμές. Οι διαφορετικές γραφές φαίνονται στον δείκτη.
+  // Προσοχή: σημεία με ΔΙΚΟ τους ΣΗΜΕΙΟ_ID (Π1 και Π01) μένουν ΧΩΡΙΣΤΑ — δεν είναι
+  // πάντα το ίδιο σημείο [[ws: S1 δεν είναι πάντα S01]].
   deigmata(rows).forEach(s => {
-    const x = s.x, k = [x['ΧΩΡΟΣ'] || '', x['ΣΗΜΕΙΟ'] || '', x['ΝΕΡΟ'] || ''].join('|');
-    if (!gram.has(k)) gram.set(k, { x: x, kata: {} });
-    gram.get(k).kata[x['ΗΜΕΡΟΜΗΝΙΑ']] = s;     // ένα δείγμα ανά σημείο & ημερομηνία
+    const x = s.x;
+    const k = (x['ΣΗΜΕΙΟ_ID'] ? 'id:' + x['ΣΗΜΕΙΟ_ID'] : [x['ΧΩΡΟΣ'], x['ΣΗΜΕΙΟ']].join('|')) +
+              '|' + (x['ΝΕΡΟ'] || '');
+    if (!gram.has(k)) gram.set(k, { x: x, grafes: new Set(), kata: {} });
+    const g = gram.get(k);
+    g.kata[x['ΗΜΕΡΟΜΗΝΙΑ']] = s;               // ένα δείγμα ανά σημείο & ημερομηνία
+    if (x['ΣΗΜΕΙΟ']) g.grafes.add(String(x['ΣΗΜΕΙΟ']).trim());
+    const p = SIM && SIM[x['ΣΗΜΕΙΟ_ID']];      // το όνομα του πλάνου υπερισχύει
+    if (p) g.x = Object.assign({}, x, { ΧΩΡΟΣ: p['ΧΩΡΟΣ'], ΣΗΜΕΙΟ: p['ΣΗΜΕΙΟ'] });
   });
   const seira = [...gram.values()].sort((a, b) => taxiSimeiou(a.x, b.x));
 
@@ -242,7 +253,10 @@ function anaSimeio(rows, st, metriseis){
   h += '</tr>';
   seira.forEach(g => {
     const x = g.x;
-    h += '<tr><td>' + esc([x['ΧΩΡΟΣ'], x['ΣΗΜΕΙΟ']].filter(Boolean).join(' · ')) + '</td>' +
+    const alles = [...g.grafes].filter(v => v && v !== String(x['ΣΗΜΕΙΟ'] || '').trim());
+    h += '<tr><td' + (alles.length ? ' title="γράφτηκε και ως: ' + esc(alles.join(' · ')) + '"' : '') +
+         '>' + esc([x['ΧΩΡΟΣ'], x['ΣΗΜΕΙΟ']].filter(Boolean).join(' · ')) +
+         (alles.length ? ' <span class="none" style="color:#aab">*</span>' : '') + '</td>' +
          (metriseis ? '<td class="c">' + esc(x['ΝΕΡΟ'] || '') + '</td>' : '');
     imerominies.forEach(d => {
       const s = g.kata[d];
@@ -260,13 +274,16 @@ function anaSimeio(rows, st, metriseis){
     });
     h += '</tr>';
   });
-  return h + '</table></div><div class="foot">· δεν έγινε δειγματοληψία · ◌ αναμονή αποτελεσμάτων' +
+  return h + '</table></div><div class="foot">· δεν έγινε δειγματοληψία · ◌ αναμονή αποτελεσμάτων' + ' · <span class="none" style="color:#aab">*</span> το σημείο έχει γραφτεί και αλλιώς ' + '(φαίνεται αν αφήσεις τον δείκτη πάνω στο όνομα)' +
          (st.pars.length === 1 ? '' : ' · ✓ εντός ορίων · ✗ εκτός ορίων — οι τιμές φαίνονται ' +
           'αν αφήσεις τον δείκτη πάνω στο σημάδι') + '</div>';
 }
 
 function render(d){
   const ep = d.episkepseis || [], met = d.metriseis || [];
+  // Τα σημεία του ΠΛΑΝΟΥ: δίνουν το επίσημο όνομα σε κάθε σημείο δειγματοληψίας.
+  const SIM = {};
+  (d.simeia || []).forEach(x => { SIM[x['ΣΗΜΕΙΟ_ID']] = x; });
   if (!ep.length) {
     el.innerHTML = '<div class="card"><h2>ΚΑΤΑΓΡΑΦΕΣ</h2><div class="empty">Δεν υπάρχουν ακόμη ' +
       'καταχωρημένες δειγματοληψίες.</div></div>';
@@ -315,7 +332,7 @@ function render(d){
             '<div class="opsi-imer"' + (OPSI === 'imer' ? '' : ' hidden') + '>' +
               enotites(e.rows, st, e.metriseis) + '</div>' +
             '<div class="opsi-simeio"' + (OPSI === 'simeio' ? '' : ' hidden') + '>' +
-              anaSimeio(e.rows, st, e.metriseis) + '</div></div>';
+              anaSimeio(e.rows, st, e.metriseis, SIM) + '</div></div>';
   });
 
   html += '<div class="foot" style="text-align:center">Ενημερώθηκε ' +
