@@ -759,7 +759,8 @@ async function sendPdfEmail() {
     await fetch(PDF_SCRIPT, {
       method: 'POST',
       mode: 'no-cors',
-      body: JSON.stringify({ form: 'sendPdf', doc: 'autopsia', email: emailVal, pelatis: pelatisName, html: html })
+      body: JSON.stringify({ form: 'sendPdf', doc: 'autopsia', email: emailVal, pelatis: pelatisName,
+                             kod: (p.get('kod') || '').toUpperCase().trim(), html: html })
     });
     alert('Στάλθηκε αίτημα αποστολής στο ' + emailVal + ' — έλεγξε το inbox σε λίγο.');
   } catch (e) {

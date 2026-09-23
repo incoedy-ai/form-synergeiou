@@ -537,7 +537,8 @@ async function sendPdfEmail() {
     await fetch(PDF_SCRIPT, {
       method: 'POST',
       mode: 'no-cors',
-      body: JSON.stringify({ form: 'sendPdf', doc: 'ecert', email: emailVal, pelatis: pelatisName, html: html })
+      body: JSON.stringify({ form: 'sendPdf', doc: 'ecert', email: emailVal, pelatis: pelatisName,
+                             kod: kodPel, html: html })   // kod: 22/09/2026 — μοναδικό ανά πελάτη
     });
     alert(exeiMyInco
       ? 'Το πιστοποιητικό ανεβαίνει στον φάκελο My InCo του πελάτη.\n\nΔΕΝ του στάλθηκε email — το βλέπει μόνος του.'
