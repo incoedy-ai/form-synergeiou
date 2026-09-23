@@ -64,6 +64,13 @@ function arithmos(xoros){
   return m ? parseInt(m[1], 10) : null;
 }
 
+// ⚠️ Ο αριθμός ΟΠΩΣ ΤΟΝ ΓΡΑΦΕΙ ΤΟ ΞΕΝΟΔΟΧΕΙΟ: «001», όχι «1» (ρητό χρήστη 23/09/2026
+// — «001 002 στο συγκεκριμένο ξενοδοχείο»). Χρησιμοποιείται στο εύρος του ορόφου.
+function arithmosKeimeno(xoros){
+  const m = String(xoros || '').toUpperCase().match(/ΔΩΜΑΤ[ΙΕ]?[ΟI]\s*#?\s*(\d+)/);
+  return m ? m[1] : null;
+}
+
 function render(d){
   let sim = d.simeia || [];
   const ep = d.episkepseis || [], met = d.metriseis || [];
@@ -151,8 +158,8 @@ function render(d){
     });
     mesa += '</div>';
     // εύρος αριθμών δωματίων του ορόφου, σε παρένθεση (ρητό χρήστη 23/09/2026)
-    const nums = lista.map(s => arithmos(s['ΧΩΡΟΣ'])).filter(n => n !== null)
-                      .sort((a, b) => a - b);
+    const nums = lista.map(s => ({ n: arithmos(s['ΧΩΡΟΣ']), t: arithmosKeimeno(s['ΧΩΡΟΣ']) }))
+                      .filter(x => x.n !== null).sort((a, b) => a.n - b.n).map(x => x.t);
     // Το εύρος έχει νόημα μόνο σε ορόφους/δωμάτια — όχι στο υπόγειο ή στους
     // κοινόχρηστους, όπου οι αριθμοί είναι μέσα σε ονόματα («SPA ΝΤΟΥΣ ΔΩΜΑΤΙΟ 1ο»).
     const arithmitiko = /ΟΡΟΦΟΣ|ΙΣΟΓΕΙΟ|ΔΩΜΑΤΙΑ/.test(g);
