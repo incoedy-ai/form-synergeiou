@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="el"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Καταγραφές Water Safety</title>
+<style>
+:root{--navy:#2D3A4D;--blue:#287B9B;--cyan:#2DAFCE;--sky:#6FB7D6;--bg:#f0f2f5;--line:#dde5ec;--red:#C62828;--green:#1b7f3b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Verdana,Arial,sans-serif;font-size:14px;background:var(--bg);color:#222}
+.head{background:var(--navy);color:#fff;padding:18px 20px}
+.head h1{font-size:17px;letter-spacing:.4px}
+.head .sub{font-size:12px;opacity:.85;margin-top:5px}
+.stripe{height:4px;background:linear-gradient(90deg,var(--sky),var(--cyan))}
+.wrap{max-width:1040px;margin:0 auto;padding:14px}
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);margin-bottom:14px;overflow:hidden}
+.card h2{background:var(--blue);color:#fff;font-size:12.5px;padding:9px 14px;letter-spacing:.4px;
+         display:flex;justify-content:space-between;align-items:center}
+.card h2 small{font-weight:normal;opacity:.85;font-size:11px}
+.body{padding:12px 14px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{background:#eef3f7;color:var(--navy);text-align:left;padding:7px 8px;font-size:11.5px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid #f0f4f7}
+td.c,th.c{text-align:center}
+tr.pote td{background:#fff7f7}
+.tiles{display:flex;gap:12px;flex-wrap:wrap}
+.tile{flex:1;min-width:150px;background:#f7fafc;border-left:4px solid var(--cyan);border-radius:6px;padding:10px 12px}
+.tile .l{font-size:11px;color:#778;text-transform:uppercase}
+.tile .v{font-size:19px;font-weight:bold;color:var(--navy);margin-top:3px}
+.ok{color:var(--green);font-weight:bold}
+.bad{color:var(--red);font-weight:bold}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--blue)}
+.none{color:#ccd5dc}
+.tag{display:inline-block;font-size:10.5px;font-weight:bold;border-radius:9px;padding:2px 7px;background:#FDECEA;color:var(--red)}
+.foot{font-size:11px;color:#778;padding:10px 14px}
+.empty{padding:16px;color:#889}
+</style></head><body>
+<div class="head"><h1 id="titlos">ΚΑΤΑΓΡΑΦΕΣ WATER SAFETY</h1>
+  <div class="sub">Πίνακας διαρκούς ενημέρωσης καταγραφών · InCo — Εφαρμογές Δημόσιας Υγείας</div></div>
+<div class="stripe"></div>
+<div class="wrap" id="wrap"><div class="card"><div class="empty" id="katastasi">Φόρτωση δεδομένων…</div></div></div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Σελίδα διαρκούς ενημέρωσης καταγραφών Water Safety.
+// Ίδια λογική με τους πίνακες του Pest Control: ο σύνδεσμος φέρνει «script» (το
+// Apps Script του Water Safety) και «kod» (ο πελάτης) — τα δεδομένα έρχονται
+// ΖΩΝΤΑΝΑ σε κάθε άνοιγμα, δεν είναι αποθηκευμένο αρχείο.
+// Τρία μέρη, με πρώτο το ΠΛΑΝΟ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ (ρητό χρήστη 23/09/2026).
+// ⚠️ Οι παράμετροι εμφανίζονται ΟΠΩΣ ΤΙΣ ΓΡΑΦΕΙ ΤΟ ΕΡΓΑΣΤΗΡΙΟ — καμία μετάφραση.
+// ---------------------------------------------------------------------------
+const P = new URLSearchParams(location.search);
+const SCRIPT = P.get('script'), KOD = P.get('kod'), PELATIS = P.get('pelatis') || '';
+const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const el = document.getElementById('wrap');
+const imer = s => s ? s.split('-').reverse().join('/') : '';
+const minas = s => s ? s.slice(5,7) + '/' + s.slice(0,4) : '';
+
+if (PELATIS) document.getElementById('titlos').textContent = 'ΚΑΤΑΓΡΑΦΕΣ WATER SAFETY — ' + PELATIS;
+
+function card(titlos, mesa, ypotitlos){
+  return '<div class="card"><h2>' + titlos + (ypotitlos ? '<small>' + ypotitlos + '</small>' : '') +
+         '</h2><div class="body">' + mesa + '</div></div>';
+}
+
+function render(d){
+  const sim = d.simeia || [], ep = (d.episkepseis || []).slice(), met = d.metriseis || [];
+  if (!ep.length) {
+    el.innerHTML = '<div class="card"><h2>ΚΑΤΑΓΡΑΦΕΣ</h2>' +
+      '<div class="empty">Δεν υπάρχουν ακόμη καταχωρημένες δειγματοληψίες.</div></div>';
+    return;
+  }
+  ep.sort((a,b) => (a['ΗΜΕΡΟΜΗΝΙΑ'] < b['ΗΜΕΡΟΜΗΝΙΑ'] ? 1 : -1));
+  const teleftaia = ep[0]['ΗΜΕΡΟΜΗΝΙΑ'];
+  const yper = met.filter(x => +x['ΥΠΕΡΒΑΣΗ'] === 1).length;
+  const deigmata = ep.reduce((s,x) => s + (+x['ΔΕΙΓΜΑΤΑ'] || 0), 0);
+  const analyseis = met.filter(x => x['ΠΑΡΑΜΕΤΡΟΣ']).length;
+  const epomenes = ep.map(x => x['ΕΠΟΜΕΝΗ']).filter(Boolean).sort();
+  let html = '';
+
+  // --- σύνοψη
+  let t = '<div class="tiles">';
+  t += '<div class="tile"><div class="l">Τελευταία δειγματοληψία</div><div class="v">' + imer(teleftaia) + '</div></div>';
+  t += '<div class="tile"><div class="l">Δείγματα συνολικά</div><div class="v">' + deigmata + '</div></div>';
+  t += '<div class="tile"><div class="l">Αναλύσεις με αποτέλεσμα</div><div class="v">' + analyseis + '</div></div>';
+  t += '<div class="tile"><div class="l">Ευρήματα εκτός ορίων</div><div class="v ' +
+       (yper ? 'bad' : 'ok') + '">' + yper + '</div></div>';
+  if (epomenes.length)
+    t += '<div class="tile"><div class="l">Επόμενη προγραμματισμένη</div><div class="v">' +
+         imer(epomenes[epomenes.length-1]) + '</div></div>';
+  html += '<div class="card"><div class="body">' + t + '</div></div>';
+
+  // --- 1. ΠΛΑΝΟ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ: όλα τα σημεία × επισκέψεις λεγεωνέλλας
+  const leg = ep.filter(x => x['ΕΙΔΟΣ'] === 'LEGIONELLA')
+                .sort((a,b) => a['ΗΜΕΡΟΜΗΝΙΑ'] < b['ΗΜΕΡΟΜΗΝΙΑ'] ? -1 : 1);
+  const stiles = leg.slice(-8);
+  const egine = {};                                   // σημείο -> σύνολο επισκέψεων
+  const kelia = {};                                   // σημείο|επίσκεψη -> ναι
+  met.forEach(x => {
+    if (!x['ΣΗΜΕΙΟ_ID']) return;
+    const k = x['ΣΗΜΕΙΟ_ID'];
+    if (!kelia[k + '|' + x['ΕΠΙΣΚΕΨΗ_ID']]) {
+      kelia[k + '|' + x['ΕΠΙΣΚΕΨΗ_ID']] = 1;
+      egine[k] = (egine[k] || 0) + 1;
+    }
+  });
+  const seira = sim.slice().sort((a,b) =>
+    (egine[a['ΣΗΜΕΙΟ_ID']] || 0) - (egine[b['ΣΗΜΕΙΟ_ID']] || 0) ||
+    String(a['ΧΩΡΟΣ']).localeCompare(String(b['ΧΩΡΟΣ']), 'el'));
+  let p = '<div class="scroll"><table><tr><th>Σημείο</th>' +
+          stiles.map(x => '<th class="c">' + minas(x['ΗΜΕΡΟΜΗΝΙΑ']) + '</th>').join('') +
+          '<th class="c">Φορές</th></tr>';
+  seira.forEach(s => {
+    const n = egine[s['ΣΗΜΕΙΟ_ID']] || 0;
+    p += '<tr' + (n ? '' : ' class="pote"') + '><td>' + (+s['ΚΡΙΣΙΜΟ'] ? '★ ' : '') +
+         esc(s['ΧΩΡΟΣ']) + (s['ΣΗΜΕΙΟ'] ? ' · ' + esc(s['ΣΗΜΕΙΟ']) : '') + '</td>' +
+         stiles.map(x => '<td class="c">' + (kelia[s['ΣΗΜΕΙΟ_ID'] + '|' + x['ΕΠΙΣΚΕΨΗ_ID']]
+           ? '<span class="dot"></span>' : '<span class="none">—</span>') + '</td>').join('') +
+         '<td class="c">' + (n ? n : '<span class="tag">ΠΟΤΕ</span>') + '</td></tr>';
+  });
+  p += '</table></div><div class="foot">Κάθε στήλη είναι μία δειγματοληψία. Τα σημεία ' +
+       'εναλλάσσονται ώστε με τον χρόνο να ελέγχεται όλο το δίκτυο· με κόκκινο φόντο όσα ' +
+       'δεν έχουν ελεγχθεί ακόμη.</div>';
+  html += card('ΠΛΑΝΟ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ', p, sim.length + ' σημεία');
+
+  // --- 2. δειγματοληψίες που έγιναν
+  let v = '<table><tr><th>Ημερομηνία</th><th>Έλεγχος</th><th class="c">Δείγματα</th>' +
+          '<th class="c">Με αποτέλεσμα</th><th>Εύρημα</th></tr>';
+  ep.forEach(x => {
+    const y = +x['ΥΠΕΡΒΑΣΕΙΣ'] || 0, m = +x['ΜΕ_ΑΠΟΤΕΛΕΣΜΑ'] || 0;
+    v += '<tr><td>' + imer(x['ΗΜΕΡΟΜΗΝΙΑ']) + '</td><td>' + esc(x['ΕΙΔΟΣ']) + '</td><td class="c">' +
+         (x['ΔΕΙΓΜΑΤΑ'] || 0) + '</td><td class="c">' + m + '</td><td>' +
+         (y ? '<span class="bad">' + y + ' εκτός ορίων</span>'
+            : (m ? '<span class="ok">εντός ορίων</span>' : '<span class="none">—</span>')) +
+         '</td></tr>';
+  });
+  html += card('ΔΕΙΓΜΑΤΟΛΗΨΙΕΣ ΠΟΥ ΕΓΙΝΑΝ', v + '</table>');
+
+  // --- 3. αποτελέσματα τελευταίας ημερομηνίας
+  const tel = ep.filter(x => x['ΗΜΕΡΟΜΗΝΙΑ'] === teleftaia).map(x => x['ΕΠΙΣΚΕΨΗ_ID']);
+  const gr = met.filter(x => tel.indexOf(x['ΕΠΙΣΚΕΨΗ_ID']) >= 0 && x['ΠΑΡΑΜΕΤΡΟΣ']);
+  let r = '';
+  if (gr.length) {
+    r = '<table><tr><th>Σημείο</th><th>Παράμετρος</th><th class="c">Αποτέλεσμα</th>' +
+        '<th class="c">Όριο</th><th class="c">Κρίση</th></tr>';
+    gr.forEach(x => {
+      const nm = [x['ΧΩΡΟΣ'], x['ΣΗΜΕΙΟ'], x['ΝΕΡΟ']].filter(Boolean).join(' · ');
+      r += '<tr><td>' + esc(nm) + '</td><td>' + esc(x['ΠΑΡΑΜΕΤΡΟΣ']) + '</td><td class="c">' +
+           esc(String(x['ΑΠΟΤΕΛΕΣΜΑ']).replace(/\s*\((?:i|ii|iii|iv|\*)\)/g, '')) + ' ' +
+           esc(x['ΜΟΝΑΔΑ']) + '</td><td class="c">' + (esc(x['ΟΡΙΟ']) || '—') + '</td><td class="c">' +
+           (+x['ΥΠΕΡΒΑΣΗ'] === 1 ? '<span class="bad">ΕΚΤΟΣ</span>' : '<span class="ok">εντός</span>') +
+           '</td></tr>';
+    });
+    r += '</table>';
+  } else {
+    r = '<div class="empty">Τα αποτελέσματα της τελευταίας δειγματοληψίας δεν έχουν καταχωρηθεί ακόμη.</div>';
+  }
+  html += card('ΑΠΟΤΕΛΕΣΜΑΤΑ ΤΕΛΕΥΤΑΙΑΣ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ (' + imer(teleftaia) + ')', r);
+
+  html += '<div class="foot" style="text-align:center">Ενημερώθηκε ' +
+          new Date().toLocaleString('el-GR') +
+          ' · InCo — Εφαρμογές Δημόσιας Υγείας · Δελφών 140, Γλυφάδα · 210 9644310</div>';
+  el.innerHTML = html;
+}
+
+if (!SCRIPT || !KOD) {
+  document.getElementById('katastasi').textContent =
+    'Ο σύνδεσμος δεν είναι πλήρης — λείπει ο πελάτης. Ζήτησέ μας καινούργιο σύνδεσμο.';
+} else {
+  fetch(SCRIPT + '?action=katagrafes&kod=' + encodeURIComponent(KOD))
+    .then(r => r.json())
+    .then(d => { if (d && d.ok) render(d); else throw new Error((d && d.error) || 'άγνωστο'); })
+    .catch(e => { document.getElementById('katastasi').textContent =
+      'Δεν φορτώθηκαν τα δεδομένα (' + e.message + '). Δοκίμασε ξανά σε λίγο.'; });
+}
+</script>
+</body></html>
