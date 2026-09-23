@@ -20,15 +20,40 @@ body{font-family:Verdana,Arial,sans-serif;font-size:14px;background:var(--bg);co
 .scroll{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:12.5px}
 th{background:#eef3f7;color:var(--navy);text-align:left;padding:6px 8px;font-size:11px;
-   border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0}
+   border-bottom:1px solid var(--line);white-space:nowrap}
 td{padding:6px 8px;border-bottom:1px solid #f2f5f8}
 td.c,th.c{text-align:center}
-tr.nea td{border-top:2px solid var(--line)}
+th.par{white-space:normal;max-width:120px;line-height:1.3;vertical-align:bottom}
+th.par .orio{display:block;font-weight:normal;color:#778;font-size:10px;margin-top:2px}
 td.imer{white-space:nowrap;color:#556}
+/* ΜΙΑ ΓΡΑΜΜΗ ΑΝΑ ΔΕΙΓΜΑ + πτυσσόμενη ενότητα ανά δειγματοληψία (23/09/2026) */
+details.ep{border-top:1px solid var(--line)}
+details.ep:first-child{border-top:none}
+summary{list-style:none;cursor:pointer;padding:9px 12px;display:flex;align-items:center;gap:10px;
+        font-size:12.5px;background:#fbfdfe}
+summary::-webkit-details-marker{display:none}
+summary:hover{background:#f2f7fa}
+summary .arrow{color:var(--blue);font-size:10px;width:10px;flex:none}
+details[open]>summary{background:#eef3f7;border-bottom:1px solid var(--line)}
+details[open]>summary .arrow{transform:rotate(90deg)}
+summary .d{font-weight:bold;color:var(--navy);min-width:88px}
+summary .n{color:#667}
+summary .sp{margin-left:auto;font-size:11.5px}
+.tgl{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.5);
+     border-radius:4px;font:inherit;font-size:11px;padding:2px 8px;cursor:pointer}
+.tgl:hover{background:rgba(255,255,255,.3)}
 .tiles{display:flex;gap:12px;flex-wrap:wrap}
 .tile{flex:1;min-width:150px;background:#f7fafc;border-left:4px solid var(--cyan);border-radius:6px;padding:10px 12px}
 .tile .l{font-size:11px;color:#778;text-transform:uppercase}
 .tile .v{font-size:19px;font-weight:bold;color:var(--navy);margin-top:3px}
+/* ΚΑΡΤΕΛΕΣ ανά είδος ελέγχου — ρητό χρήστη 23/09/2026 («να αλλάζεις καρτέλες») */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.tab{background:#fff;border:1px solid var(--line);border-bottom:3px solid var(--line);
+     border-radius:6px 6px 0 0;color:var(--navy);font:inherit;font-size:12px;font-weight:bold;
+     padding:9px 14px;cursor:pointer}
+.tab:hover{border-bottom-color:var(--sky)}
+.tab.on{background:var(--blue);color:#fff;border-color:var(--blue);border-bottom-color:var(--cyan)}
+.tab .n{font-weight:normal;opacity:.75;margin-left:6px;font-size:11px}
 .ok{color:var(--green);font-weight:bold}
 .bad{color:var(--red);font-weight:bold}
 .none{color:#ccd5dc}
@@ -65,35 +90,84 @@ const katharo = v => String(v == null ? '' : v).replace(/\s*\((?:i|ii|iii|iv|\*)
 if (PELATIS) document.getElementById('titlos').textContent = 'ΣΥΓΚΕΝΤΡΩΤΙΚΑ WATER SAFETY — ' + PELATIS;
 
 const EIDI = [
-  { key: 'LEGIONELLA',  titlos: 'ΣΥΓΚΕΝΤΡΩΤΙΚΑ ΛΕΓΕΩΝΕΛΛΑΣ',            metriseis: true },
-  { key: 'ΠΟΣΙΜΟ',      titlos: 'ΣΥΓΚΕΝΤΡΩΤΙΚΑ ΠΟΣΙΜΟΥ ΝΕΡΟΥ',           metriseis: false },
-  { key: 'ΚΟΛΥΜΒΗΤΙΚΗ', titlos: 'ΣΥΓΚΕΝΤΡΩΤΙΚΑ ΚΟΛΥΜΒΗΤΙΚΗΣ / JACUZZI',  metriseis: true },
-  { key: 'ΕΠΙΦΑΝΕΙΕΣ',  titlos: 'ΣΥΓΚΕΝΤΡΩΤΙΚΑ ΕΠΙΦΑΝΕΙΩΝ (SWAB TEST)',  metriseis: false }
+  { key: 'LEGIONELLA',  koumpi: 'ΛΕΓΕΩΝΕΛΛΑ',   titlos: 'ΣΥΓΚΕΝΤΡΩΤΙΚΑ ΛΕΓΕΩΝΕΛΛΑΣ',            metriseis: true },
+  { key: 'ΠΟΣΙΜΟ',      koumpi: 'ΠΟΣΙΜΟ ΝΕΡΟ',  titlos: 'ΣΥΓΚΕΝΤΡΩΤΙΚΑ ΠΟΣΙΜΟΥ ΝΕΡΟΥ',           metriseis: false },
+  { key: 'ΚΟΛΥΜΒΗΤΙΚΗ', koumpi: 'ΚΟΛΥΜΒΗΤΙΚΕΣ', titlos: 'ΣΥΓΚΕΝΤΡΩΤΙΚΑ ΚΟΛΥΜΒΗΤΙΚΗΣ / JACUZZI',  metriseis: true },
+  { key: 'ΕΠΙΦΑΝΕΙΕΣ',  koumpi: 'SWAB TEST',    titlos: 'ΣΥΓΚΕΝΤΡΩΤΙΚΑ ΕΠΙΦΑΝΕΙΩΝ (SWAB TEST)',  metriseis: false }
 ];
 
-function pinakas(rows, metriseis){
-  let h = '<div class="scroll"><table><tr><th>Ημερομηνία</th><th>Σημείο</th>' +
-          (metriseis ? '<th class="c">Νερό</th><th class="c">Τ °C</th><th class="c">Cl</th><th class="c">pH</th>' : '') +
-          '<th>Παράμετρος</th><th class="c">Αποτέλεσμα</th><th class="c">Όριο</th><th class="c">Κρίση</th></tr>';
-  let prin = '';
+// Το κλειδί του ΔΕΙΓΜΑΤΟΣ. Κρατάμε και εφεδρικό κλειδί, για την περίπτωση που το
+// φύλλο δεν έχει ακόμη τη στήλη ΔΕΙΓΜΑ_ID (παλιό push) — αλλιώς η σελίδα αδειάζει.
+const klidi = x => x['ΔΕΙΓΜΑ_ID'] ||
+  [x['ΕΠΙΣΚΕΨΗ_ID'], x['ΣΗΜΕΙΟ_ID'], x['ΧΩΡΟΣ'], x['ΣΗΜΕΙΟ'], x['ΝΕΡΟ']].join('|');
+
+/* Μία γραμμή ανά ΔΕΙΓΜΑ — οι παράμετροι γίνονται ΣΤΗΛΕΣ.
+   Πριν, κάθε ανάλυση έπιανε δική της γραμμή: ένα δείγμα πόσιμου = 6 γραμμές. */
+function deigmata(rows){
+  const m = new Map();
   rows.forEach(x => {
-    const nea = x['ΗΜΕΡΟΜΗΝΙΑ'] !== prin;
-    prin = x['ΗΜΕΡΟΜΗΝΙΑ'];
-    const simeio = [x['ΧΩΡΟΣ'], x['ΣΗΜΕΙΟ']].filter(Boolean).join(' · ');
-    h += '<tr' + (nea ? ' class="nea"' : '') + '><td class="imer">' + (nea ? imer(x['ΗΜΕΡΟΜΗΝΙΑ']) : '') +
-         '</td><td>' + esc(simeio) + '</td>' +
+    const k = klidi(x);
+    if (!m.has(k)) m.set(k, { x: x, res: {} });
+    if (x['ΠΑΡΑΜΕΤΡΟΣ']) m.get(k).res[x['ΠΑΡΑΜΕΤΡΟΣ']] = x;
+  });
+  return [...m.values()];
+}
+
+function pinakas(deig, pars, oria, metriseis){
+  let h = '<div class="scroll"><table><tr><th>Σημείο</th>' +
+          (metriseis ? '<th class="c">Νερό</th><th class="c">Τ °C</th><th class="c">Cl</th><th class="c">pH</th>' : '');
+  pars.forEach(p => h += '<th class="par c">' + esc(p) +
+    (oria[p] ? '<span class="orio">όριο ' + esc(oria[p]) + '</span>' : '') + '</th>');
+  h += '</tr>';
+  deig.forEach(s => {
+    const x = s.x, simeio = [x['ΧΩΡΟΣ'], x['ΣΗΜΕΙΟ']].filter(Boolean).join(' · ');
+    h += '<tr><td>' + esc(simeio) + '</td>' +
          (metriseis ? '<td class="c">' + esc(x['ΝΕΡΟ'] || '') + '</td><td class="c">' +
             num(x['ΘΕΡΜΟΚΡΑΣΙΑ']) + '</td><td class="c">' + num(x['ΧΛΩΡΙΟ']) + '</td><td class="c">' +
-            num(x['PH']) + '</td>' : '') +
-         '<td>' + (x['ΠΑΡΑΜΕΤΡΟΣ'] ? esc(x['ΠΑΡΑΜΕΤΡΟΣ']) : '<span class="none">δεν έχει καταχωρηθεί</span>') +
-         '</td><td class="c">' + (x['ΑΠΟΤΕΛΕΣΜΑ'] ? esc(katharo(x['ΑΠΟΤΕΛΕΣΜΑ'])) + ' ' + esc(x['ΜΟΝΑΔΑ'] || '')
-            : '<span class="none">—</span>') +
-         '</td><td class="c">' + (x['ΟΡΙΟ'] ? esc(x['ΟΡΙΟ']) : '<span class="none">—</span>') +
-         '</td><td class="c">' + (x['ΠΑΡΑΜΕΤΡΟΣ']
-            ? (+x['ΥΠΕΡΒΑΣΗ'] === 1 ? '<span class="bad">ΕΚΤΟΣ</span>' : '<span class="ok">εντός</span>')
-            : '<span class="none">—</span>') + '</td></tr>';
+            num(x['PH']) + '</td>' : '');
+    pars.forEach(p => {
+      const r = s.res[p];
+      if (!r || !r['ΑΠΟΤΕΛΕΣΜΑ']) { h += '<td class="c"><span class="none">—</span></td>'; return; }
+      const t = esc(katharo(r['ΑΠΟΤΕΛΕΣΜΑ'])) + (r['ΜΟΝΑΔΑ'] ? ' ' + esc(r['ΜΟΝΑΔΑ']) : '');
+      h += '<td class="c">' + (+r['ΥΠΕΡΒΑΣΗ'] === 1 ? '<span class="bad">' + t + '</span>' : t) + '</td>';
+    });
+    h += '</tr>';
   });
   return h + '</table></div>';
+}
+
+/* Μία πτυσσόμενη ενότητα ανά δειγματοληψία: ανοιχτή μόνο η τελευταία. */
+function enotites(rows, metriseis){
+  const anaEp = new Map();
+  rows.forEach(x => {
+    const k = x['ΕΠΙΣΚΕΨΗ_ID'];
+    if (!anaEp.has(k)) anaEp.set(k, { imerominia: x['ΗΜΕΡΟΜΗΝΙΑ'], rows: [] });
+    anaEp.get(k).rows.push(x);
+  });
+  const seira = [...anaEp.values()].sort((a, b) => a.imerominia < b.imerominia ? 1 : -1);
+  // Οι στήλες ίδιες σε ΟΛΕΣ τις ενότητες, για να συγκρίνονται με το μάτι.
+  const pars = [], oria = {};
+  rows.forEach(x => {
+    const p = x['ΠΑΡΑΜΕΤΡΟΣ'];
+    if (!p) return;
+    if (pars.indexOf(p) < 0) { pars.push(p); oria[p] = katharo(x['ΟΡΙΟ'] || ''); }
+    else if (oria[p] !== katharo(x['ΟΡΙΟ'] || '')) oria[p] = '';   // διαφορετικό ανά σημείο
+  });
+  let h = '';
+  seira.forEach((e, i) => {
+    const d = deigmata(e.rows);
+    const yp = e.rows.filter(x => +x['ΥΠΕΡΒΑΣΗ'] === 1).length;
+    const xoris = d.filter(s => !Object.keys(s.res).length).length;
+    h += '<details class="ep"' + (i === 0 ? ' open' : '') + '><summary><span class="arrow">▶</span>' +
+         '<span class="d">' + imer(e.imerominia) + '</span>' +
+         '<span class="n">' + d.length + (d.length === 1 ? ' δείγμα' : ' δείγματα') + '</span>' +
+         '<span class="sp">' + (yp ? '<span class="bad">' + yp + ' εκτός ορίων</span>'
+            : xoris === d.length ? '<span class="none" style="color:#889">αναμονή αποτελεσμάτων</span>'
+            : '<span class="ok">όλα εντός ορίων</span>' +
+              (xoris ? ' <span class="n">· ' + xoris + ' σε αναμονή</span>' : '')) +
+         '</span></summary>' + pinakas(d, pars, oria, metriseis) + '</details>';
+  });
+  return h;
 }
 
 function render(d){
@@ -119,22 +193,41 @@ function render(d){
     '</div><div class="foot" style="padding:10px 0 0"><a class="link" href="' + PLANO +
     '">→ Πλάνο δειγματοληψίας λεγεωνέλλας (πού έχει γίνει και πού όχι)</a></div></div></div>';
 
-  EIDI.forEach(e => {
+  // ΚΑΡΤΕΛΕΣ: μόνο τα είδη που έχουν δειγματοληψίες, πρώτη ανοιχτή η λεγεωνέλλα.
+  const diathesima = EIDI.map(e => {
     const rows = met.filter(x => x['ΕΙΔΟΣ'] === e.key)
                     .sort((a,b) => (a['ΗΜΕΡΟΜΗΝΙΑ'] < b['ΗΜΕΡΟΜΗΝΙΑ'] ? 1 :
                                     a['ΗΜΕΡΟΜΗΝΙΑ'] > b['ΗΜΕΡΟΜΗΝΙΑ'] ? -1 :
                                     (a['ΣΗΜΕΙΟ_ID'] || 0) - (b['ΣΗΜΕΙΟ_ID'] || 0)));
-    if (!rows.length) return;
-    const episk = ep.filter(x => x['ΕΙΔΟΣ'] === e.key).length;
-    html += '<div class="card"><h2>' + e.titlos + '<small>' + episk + ' δειγματοληψίες · ' +
-            rows.length + ' γραμμές</small></h2><div class="body">' +
-            pinakas(rows, e.metriseis) + '</div></div>';
+    return Object.assign({}, e, { rows: rows, episk: ep.filter(x => x['ΕΙΔΟΣ'] === e.key).length });
+  }).filter(e => e.rows.length);
+
+  html += '<div class="tabs">' + diathesima.map((e, i) =>
+    '<button class="tab' + (i === 0 ? ' on' : '') + '" data-k="' + e.key + '">' + e.koumpi +
+    '<span class="n">' + e.episk + '</span></button>').join('') + '</div>';
+
+  diathesima.forEach((e, i) => {
+    html += '<div class="card eidos" data-k="' + e.key + '"' + (i ? ' hidden' : '') + '><h2>' + e.titlos +
+            '<small>' + e.episk + (e.episk === 1 ? ' δειγματοληψία' : ' δειγματοληψίες') +
+            ' &nbsp;<button class="tgl">άνοιγμα όλων</button></small></h2>' +
+            enotites(e.rows, e.metriseis) + '</div>';
   });
 
   html += '<div class="foot" style="text-align:center">Ενημερώθηκε ' +
           new Date().toLocaleString('el-GR') +
           ' · InCo — Εφαρμογές Δημόσιας Υγείας · Δελφών 140, Γλυφάδα · 210 9644310</div>';
   el.innerHTML = html;
+
+  el.querySelectorAll('.tab').forEach(b => b.onclick = () => {
+    el.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
+    el.querySelectorAll('.eidos').forEach(c => c.hidden = c.dataset.k !== b.dataset.k);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  el.querySelectorAll('.tgl').forEach(b => b.onclick = () => {
+    const card = b.closest('.eidos'), anoixta = !card.querySelector('details:not([open])');
+    card.querySelectorAll('details').forEach(d => d.open = !anoixta);
+    b.textContent = anoixta ? 'άνοιγμα όλων' : 'κλείσιμο όλων';
+  });
 }
 
 if (!SCRIPT || !KOD) {

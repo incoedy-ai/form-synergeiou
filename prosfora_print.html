@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<title>Πρόταση Συνεργασίας</title>
+<style>
+  @page { size: A4 portrait; margin: 12mm 12mm 14mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: Verdana, Arial, sans-serif; color: #222; font-size: 9.5px;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  .topbar { display: flex; align-items: center; gap: 14px;
+            border-bottom: 3px solid #2D3A4D; padding-bottom: 8px; margin-bottom: 10px; }
+  .topbar .logo { height: 74px; width: auto; }
+  .topbar .ttl { flex: 1; text-align: center; }
+  .topbar h1 { font-size: 16px; margin: 0; letter-spacing: 1.2px; color: #2D3A4D; }
+  .topbar .sub { font-size: 8px; color: #287B9B; letter-spacing: .8px; margin-top: 2px; }
+  .meta { text-align: right; font-size: 8px; color: #666; white-space: nowrap; }
+  .meta .num { font-size: 12px; font-weight: bold; color: #2D3A4D;
+               background: #2DAFCE; padding: 2px 9px; border-radius: 4px;
+               display: inline-block; margin-bottom: 3px; }
+
+  .band { background: #287B9B; color: #fff; font-weight: bold; font-size: 9px;
+          padding: 3px 8px; letter-spacing: .5px; }
+  table.cust { width: 100%; border-collapse: collapse; margin-bottom: 10px;
+               border: 1px solid #cfdbe6; }
+  table.cust td { border: 1px solid #e2eaf1; padding: 3px 6px; vertical-align: top; }
+  table.cust td.l { background: #f4f8fc; font-weight: bold; color: #2D3A4D;
+                    width: 17%; font-size: 8px; text-transform: uppercase; }
+  table.cust td.v { width: 33%; font-size: 9.5px; }
+
+  p { margin: 0 0 6px; text-align: justify; }
+  .intro { margin-bottom: 9px; }
+
+  h2 { font-size: 10.5px; color: #2D3A4D; margin: 10px 0 4px;
+       border-left: 4px solid #2DAFCE; padding-left: 6px; }
+  h2 .vis { font-weight: normal; color: #287B9B; font-size: 9.5px; }
+  /* Ο αριθμός επισκέψεων ανά έτος είναι το πιο κρίσιμο νούμερο της πρότασης:
+     ορίζει πόσο κοστίζει η συνεργασία συνολικά. Πρέπει να χτυπάει στο μάτι. */
+  .visits { display: inline-flex; align-items: baseline; gap: 6px; float: right;
+            background: #2D3A4D; color: #fff; border-radius: 5px;
+            padding: 3px 11px; margin-top: -2px; }
+  .visits .n { font-size: 17px; font-weight: bold; color: #2DAFCE; line-height: 1; }
+  .visits .t { font-size: 8.5px; letter-spacing: .5px; text-transform: uppercase; }
+
+  table.pr { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+  table.pr th { background: #2D3A4D; color: #fff; font-size: 8px; padding: 4px 6px;
+                text-align: left; letter-spacing: .4px; }
+  table.pr th.r, table.pr td.r { text-align: right; white-space: nowrap; }
+  table.pr td { border-bottom: 1px solid #e2eaf1; padding: 4px 6px; font-size: 9.5px; }
+  table.pr tr.tot td { background: #f4f8fc; font-weight: bold; color: #2D3A4D;
+                       border-top: 2px solid #2D3A4D; font-size: 10px; }
+  table.pr th .vat { font-size: 7.5px; font-weight: normal; color: #2DAFCE;
+                     letter-spacing: .3px; margin-top: 1px; }
+  table.pr tr.tot .vatx { font-weight: normal; font-size: 8px; color: #566;
+                          margin-left: 6px; }
+
+  .special { border: 1px solid #cfdbe6; border-radius: 5px; padding: 6px 8px;
+             margin-bottom: 8px; background: #fbfdff; }
+  .special .t { font-weight: bold; color: #2D3A4D; margin-bottom: 3px; }
+  .special .rates { color: #333; }
+  /* Ελεύθερο κείμενο: ό,τι δεν χωράει στους πίνακες — π.χ. δύο επισκέψεις με
+     διαφορετική έκταση και διαφορετικό κόστος η καθεμία. Μπαίνει αμέσως μετά τον
+     πίνακα του προγράμματος, εκεί που ο πελάτης μόλις είδε τις τιμές. */
+  .note-free { border-left: 3px solid #287B9B; background: #F4F8FA;
+               padding: 6px 10px; margin: 6px 0; color: #26333f; }
+  .note-free p { margin: 0 0 4px 0; }
+  .note-free p:last-child { margin-bottom: 0; }
+  /* Η υποσημείωση του αστερίσκου: πιο μικρή και πιο ήπια από τις τιμές,
+     ώστε να διαβάζεται ως διευκρίνιση και όχι ως όρος. */
+  .special .note { margin-top: 4px; font-size: 8.4pt; color: #5b6b78;
+                   font-style: italic; }
+
+  .terms { }   /* ίδιο μέγεθος με το υπόλοιπο κείμενο */
+  .myinco { border: 1px solid #2DAFCE; border-radius: 6px; padding: 7px 9px;
+            background: #f4fbfd; margin: 8px 0; page-break-inside: avoid; }
+  .myinco .hd { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .myinco .hd img { height: 20px; }
+  .myinco ul { margin: 3px 0 3px 16px; padding: 0; }
+  .myinco li { margin-bottom: 1px; }
+
+  .sign { margin-top: 14px; page-break-inside: avoid; }
+  .sign .who { font-weight: bold; color: #2D3A4D; font-size: 10px; }
+  .sign .role { font-size: 9px; color: #555; line-height: 1.45; }
+  .foot { margin-top: 10px; border-top: 1px solid #cfdbe6; padding-top: 5px;
+          font-size: 7.5px; color: #777; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  {{LOGO_IMG}}
+  <div class="ttl">
+    <h1>{{TITLOS}}</h1>
+    <div class="sub">INCO — ΕΦΑΡΜΟΓΕΣ ΔΗΜΟΣΙΑΣ ΥΓΕΙΑΣ</div>
+  </div>
+  <div class="meta">
+    <div class="num">{{ARITHMOS}}</div><br>
+    {{IMEROMINIA}}<br>
+    {{ISXYS}}
+  </div>
+</div>
+
+<div class="band">ΣΤΟΙΧΕΙΑ ΥΠΟΨΗΦΙΟΥ ΠΕΛΑΤΗ</div>
+<table class="cust">
+  <tr><td class="l">Επωνυμία</td><td class="v">{{EPONYMIA}}</td>
+      <td class="l">Υπεύθυνος επικ/ίας</td><td class="v">{{YPEYTHYNOS}}</td></tr>
+  <tr><td class="l">Διακριτικός τίτλος</td><td class="v">{{DIAKRITIKOS}}</td>
+      <td class="l">Τηλέφωνο επικ/ίας</td><td class="v">{{TILEFONO}}</td></tr>
+  <tr><td class="l">Δραστηριότητα</td><td class="v">{{DRASTIRIOTITA}}</td>
+      <td class="l">Email</td><td class="v">{{EMAIL}}</td></tr>
+  <tr><td class="l">Διεύθυνση</td><td class="v">{{DIEYTHYNSI}}</td>
+      <td class="l">ΑΦΜ / ΔΟΥ</td><td class="v">{{AFM}}</td></tr>
+</table>
+
+<div class="intro">{{EISAGOGI}}</div>
+
+{{PINAKAS_PROTI}}
+{{PINAKAS_PROGRAMMA}}
+{{SIMEIOSEIS}}
+{{EIDIKES}}
+
+<div class="terms">{{OROI}}</div>
+
+{{MYINCO_BLOCK}}
+
+<div class="sign">
+  <div>Με εκτίμηση</div>
+  <div class="who">Αρχιμήδης Λ. Τρυφωνίδης</div>
+  <div class="role">Υγιεινολόγος ΤΕ, MSc,<br>Λειτουργός Δημόσιας Υγείας,<br>Υπεύθυνος Επιστήμονας στην InCo</div>
+</div>
+
+
+<!-- Νομικό υποσέλιδο: φαίνεται στην οθόνη. Στο PDF το τυπώνει ο Chrome
+     σε ΚΑΘΕ σελίδα (generate_prosfora_pdf.py), γι' αυτό κρύβεται στην εκτύπωση. -->
+<div class="foot">
+  ΑΡΧΙΜΗΔΗΣ Λ. ΤΡΥΦΩΝΙΔΗΣ / ΥΓΕΙΟΝΟΜΙΚΕΣ ΜΕΛΕΤΕΣ – ΑΠΟΛΥΜΑΝΣΕΙΣ /
+  ΑΦΜ.104353567 / ΚΕΦΟΔΕ ΑΤΤΙΚΗΣ<br>
+  ΑΡ. ΓΕΜΗ.008784101000 / ΔΕΛΦΩΝ 140 – 165,61 / ΓΛΥΦΑΔΑ / 210.96.44.310 /
+  sales@in-co.gr / www.in-co.gr
+</div>
+
+<style>@media print { .foot { display: none; } }</style>
+</body>
+</html>

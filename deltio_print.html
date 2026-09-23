@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>Συγκεντρωτικό Δελτίο Αποστολής</title>
+<style>
+  @page { size: A4; margin: 12mm 12mm 16mm 12mm; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; color: #18222E;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 10.5pt; line-height: 1.35;
+  }
+  .head { display: flex; align-items: flex-start; gap: 14px;
+          border-bottom: 2px solid #2D3A4D; padding-bottom: 8px; }
+  .logo { height: 46px; }
+  .co { flex: 1; }
+  .co b { display: block; font-size: 12pt; color: #2D3A4D; letter-spacing: .01em; }
+  .co span { display: block; font-size: 8.8pt; color: #4A5766; }
+
+  .doc { text-align: right; min-width: 54mm; }
+  .doc .t { font-size: 11pt; font-weight: 600; color: #287B9B;
+            text-transform: uppercase; letter-spacing: .06em; }
+  .doc .n { font-size: 17pt; font-weight: 700; color: #2D3A4D;
+            font-variant-numeric: tabular-nums; margin-top: 2px; }
+
+  h1 { font-size: 12.5pt; margin: 10px 0 6px; color: #2D3A4D;
+       text-transform: uppercase; letter-spacing: .05em; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px;
+          border: 1px solid #DFE5EA; border-radius: 4px; padding: 8px 10px;
+          background: #FAFBFC; }
+  .f { display: flex; gap: 6px; font-size: 10pt; }
+  .f i { font-style: normal; color: #6B7681; min-width: 34mm; }
+  .f b { font-weight: 600; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  thead { display: table-header-group; }        /* η κεφαλίδα επαναλαμβάνεται σε κάθε σελίδα */
+  tfoot { display: table-row-group; }
+  tr { page-break-inside: avoid; }              /* καμία γραμμή δεν κόβεται στη μέση */
+  thead th { background: #2D3A4D; color: #fff; font-size: 9pt; font-weight: 600;
+             text-transform: uppercase; letter-spacing: .05em;
+             padding: 5px 7px; text-align: left; }
+  thead th.r, td.r { text-align: right; }
+  tbody td { padding: 3px 7px; border-bottom: 1px solid #E4E9ED;
+             font-size: 10pt; }
+  tbody tr:nth-child(even) td { background: #F7F9FA; }
+  td.r { font-variant-numeric: tabular-nums; }
+  td.n { color: #6B7681; width: 8mm; }
+  tfoot td { padding: 6px 7px; font-weight: 700; font-size: 10.5pt;
+             border-top: 2px solid #2D3A4D; }
+
+  .sign { display: flex; gap: 30px; margin-top: 6mm;
+          page-break-inside: avoid; }
+  .sign div { flex: 1; text-align: center; font-size: 9pt; color: #4A5766; }
+  .sign span { display: block; border-top: 1px solid #8A939C;
+               padding-top: 4px; margin-top: 7mm;
+               font-size: 10pt; font-weight: 600; color: #18222E; }
+  .note { margin-top: 8px; font-size: 8pt; color: #6B7681;
+          page-break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<div class="head">
+  {{LOGO_IMG}}
+  <div class="co">
+    <b>{{CO_NAME}}</b>
+    <span>{{CO_ADDR}}</span>
+    <span>{{CO_EXTRA}}</span>
+  </div>
+  <div class="doc">
+    <div class="t">Συγκεντρωτικό<br>Δελτίο Αποστολής</div>
+    <div class="n">{{SEIRA}} – {{ARITHMOS}}</div>
+  </div>
+</div>
+
+<h1>Στοιχεία Διακίνησης</h1>
+<div class="grid">
+  <div class="f"><i>Ημερομηνία</i><b>{{IMER}}</b></div>
+  <div class="f"><i>Ώρα έναρξης</i><b>{{ORA}}</b></div>
+  <div class="f"><i>Όχημα</i><b>{{OXIMA}}</b></div>
+  <div class="f"><i>Σειρά</i><b>{{SEIRA}}</b></div>
+  <div class="f"><i>Τόπος φόρτωσης</i><b>{{TOPOS_FORT}}</b></div>
+  <div class="f"><i>Τόπος προορισμού</i><b>{{TOPOS_PROOR}}</b></div>
+</div>
+
+<h1>Είδη που Διακινούνται</h1>
+<table>
+  <thead>
+    <tr>
+      <th class="n">#</th>
+      <th>Είδος</th>
+      <th class="r">Ποσότητα</th>
+      <th>Μονάδα</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{ROWS}}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="2">Σύνολο ειδών</td>
+      <td class="r">{{SYNOLO}}</td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+
+{{EQUIP_BLOCK}}
+
+<div class="sign">
+  <div>Ο Αποστολέας<span>{{APOSTOLEAS}}</span></div>
+  <div>Ο Παραλαβών / Οδηγός<span>{{ODIGOS}}</span></div>
+</div>
+
+<p class="note">
+  Σκοπός διακίνησης: μεταφορά υλικών για εκτέλεση εφαρμογών σε πελάτες.
+  Το παρόν εκδίδεται ηλεκτρονικά από το InCo ERP.
+</p>
+
+  <!-- Έλεγχος εγγράφου (21/09/2026): σε ΟΛΑ τα PDF, ίδια τιμή με Αυτοψία/Πιστοποιητικό. -->
+  <div class="docCtrl" style="border-top:1px solid #999;margin-top:3px;padding-top:2px;font-size:8px;text-align:center;color:#333;font-family:Arial,Helvetica,sans-serif;">ΣΥΝΤΑΞΗ / ΕΓΚΡΙΣΗ : <b>ΑΡΧΙΜΗΔΗΣ Λ. ΤΡΥΦΩΝΙΔΗΣ</b> &nbsp;|&nbsp; ΕΚΔ. : <b>digital 01</b> &nbsp;|&nbsp; ΙΣΧΥΕΙ ΑΠΟ : <b>08/2026</b></div>
+</body>
+</html>

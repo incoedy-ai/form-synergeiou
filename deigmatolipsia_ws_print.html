@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="el"><head><meta charset="utf-8">
+<title>Δελτίο Δειγματοληψίας — Water Safety</title>
+<style>
+  @page { size: A4 portrait; margin: 10mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Verdana, Arial, sans-serif; color: #222; font-size: 10px; }
+  /* Υδατογράφημα, ίδιο μοτίβο με το δελτίο επίσκεψης: ΠΑΝΩ από το περιεχόμενο με
+     χαμηλή διαφάνεια — οι πίνακες εδώ είναι συμπαγείς και αλλιώς το έκρυβαν. */
+  .wrap { position: relative; overflow: hidden; }
+  .watermark { position: absolute; z-index: 5; pointer-events: none;
+               width: 88%; right: -6%; top: 50%; transform: translateY(-50%); opacity: .2; }
+  .wrap > *:not(.watermark) { position: relative; z-index: 1; }
+  .topbar { display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #2D3A4D; padding-bottom: 6px; }
+  .topbar img.logo { height: 76px; }
+  .topbar .mid { flex: 1; text-align: center; }
+  .topbar h1 { font-size: 14px; margin: 0; color: #2D3A4D; letter-spacing: .3px; }
+  .topbar .sub { font-size: 8px; color: #666; margin-top: 3px; }
+  .eidos { background: #287B9B; color: #fff; font-size: 10px; font-weight: bold; padding: 3px 10px; margin-top: 4px; display: inline-block; }
+  .kod-box { border: 1px solid #b9cfe0; padding: 4px 8px; text-align: center; min-width: 104px; }
+  .kod-box .lbl { font-size: 7px; color: #666; }
+  .kod-box .val { font-size: 12px; font-weight: bold; color: #2D3A4D; }
+  .kod-box .ora { font-size: 10px; font-weight: bold; color: #2D3A4D; }
+  .kod-box .val2 { font-size: 10.5px; font-weight: bold; color: #287B9B; }
+  .kod-box .sep { border-top: 1px dashed #b9cfe0; margin: 4px -8px; }
+  .kod-box .aa { margin-top: 3px; color: #999; }
+  h2 { background: #2D3A4D; color: #fff; font-size: 9px; margin: 8px 0 4px; padding: 3px 7px; letter-spacing: .3px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px 8px; }
+  .item { border-bottom: 1px solid #e3e8ed; padding: 2px 0; }
+  .item .l { display: block; font-size: 6.5px; color: #888; text-transform: uppercase; }
+  .item .v { display: block; font-weight: bold; color: #2D3A4D; min-height: 12px; }
+  .w2 { grid-column: span 2; } .w4 { grid-column: 1 / -1; }
+  table { width: 100%; border-collapse: collapse; font-size: 9px; }
+  th { background: #eef3f7; color: #2D3A4D; text-align: left; padding: 4px; border: 1px solid #cfdae3; font-size: 7.5px; }
+  td { padding: 4px; border: 1px solid #dde5ec; height: 20px; }
+  td.c { text-align: center; } td.kod { text-align: center; font-weight: bold; color: #287B9B; }
+  td.na { text-align: center; color: #bbb; }
+  .params { border: 1px solid #cfdae3; background: #f7fbfd; padding: 5px 8px; font-size: 8.5px; margin-bottom: 5px; }
+  .params b { color: #2D3A4D; }
+  /* Τα στοιχεία μας πιάνουν το μισό πλάτος και δίπλα ακριβώς μπαίνουν τα πεδία
+     που συμπληρώνει το εργαστήριο (ρητό χρήστη 20/09/2026). */
+  .cols { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 4px; }
+  .cols > div:first-child { flex: 1; }
+  .cols > div:last-child { width: 38%; }
+  .cols .grid { grid-template-columns: repeat(2, 1fr); }
+  /* ΟΧΙ height:100% — ξεχείλιζε κάτω από την επόμενη μπάρα. */
+  .lab { border: 1px solid #b9c6d1; background: #e7ecf0; padding: 6px 8px; font-size: 8.5px; }
+  .lab .ttl { font-weight: bold; color: #2D3A4D; margin-bottom: 4px; display: block; }
+  .lab table { width: 100%; }
+  .lab .cell { border: 1px solid #b9c6d1; background: #fff; padding: 2px 4px; height: 26px; margin-bottom: 4px; }
+  .lab .cell .l { display: block; font-size: 6.5px; color: #5b6b7d; text-transform: uppercase; }
+  .lab td { border: 1px solid #b9c6d1; background: #fff; height: 30px; vertical-align: top; padding: 2px 4px; }
+  .lab td .l { font-size: 6.5px; color: #5b6b7d; text-transform: uppercase; }
+  .sig { margin-top: 92px; display: flex; gap: 40px; }   /* χώρος για τη σφραγίδα */
+  .sig div { flex: 1; border-top: 1px solid #888; padding-top: 3px; font-size: 7.5px; color: #666; text-align: center; }
+  /* Η σφραγίδα με την υπογραφή μπαίνει ΠΑΝΩ από τη γραμμή του υπευθύνου. */
+  .sig .me { position: relative; }
+  .sig .me img.stamp { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+                       height: 86px; margin-bottom: 1px; }
+  .entypo { font-size: 7.5px; color: #666; letter-spacing: .4px; margin-top: 2px; }
+  .foot { margin-top: 8px; display: flex; justify-content: space-between; font-size: 7.5px; color: #666; border-top: 1px solid #cfdae3; padding-top: 4px; }
+</style></head><body>
+<div class="wrap">
+{{YDATOGRAFIMA}}
+
+<div class="topbar">
+  {{LOGO_IMG}}
+  <div class="mid">
+    <h1>ΔΕΛΤΙΟ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ</h1>
+    <div class="sub">InCo — Εφαρμογές Δημόσιας Υγείας · Δελφών 140, 16561 Γλυφάδα · 210 9644310 · sales@in-co.gr</div>
+    <div class="eidos">{{EIDOS}}</div>
+    <div class="entypo">Έντυπο {{KODIKOS}}</div>
+  </div>
+  <div class="kod-box"><div class="lbl">ΛΗΨΗ ΔΕΙΓΜΑΤΩΝ</div><div class="val">{{IMER}}</div><div class="ora">{{ORA}}</div><div class="sep"></div><div class="lbl">ΠΑΡΑΔΟΣΗ ΔΕΙΓΜΑΤΩΝ</div><div class="val2">{{PARAD}}</div><div class="lbl aa">ΑΡ. ΔΕΛΤΙΟΥ</div><div class="val2" style="color:#2D3A4D">{{ARITHMOS}}</div></div>
+</div>
+
+<div class="cols">
+  <div>
+    <h2>ΣΤΟΙΧΕΙΑ</h2>
+    <div class="grid">
+      <!-- ⚠️ ΧΩΡΙΣ κωδικό πελάτη ΚΑΙ ΧΩΡΙΣ επωνυμία: στο εργαστήριο φαίνεται μόνο
+           το όνομα της εγκατάστασης — ξενοδοχείο (ρητό 20 & 23/09/2026). -->
+      <div class="item w2"><span class="l">Εγκατάσταση</span><span class="v">{{EGK}}</span></div>
+      <div class="item w2"><span class="l">Υπεύθυνος δειγματοληψίας</span><span class="v">{{YP}}</span></div>
+    </div>
+    <h2>ΑΙΤΟΥΜΕΝΕΣ ΑΝΑΛΥΣΕΙΣ</h2>
+    <div class="params"><b>{{EIDOS}}:</b> {{PARAMS}}</div>
+  </div>
+  <div>
+    <h2>ΣΥΜΠΛΗΡΩΝΕΤΑΙ ΑΠΟ ΤΟ ΕΡΓΑΣΤΗΡΙΟ</h2>
+    <div class="lab">
+      <div class="cell"><span class="l">Ημ. / ώρα παραλαβής</span></div>
+      <div class="cell"><span class="l">Κατάσταση δειγμάτων</span></div>
+      <div class="cell"><span class="l">Θερμοκρασία μεταφοράς</span></div>
+      <div class="cell" style="margin-bottom:0"><span class="l">Αρ. πρωτοκόλλου εργαστηρίου</span></div>
+    </div>
+  </div>
+</div>
+
+
+<h2>ΔΕΙΓΜΑΤΑ — {{PLITHOS}}</h2>
+{{DEIGMATA}}
+
+{{SIMEIOSEIS}}
+
+<div class="sig"><div class="me">{{SFRAGIDA}}<span>Υπεύθυνος δειγματοληψίας (InCo)</span></div><div>Παραλαβή από το εργαστήριο</div></div>
+  <!-- Έλεγχος εγγράφου (21/09/2026): σε ΟΛΑ τα PDF, ίδια τιμή με Αυτοψία/Πιστοποιητικό. -->
+  <div class="docCtrl" style="border-top:1px solid #999;margin-top:3px;padding-top:2px;font-size:8px;text-align:center;color:#333;font-family:Arial,Helvetica,sans-serif;">ΣΥΝΤΑΞΗ / ΕΓΚΡΙΣΗ : <b>ΑΡΧΙΜΗΔΗΣ Λ. ΤΡΥΦΩΝΙΔΗΣ</b> &nbsp;|&nbsp; ΕΚΔ. : <b>digital 01</b> &nbsp;|&nbsp; ΙΣΧΥΕΙ ΑΠΟ : <b>08/2026</b></div>
+<div class="foot"><span>Δελτίο δειγματοληψίας — συνοδεύει τα δείγματα στο εργαστήριο</span><span>Εκτυπώθηκε: {{PRINTED}}</span></div>
+</div>
+</body></html>
