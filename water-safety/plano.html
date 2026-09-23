@@ -62,7 +62,8 @@ function arithmos(xoros){
 }
 
 function render(d){
-  const sim = d.simeia || [], ep = d.episkepseis || [], met = d.metriseis || [];
+  let sim = d.simeia || [];
+  const ep = d.episkepseis || [], met = d.metriseis || [];
   const leg = ep.filter(x => x['ΕΙΔΟΣ'] === 'LEGIONELLA');
   if (!sim.length) {
     el.innerHTML = '<div class="card"><h2>ΠΛΑΝΟ</h2><div class="empty">Δεν έχουν καταγραφεί ' +
@@ -77,6 +78,13 @@ function render(d){
     if (!d2 || !x['ΣΗΜΕΙΟ_ID']) return;
     (imer[x['ΣΗΜΕΙΟ_ID']] = imer[x['ΣΗΜΕΙΟ_ID']] || {})[d2] = 1;
   });
+
+  // ⚠️ ΜΟΝΟ σημεία λεγεωνέλλας: όσα έχουν δείγμα λεγεωνέλλας, και όσα δεν έχουν
+  // δειγματιστεί ΠΟΤΕ (αυτά είναι τα δωμάτια του πλάνου που περιμένουν σειρά).
+  // Σημεία που υπάρχουν μόνο για πόσιμο/swab/κολυμβητική δεν ανήκουν εδώ.
+  const alla = {};
+  met.forEach(x => { if (x['ΣΗΜΕΙΟ_ID'] && !legIds[x['ΕΠΙΣΚΕΨΗ_ID']]) alla[x['ΣΗΜΕΙΟ_ID']] = 1; });
+  sim = sim.filter(s => imer[s['ΣΗΜΕΙΟ_ID']] || !alla[s['ΣΗΜΕΙΟ_ID']]);
 
   const exei3psifia = sim.some(s => (arithmos(s['ΧΩΡΟΣ']) || 0) >= 100);
   const omades = {};
