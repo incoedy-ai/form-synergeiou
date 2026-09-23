@@ -96,6 +96,25 @@ const EIDI = [
   { key: 'ΕΠΙΦΑΝΕΙΕΣ',  koumpi: 'SWAB TEST',    titlos: 'ΣΥΓΚΕΝΤΡΩΤΙΚΑ ΕΠΙΦΑΝΕΙΩΝ (SWAB TEST)',  metriseis: false }
 ];
 
+/* Η ΙΔΙΑ ανάλυση γράφεται αλλιώς ανά χρονιά και ανά εργαστήριο («Αερόβιοι 37 °C» /
+   «Micro-organisms enumeration @ 36±2°C», «E. coli» / «Escherichia coli»). Στον
+   συγκεντρωτικό πίνακα πρέπει να πέφτουν στην ΙΔΙΑ ΣΤΗΛΗ, αλλιώς βγαίνουν διπλές
+   μισοάδειες στήλες. Η ΕΠΙΚΕΦΑΛΙΔΑ μένει όπως τη γράφει το ΠΙΟ ΠΡΟΣΦΑΤΟ πιστοποιητικό
+   — καμία δική μας μετάφραση (ρητό χρήστη: «όπως είναι στο πιστοποιητικό»). */
+function kleidiPar(p){
+  const s = String(p).toLowerCase().replace(/\s+/g, ' ').trim();
+  if (/legionella/.test(s)) return 'legionella';
+  if (/clostridium|περφριγκ/.test(s)) return 'clostridium';
+  if (/enterococc|εντερόκοκκ/.test(s)) return 'enterococci';
+  if (/escherichia|e\.\s?coli/.test(s)) return 'ecoli';
+  if (/coliform|κολοβακτηρ/.test(s)) return 'coliforms';
+  if (/micro-?organism|αερόβι|αποικ/.test(s)) {
+    const t = (s.match(/\b(22|30|36|37)\b/) || [])[1];
+    return 'aerob' + (t === '36' ? '37' : (t || ''));    // 36±2°C = 37 °C, ίδια ανάλυση
+  }
+  return s;
+}
+
 // Το κλειδί του ΔΕΙΓΜΑΤΟΣ. Κρατάμε και εφεδρικό κλειδί, για την περίπτωση που το
 // φύλλο δεν έχει ακόμη τη στήλη ΔΕΙΓΜΑ_ID (παλιό push) — αλλιώς η σελίδα αδειάζει.
 const klidi = x => x['ΔΕΙΓΜΑ_ID'] ||
@@ -108,15 +127,15 @@ function deigmata(rows){
   rows.forEach(x => {
     const k = klidi(x);
     if (!m.has(k)) m.set(k, { x: x, res: {} });
-    if (x['ΠΑΡΑΜΕΤΡΟΣ']) m.get(k).res[x['ΠΑΡΑΜΕΤΡΟΣ']] = x;
+    if (x['ΠΑΡΑΜΕΤΡΟΣ']) m.get(k).res[kleidiPar(x['ΠΑΡΑΜΕΤΡΟΣ'])] = x;
   });
   return [...m.values()];
 }
 
-function pinakas(deig, pars, oria, metriseis){
+function pinakas(deig, pars, onoma, oria, metriseis){
   let h = '<div class="scroll"><table><tr><th>Σημείο</th>' +
           (metriseis ? '<th class="c">Νερό</th><th class="c">Τ °C</th><th class="c">Cl</th><th class="c">pH</th>' : '');
-  pars.forEach(p => h += '<th class="par c">' + esc(p) +
+  pars.forEach(p => h += '<th class="par c">' + esc(onoma[p]) +
     (oria[p] ? '<span class="orio">όριο ' + esc(oria[p]) + '</span>' : '') + '</th>');
   h += '</tr>';
   deig.forEach(s => {
@@ -146,12 +165,16 @@ function enotites(rows, metriseis){
   });
   const seira = [...anaEp.values()].sort((a, b) => a.imerominia < b.imerominia ? 1 : -1);
   // Οι στήλες ίδιες σε ΟΛΕΣ τις ενότητες, για να συγκρίνονται με το μάτι.
-  const pars = [], oria = {};
+  // ⚠️ Οι γραμμές έρχονται με την πιο πρόσφατη πρώτη, άρα η πρώτη διατύπωση που
+  // συναντάμε είναι του νεότερου πιστοποιητικού — αυτή μπαίνει επικεφαλίδα.
+  const pars = [], onoma = {}, oria = {};
   rows.forEach(x => {
-    const p = x['ΠΑΡΑΜΕΤΡΟΣ'];
-    if (!p) return;
-    if (pars.indexOf(p) < 0) { pars.push(p); oria[p] = katharo(x['ΟΡΙΟ'] || ''); }
-    else if (oria[p] !== katharo(x['ΟΡΙΟ'] || '')) oria[p] = '';   // διαφορετικό ανά σημείο
+    if (!x['ΠΑΡΑΜΕΤΡΟΣ']) return;
+    const k = kleidiPar(x['ΠΑΡΑΜΕΤΡΟΣ']), or = katharo(x['ΟΡΙΟ'] || '').trim();
+    if (pars.indexOf(k) < 0) {
+      pars.push(k); onoma[k] = x['ΠΑΡΑΜΕΤΡΟΣ'];
+      oria[k] = (or === '-' ? '' : or);
+    } else if (oria[k] !== (or === '-' ? '' : or)) oria[k] = '';   // διαφορετικό ανά σημείο
   });
   let h = '';
   seira.forEach((e, i) => {
@@ -165,7 +188,7 @@ function enotites(rows, metriseis){
             : xoris === d.length ? '<span class="none" style="color:#889">αναμονή αποτελεσμάτων</span>'
             : '<span class="ok">όλα εντός ορίων</span>' +
               (xoris ? ' <span class="n">· ' + xoris + ' σε αναμονή</span>' : '')) +
-         '</span></summary>' + pinakas(d, pars, oria, metriseis) + '</details>';
+         '</span></summary>' + pinakas(d, pars, onoma, oria, metriseis) + '</details>';
   });
   return h;
 }
