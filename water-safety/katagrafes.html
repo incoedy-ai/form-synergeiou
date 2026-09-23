@@ -42,6 +42,7 @@ summary .sp{margin-left:auto;font-size:11.5px}
 .tgl{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.5);
      border-radius:4px;font:inherit;font-size:11px;padding:2px 8px;cursor:pointer}
 .tgl:hover{background:rgba(255,255,255,.3)}
+.tgl[disabled]{background:#fff;color:var(--blue);border-color:#fff;cursor:default;font-weight:bold}
 .tiles{display:flex;gap:12px;flex-wrap:wrap}
 .tile{flex:1;min-width:150px;background:#f7fafc;border-left:4px solid var(--cyan);border-radius:6px;padding:10px 12px}
 .tile .l{font-size:11px;color:#778;text-transform:uppercase}
@@ -121,6 +122,15 @@ function kleidiPar(p){
 const klidi = x => x['ΔΕΙΓΜΑ_ID'] ||
   [x['ΕΠΙΣΚΕΨΗ_ID'], x['ΣΗΜΕΙΟ_ID'], x['ΧΩΡΟΣ'], x['ΣΗΜΕΙΟ'], x['ΝΕΡΟ']].join('|');
 
+/* ΣΕΙΡΑ ΣΗΜΕΙΩΝ: ΔΩΜΑΤΙΟ 1, ΔΩΜΑΤΙΟ 2, ΔΩΜΑΤΙΟ 10 — όχι 1, 10, 2 (ρητό 23/09/2026).
+   Το {numeric:true} συγκρίνει τα νούμερα ως νούμερα, όποια κι αν είναι η γραφή του
+   ξενοδοχείου (1 ή 001). Μέσα στο ίδιο σημείο: κρύο αρχή/επιστροφή, ζεστό αρχή/επιστροφή. */
+const NERA = ['Κ.Α', 'Κ.Ε', 'Ζ.Α', 'Ζ.Ε'];
+const taxiSimeiou = (a, b) =>
+  String(a['ΧΩΡΟΣ'] || '').localeCompare(String(b['ΧΩΡΟΣ'] || ''), 'el', { numeric: true }) ||
+  String(a['ΣΗΜΕΙΟ'] || '').localeCompare(String(b['ΣΗΜΕΙΟ'] || ''), 'el', { numeric: true }) ||
+  NERA.indexOf(a['ΝΕΡΟ']) - NERA.indexOf(b['ΝΕΡΟ']);
+
 /* Μία γραμμή ανά ΔΕΙΓΜΑ — οι παράμετροι γίνονται ΣΤΗΛΕΣ.
    Πριν, κάθε ανάλυση έπιανε δική της γραμμή: ένα δείγμα πόσιμου = 6 γραμμές. */
 function deigmata(rows){
@@ -164,18 +174,10 @@ function pinakas(deig, st, metriseis){
   return h + '</table></div>';
 }
 
-/* Μία πτυσσόμενη ενότητα ανά δειγματοληψία: ανοιχτή μόνο η τελευταία. */
-function enotites(rows, metriseis){
-  const anaEp = new Map();
-  rows.forEach(x => {
-    const k = x['ΕΠΙΣΚΕΨΗ_ID'];
-    if (!anaEp.has(k)) anaEp.set(k, { imerominia: x['ΗΜΕΡΟΜΗΝΙΑ'], rows: [] });
-    anaEp.get(k).rows.push(x);
-  });
-  const seira = [...anaEp.values()].sort((a, b) => a.imerominia < b.imerominia ? 1 : -1);
-  // Οι στήλες ίδιες σε ΟΛΕΣ τις ενότητες, για να συγκρίνονται με το μάτι.
-  // ⚠️ Οι γραμμές έρχονται με την πιο πρόσφατη πρώτη, άρα η πρώτη διατύπωση που
-  // συναντάμε είναι του νεότερου πιστοποιητικού — αυτή μπαίνει επικεφαλίδα.
+/* Οι ΣΤΗΛΕΣ ΑΝΑΛΥΣΕΩΝ, ίδιες σε όλες τις ενότητες ώστε να συγκρίνονται με το μάτι.
+   ⚠️ Οι γραμμές έρχονται με την πιο πρόσφατη πρώτη, άρα η πρώτη διατύπωση που
+   συναντάμε είναι του νεότερου πιστοποιητικού — αυτή μπαίνει επικεφαλίδα. */
+function stiles(rows){
   const st = { pars: [], onoma: {}, oria: {}, mon: {}, monMix: {} };
   rows.forEach(x => {
     if (!x['ΠΑΡΑΜΕΤΡΟΣ']) return;
@@ -191,9 +193,22 @@ function enotites(rows, metriseis){
       if (st.mon[k] !== u) st.monMix[k] = true;  // διαφορετικές μονάδες -> μένουν στα κελιά
     }
   });
+  return st;
+}
+
+/* ΟΨΗ 1 — ΑΝΑ ΔΕΙΓΜΑΤΟΛΗΨΙΑ: μία πτυσσόμενη ενότητα ανά ημερομηνία, ανοιχτή η τελευταία.
+   Απαντά στο «τι έδειξε η τελευταία δειγματοληψία». */
+function enotites(rows, st, metriseis){
+  const anaEp = new Map();
+  rows.forEach(x => {
+    const k = x['ΕΠΙΣΚΕΨΗ_ID'];
+    if (!anaEp.has(k)) anaEp.set(k, { imerominia: x['ΗΜΕΡΟΜΗΝΙΑ'], rows: [] });
+    anaEp.get(k).rows.push(x);
+  });
+  const seira = [...anaEp.values()].sort((a, b) => a.imerominia < b.imerominia ? 1 : -1);
   let h = '';
   seira.forEach((e, i) => {
-    const d = deigmata(e.rows);
+    const d = deigmata(e.rows).sort((p, q) => taxiSimeiou(p.x, q.x));
     const yp = e.rows.filter(x => +x['ΥΠΕΡΒΑΣΗ'] === 1).length;
     const xoris = d.filter(s => !Object.keys(s.res).length).length;
     h += '<details class="ep"' + (i === 0 ? ' open' : '') + '><summary><span class="arrow">▶</span>' +
@@ -206,6 +221,48 @@ function enotites(rows, metriseis){
          '</span></summary>' + pinakas(d, st, metriseis) + '</details>';
   });
   return h;
+}
+
+/* ΟΨΗ 2 — ΑΝΑ ΣΗΜΕΙΟ: κάθε σημείο μία γραμμή, στήλες οι ημερομηνίες.
+   Απαντά στο «τι έδειξε ΑΥΤΟ το σημείο όλα αυτά τα χρόνια».
+   Όπου η ανάλυση είναι μία (λεγεωνέλλα) το κελί δείχνει την ΤΙΜΗ· όπου είναι
+   πολλές (πόσιμο, swab) δείχνει ✓ / ✗ και οι τιμές φαίνονται στο δείκτη. */
+function anaSimeio(rows, st, metriseis){
+  const imerominies = [...new Set(rows.map(x => x['ΗΜΕΡΟΜΗΝΙΑ']))].sort().reverse();
+  const gram = new Map();
+  deigmata(rows).forEach(s => {
+    const x = s.x, k = [x['ΧΩΡΟΣ'] || '', x['ΣΗΜΕΙΟ'] || '', x['ΝΕΡΟ'] || ''].join('|');
+    if (!gram.has(k)) gram.set(k, { x: x, kata: {} });
+    gram.get(k).kata[x['ΗΜΕΡΟΜΗΝΙΑ']] = s;     // ένα δείγμα ανά σημείο & ημερομηνία
+  });
+  const seira = [...gram.values()].sort((a, b) => taxiSimeiou(a.x, b.x));
+
+  let h = '<div class="scroll"><table><tr><th>Σημείο</th>' + (metriseis ? '<th class="c">Νερό</th>' : '');
+  imerominies.forEach(d => h += '<th class="c">' + imer(d) + '</th>');
+  h += '</tr>';
+  seira.forEach(g => {
+    const x = g.x;
+    h += '<tr><td>' + esc([x['ΧΩΡΟΣ'], x['ΣΗΜΕΙΟ']].filter(Boolean).join(' · ')) + '</td>' +
+         (metriseis ? '<td class="c">' + esc(x['ΝΕΡΟ'] || '') + '</td>' : '');
+    imerominies.forEach(d => {
+      const s = g.kata[d];
+      if (!s) { h += '<td class="c"><span class="none">·</span></td>'; return; }
+      const res = st.pars.map(p => s.res[p]).filter(r => r && r['ΑΠΟΤΕΛΕΣΜΑ']);
+      if (!res.length) { h += '<td class="c" title="αναμονή αποτελεσμάτων">' +
+        '<span class="none" style="color:#aab">◌</span></td>'; return; }
+      const ekt = res.some(r => +r['ΥΠΕΡΒΑΣΗ'] === 1);
+      const titl = res.map(r => st.onoma[kleidiPar(r['ΠΑΡΑΜΕΤΡΟΣ'])] + ': ' +
+                   katharo(r['ΑΠΟΤΕΛΕΣΜΑ']) + ' ' + (r['ΜΟΝΑΔΑ'] || '')).join('\n');
+      const mesa = st.pars.length === 1 ? ekth(katharo(res[0]['ΑΠΟΤΕΛΕΣΜΑ']))
+                                        : (ekt ? '✗' : '✓');
+      h += '<td class="c" title="' + esc(titl) + '">' +
+           '<span class="' + (ekt ? 'bad' : 'ok') + '">' + mesa + '</span></td>';
+    });
+    h += '</tr>';
+  });
+  return h + '</table></div><div class="foot">· δεν έγινε δειγματοληψία · ◌ αναμονή αποτελεσμάτων' +
+         (st.pars.length === 1 ? '' : ' · ✓ εντός ορίων · ✗ εκτός ορίων — οι τιμές φαίνονται ' +
+          'αν αφήσεις τον δείκτη πάνω στο σημάδι') + '</div>';
 }
 
 function render(d){
@@ -244,11 +301,21 @@ function render(d){
     '<button class="tab' + (i === 0 ? ' on' : '') + '" data-k="' + e.key + '">' + e.koumpi +
     '<span class="n">' + e.episk + '</span></button>').join('') + '</div>';
 
+  // ΔΥΟ ΟΨΕΙΣ σε κάθε είδος — κρατάμε και τις δύο, όπως και στο πλάνο:
+  // «ανά δειγματοληψία» (τι έδειξε η τελευταία) και «ανά σημείο» (η πορεία του σημείου).
+  const OPSI = localStorage.getItem('ws_kat_opsi') === 'simeio' ? 'simeio' : 'imer';
   diathesima.forEach((e, i) => {
+    const st = stiles(e.rows);
     html += '<div class="card eidos" data-k="' + e.key + '"' + (i ? ' hidden' : '') + '><h2>' + e.titlos +
-            '<small>' + e.episk + (e.episk === 1 ? ' δειγματοληψία' : ' δειγματοληψίες') +
-            ' &nbsp;<button class="tgl">άνοιγμα όλων</button></small></h2>' +
-            enotites(e.rows, e.metriseis) + '</div>';
+            '<small><button class="tgl opsi" data-o="imer"' + (OPSI === 'imer' ? ' disabled' : '') +
+            '>ανά δειγματοληψία</button> <button class="tgl opsi" data-o="simeio"' +
+            (OPSI === 'simeio' ? ' disabled' : '') + '>ανά σημείο</button>' +
+            ' &nbsp;<button class="tgl ola"' + (OPSI === 'simeio' ? ' hidden' : '') +
+            '>άνοιγμα όλων</button></small></h2>' +
+            '<div class="opsi-imer"' + (OPSI === 'imer' ? '' : ' hidden') + '>' +
+              enotites(e.rows, st, e.metriseis) + '</div>' +
+            '<div class="opsi-simeio"' + (OPSI === 'simeio' ? '' : ' hidden') + '>' +
+              anaSimeio(e.rows, st, e.metriseis) + '</div></div>';
   });
 
   html += '<div class="foot" style="text-align:center">Ενημερώθηκε ' +
@@ -261,10 +328,21 @@ function render(d){
     el.querySelectorAll('.eidos').forEach(c => c.hidden = c.dataset.k !== b.dataset.k);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
-  el.querySelectorAll('.tgl').forEach(b => b.onclick = () => {
+  el.querySelectorAll('.tgl.ola').forEach(b => b.onclick = () => {
     const card = b.closest('.eidos'), anoixta = !card.querySelector('details:not([open])');
     card.querySelectorAll('details').forEach(d => d.open = !anoixta);
     b.textContent = anoixta ? 'άνοιγμα όλων' : 'κλείσιμο όλων';
+  });
+  // Η επιλογή όψης ισχύει για ΟΛΕΣ τις καρτέλες και κρατιέται για την επόμενη φορά.
+  el.querySelectorAll('.tgl.opsi').forEach(b => b.onclick = () => {
+    const o = b.dataset.o;
+    try { localStorage.setItem('ws_kat_opsi', o); } catch (e) {}
+    el.querySelectorAll('.eidos').forEach(card => {
+      card.querySelector('.opsi-imer').hidden = o !== 'imer';
+      card.querySelector('.opsi-simeio').hidden = o !== 'simeio';
+      card.querySelector('.tgl.ola').hidden = o !== 'imer';
+      card.querySelectorAll('.tgl.opsi').forEach(x => x.disabled = x.dataset.o === o);
+    });
   });
 }
 
