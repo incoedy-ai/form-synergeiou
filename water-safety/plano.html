@@ -39,6 +39,19 @@ td.nm small{display:block;font-weight:normal;color:#8a99a8;font-size:11px}
 .dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--green)}
 .none{color:#d6dee5}
 .tel{font-weight:bold;color:var(--navy)}
+/* --- η δεύτερη όψη: κουτάκια (ο χρήστης θα διαλέξει ποια βολεύει) --- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px}
+.pt{border:1px solid var(--line);border-left:5px solid #cfd8e0;border-radius:6px;padding:8px 10px;background:#fbfdff}
+.pt.egine{border-left-color:var(--green);background:#f6fbf7}
+.pt.pote{border-left-color:var(--red);background:#fff7f7}
+.pt .nm{font-weight:bold;color:var(--navy);font-size:13px}
+.pt .kt{font-size:11.5px;margin-top:3px;color:#667}
+.pt.pote .kt{color:var(--red);font-weight:bold}
+.pt .kt.palies{color:#8a99a8;font-size:11px}
+.opsi{display:flex;gap:8px;margin-bottom:12px}
+.opsi button{border:1px solid var(--line);background:#fff;color:var(--navy);font-family:inherit;
+             font-weight:bold;font-size:12.5px;border-radius:6px;padding:9px 16px;cursor:pointer}
+.opsi button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 .foot{font-size:11px;color:#778;padding:10px 14px}
 .empty{padding:16px;color:#889}
 .mini{font-size:11.5px;color:#556;margin-top:6px}
@@ -142,40 +155,75 @@ function render(d){
     '<div class="mini">Κάλυψη δικτύου ' + Math.round(eginan * 100 / synolo) + '% · τα σημεία ' +
     'εναλλάσσονται σε κάθε δειγματοληψία ώστε με τον χρόνο να ελεγχθούν όλα.</div></div></div>';
 
-  // ⚠️ ΕΝΑΣ συγκεντρωτικός πίνακας: γραμμή ανά σημείο, στήλη ανά δειγματοληψία,
-  // κουκκίδα όπου πάρθηκε δείγμα (πρόταση του χρήστη 23/09/2026 — πιο εύχρηστο από
-  // τα κουτάκια). Ο όροφος μπαίνει ως γραμμή-τίτλος μέσα στον ίδιο πίνακα.
+  // ⚠️ ΔΥΟ ΟΨΕΙΣ, ο χρήστης διαλέγει: «δεν ξέρω τι είναι πιο βολικό οπτικά· με τα
+  // κουτάκια απέφυγα πολύ διάβασμα» (23/09/2026). Πίνακας με κουκκίδες ή κουτάκια.
+  // Η επιλογή θυμάται στον browser του καθενός.
   const stiles = leg.slice().sort((a, b) => a['ΗΜΕΡΟΜΗΝΙΑ'] < b['ΗΜΕΡΟΜΗΝΙΑ'] ? -1 : 1);
-  html += '<div class="card"><h2>ΠΛΑΝΟ ΑΝΑ ΣΗΜΕΙΟ<small>' + stiles.length +
-          ' δειγματοληψίες λεγεωνέλλας</small></h2><div class="body"><div class="scroll">' +
-          '<table><tr><th>Σημείο</th>' +
-          stiles.map(x => '<th class="c">' + minas(x['ΗΜΕΡΟΜΗΝΙΑ']).slice(3) + '</th>').join('') +
-          '<th class="c">Φορές</th></tr>';
-  seira.forEach(g => {
+
+  function omada(g){
     const lista = omades[g].slice().sort((a, b) =>
       (arithmos(a['ΧΩΡΟΣ']) || 9999) - (arithmos(b['ΧΩΡΟΣ']) || 9999) ||
       String(a['ΧΩΡΟΣ']).localeCompare(String(b['ΧΩΡΟΣ']), 'el'));
-    const n_ok = lista.filter(s => imer[s['ΣΗΜΕΙΟ_ID']]).length;
     const nums = lista.map(s => ({ n: arithmos(s['ΧΩΡΟΣ']), t: arithmosKeimeno(s['ΧΩΡΟΣ']) }))
                       .filter(x => x.n !== null).sort((a, b) => a.n - b.n).map(x => x.t);
     const arithmitiko = /ΟΡΟΦΟΣ|ΙΣΟΓΕΙΟ|ΔΩΜΑΤΙΑ/.test(g);
-    const evros = (arithmitiko && nums.length) ? ' (' + (nums[0] === nums[nums.length - 1] ? nums[0]
-                  : nums[0] + '–' + nums[nums.length - 1]) + ')' : '';
-    html += '<tr class="orofos"><td colspan="' + (stiles.length + 2) + '">' + esc(g) + evros +
-            '<span>ελέγχθηκαν ' + n_ok + ' από ' + lista.length + '</span></td></tr>';
-    lista.forEach(s => {
+    return { lista: lista,
+             n_ok: lista.filter(s => imer[s['ΣΗΜΕΙΟ_ID']]).length,
+             evros: (arithmitiko && nums.length) ? ' (' + (nums[0] === nums[nums.length - 1] ? nums[0]
+                    : nums[0] + '–' + nums[nums.length - 1]) + ')' : '' };
+  }
+  function onomaSimeiou(s){
+    return String(s['ΧΩΡΟΣ'] || '').replace(/^ΔΩΜΑΤ[ΙΕ]?[ΟI]\s*/i, 'Δωμάτιο ');
+  }
+
+  // --- όψη Α: ένας πίνακας, στήλη ανά δειγματοληψία, κουκκίδα όπου πάρθηκε δείγμα
+  let pin = '<div class="card"><h2>ΠΛΑΝΟ ΑΝΑ ΣΗΜΕΙΟ<small>' + stiles.length +
+            ' δειγματοληψίες λεγεωνέλλας</small></h2><div class="body"><div class="scroll">' +
+            '<table><tr><th>Σημείο</th>' +
+            stiles.map(x => '<th class="c">' + minas(x['ΗΜΕΡΟΜΗΝΙΑ']).slice(3) + '</th>').join('') +
+            '<th class="c">Φορές</th></tr>';
+  seira.forEach(g => {
+    const o = omada(g);
+    pin += '<tr class="orofos"><td colspan="' + (stiles.length + 2) + '">' + esc(g) + o.evros +
+           '<span>ελέγχθηκαν ' + o.n_ok + ' από ' + o.lista.length + '</span></td></tr>';
+    o.lista.forEach(s => {
       const dates = imer[s['ΣΗΜΕΙΟ_ID']] || {};
       const n = Object.keys(dates).length;
-      const onoma = String(s['ΧΩΡΟΣ'] || '').replace(/^ΔΩΜΑΤ[ΙΕ]?[ΟI]\s*/i, 'Δωμάτιο ');
-      html += '<tr' + (n ? '' : ' class="pote"') + '><td class="nm">' +
-              (+s['ΚΡΙΣΙΜΟ'] ? '★ ' : '') + esc(onoma) +
-              (s['ΣΗΜΕΙΟ'] ? '<small>' + esc(s['ΣΗΜΕΙΟ']) + '</small>' : '') + '</td>' +
-              stiles.map(x => '<td class="c">' + (dates[x['ΗΜΕΡΟΜΗΝΙΑ']]
-                ? '<span class="dot"></span>' : '<span class="none">·</span>') + '</td>').join('') +
-              '<td class="c ' + (n ? 'tel' : 'none') + '">' + (n || '—') + '</td></tr>';
+      pin += '<tr' + (n ? '' : ' class="pote"') + '><td class="nm">' +
+             (+s['ΚΡΙΣΙΜΟ'] ? '★ ' : '') + esc(onomaSimeiou(s)) +
+             (s['ΣΗΜΕΙΟ'] ? '<small>' + esc(s['ΣΗΜΕΙΟ']) + '</small>' : '') + '</td>' +
+             stiles.map(x => '<td class="c">' + (dates[x['ΗΜΕΡΟΜΗΝΙΑ']]
+               ? '<span class="dot"></span>' : '<span class="none">·</span>') + '</td>').join('') +
+             '<td class="c ' + (n ? 'tel' : 'none') + '">' + (n || '—') + '</td></tr>';
     });
   });
-  html += '</table></div></div></div>';
+  pin += '</table></div></div></div>';
+
+  // --- όψη Β: κουτάκια ανά όροφο (λιγότερο διάβασμα)
+  let kout = '';
+  seira.forEach(g => {
+    const o = omada(g);
+    let mesa = '<div class="grid">';
+    o.lista.forEach(s => {
+      const dates = Object.keys(imer[s['ΣΗΜΕΙΟ_ID']] || {}).sort();
+      mesa += '<div class="pt ' + (dates.length ? 'egine' : 'pote') + '">' +
+              (+s['ΚΡΙΣΙΜΟ'] ? '<span style="float:right">★</span>' : '') +
+              '<div class="nm">' + esc(onomaSimeiou(s)) + '</div>' +
+              '<div class="kt">' + (dates.length
+                ? '✓ ' + minas(dates[dates.length - 1]) +
+                  (dates.length > 1 ? ' · ' + dates.length + ' φορές' : '')
+                : 'δεν έχει ελεγχθεί') + '</div>' +
+              (dates.length > 1 ? '<div class="kt palies">' +
+                 dates.slice(0, -1).reverse().map(minas).join(' · ') + '</div>' : '') +
+              (s['ΣΗΜΕΙΟ'] ? '<div class="kt">' + esc(s['ΣΗΜΕΙΟ']) + '</div>' : '') + '</div>';
+    });
+    kout += '<div class="card"><h2>' + esc(g) + o.evros + '<small>ελέγχθηκαν ' + o.n_ok +
+            ' από ' + o.lista.length + '</small></h2><div class="body">' + mesa + '</div></div></div>';
+  });
+
+  html += '<div class="opsi"><button id="bPin">Πίνακας με κουκκίδες</button>' +
+          '<button id="bKout">Κουτάκια</button></div>' +
+          '<div id="opsiPin">' + pin + '</div><div id="opsiKout">' + kout + '</div>';
 
   html += '<div class="foot" style="text-align:center">Κάθε στήλη είναι μία δειγματοληψία· ' +
           'η κουκκίδα σημαίνει ότι πάρθηκε δείγμα από εκείνο το σημείο. Με κόκκινο φόντο ' +
@@ -183,6 +231,19 @@ function render(d){
           'δειγματοληψίες και τα αποτελέσματα →</a><br>Ενημερώθηκε ' +
           new Date().toLocaleString('el-GR') + ' · InCo — Δελφών 140, Γλυφάδα · 210 9644310</div>';
   el.innerHTML = html;
+
+  function deixe(poia){
+    document.getElementById('opsiPin').style.display = poia === 'pinakas' ? '' : 'none';
+    document.getElementById('opsiKout').style.display = poia === 'pinakas' ? 'none' : '';
+    document.getElementById('bPin').className = poia === 'pinakas' ? 'on' : '';
+    document.getElementById('bKout').className = poia === 'pinakas' ? '' : 'on';
+    try { localStorage.setItem('ws_plano_opsi', poia); } catch (e) {}
+  }
+  document.getElementById('bPin').onclick = function(){ deixe('pinakas'); };
+  document.getElementById('bKout').onclick = function(){ deixe('koutakia'); };
+  let proti = 'pinakas';
+  try { proti = localStorage.getItem('ws_plano_opsi') || 'pinakas'; } catch (e) {}
+  deixe(proti);
 }
 
 if (!SCRIPT || !KOD) {
