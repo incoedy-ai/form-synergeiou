@@ -86,6 +86,7 @@ const el = document.getElementById('wrap');
 const imer = s => s ? s.slice(8,10) + '/' + s.slice(5,7) + '/' + s.slice(0,4) : '';
 const num = v => (v === '' || v === null || v === undefined) ? '<span class="none">—</span>' :
                  String(v).replace('.', ',');
+const ekth = s => esc(s).replace(/\^(-?\d+)/g, '<sup>$1</sup>');
 const katharo = v => String(v == null ? '' : v).replace(/\s*\((?:i|ii|iii|iv|\*)\)/g, '');
 if (PELATIS) document.getElementById('titlos').textContent = 'ΣΥΓΚΕΝΤΡΩΤΙΚΑ WATER SAFETY — ' + PELATIS;
 
@@ -132,11 +133,18 @@ function deigmata(rows){
   return [...m.values()];
 }
 
-function pinakas(deig, pars, onoma, oria, metriseis){
+function pinakas(deig, st, metriseis){
+  const pars = st.pars;
   let h = '<div class="scroll"><table><tr><th>Σημείο</th>' +
           (metriseis ? '<th class="c">Νερό</th><th class="c">Τ °C</th><th class="c">Cl</th><th class="c">pH</th>' : '');
-  pars.forEach(p => h += '<th class="par c">' + esc(onoma[p]) +
-    (oria[p] ? '<span class="orio">όριο ' + esc(oria[p]) + '</span>' : '') + '</th>');
+  pars.forEach(p => {
+    // Η ΜΟΝΑΔΑ και το ΟΡΙΟ μπαίνουν στην επικεφαλίδα — ίδια για όλη τη στήλη, δεν
+    // υπάρχει λόγος να επαναλαμβάνονται σε κάθε κελί.
+    const ypo = [st.monMix[p] ? '' : st.mon[p], st.oria[p] ? 'όριο ' + st.oria[p] : '']
+                .filter(Boolean).join(' · ');
+    h += '<th class="par c">' + esc(st.onoma[p]) +
+         (ypo ? '<span class="orio">' + esc(ypo) + '</span>' : '') + '</th>';
+  });
   h += '</tr>';
   deig.forEach(s => {
     const x = s.x, simeio = [x['ΧΩΡΟΣ'], x['ΣΗΜΕΙΟ']].filter(Boolean).join(' · ');
@@ -147,7 +155,8 @@ function pinakas(deig, pars, onoma, oria, metriseis){
     pars.forEach(p => {
       const r = s.res[p];
       if (!r || !r['ΑΠΟΤΕΛΕΣΜΑ']) { h += '<td class="c"><span class="none">—</span></td>'; return; }
-      const t = esc(katharo(r['ΑΠΟΤΕΛΕΣΜΑ'])) + (r['ΜΟΝΑΔΑ'] ? ' ' + esc(r['ΜΟΝΑΔΑ']) : '');
+      const t = ekth(katharo(r['ΑΠΟΤΕΛΕΣΜΑ'])) +
+                (st.monMix[p] && r['ΜΟΝΑΔΑ'] ? ' ' + esc(r['ΜΟΝΑΔΑ']) : '');
       h += '<td class="c">' + (+r['ΥΠΕΡΒΑΣΗ'] === 1 ? '<span class="bad">' + t + '</span>' : t) + '</td>';
     });
     h += '</tr>';
@@ -167,14 +176,18 @@ function enotites(rows, metriseis){
   // Οι στήλες ίδιες σε ΟΛΕΣ τις ενότητες, για να συγκρίνονται με το μάτι.
   // ⚠️ Οι γραμμές έρχονται με την πιο πρόσφατη πρώτη, άρα η πρώτη διατύπωση που
   // συναντάμε είναι του νεότερου πιστοποιητικού — αυτή μπαίνει επικεφαλίδα.
-  const pars = [], onoma = {}, oria = {};
+  const st = { pars: [], onoma: {}, oria: {}, mon: {}, monMix: {} };
   rows.forEach(x => {
     if (!x['ΠΑΡΑΜΕΤΡΟΣ']) return;
-    const k = kleidiPar(x['ΠΑΡΑΜΕΤΡΟΣ']), or = katharo(x['ΟΡΙΟ'] || '').trim();
-    if (pars.indexOf(k) < 0) {
-      pars.push(k); onoma[k] = x['ΠΑΡΑΜΕΤΡΟΣ'];
-      oria[k] = (or === '-' ? '' : or);
-    } else if (oria[k] !== (or === '-' ? '' : or)) oria[k] = '';   // διαφορετικό ανά σημείο
+    const k = kleidiPar(x['ΠΑΡΑΜΕΤΡΟΣ']), u = String(x['ΜΟΝΑΔΑ'] || '').trim();
+    let or = katharo(x['ΟΡΙΟ'] || '').trim();
+    if (or === '-') or = '';
+    if (st.pars.indexOf(k) < 0) {
+      st.pars.push(k); st.onoma[k] = x['ΠΑΡΑΜΕΤΡΟΣ']; st.oria[k] = or; st.mon[k] = u;
+    } else {
+      if (!st.oria[k]) st.oria[k] = or;          // κρατάει το πιο πρόσφατο μη κενό όριο
+      if (st.mon[k] !== u) st.monMix[k] = true;  // διαφορετικές μονάδες -> μένουν στα κελιά
+    }
   });
   let h = '';
   seira.forEach((e, i) => {
@@ -188,7 +201,7 @@ function enotites(rows, metriseis){
             : xoris === d.length ? '<span class="none" style="color:#889">αναμονή αποτελεσμάτων</span>'
             : '<span class="ok">όλα εντός ορίων</span>' +
               (xoris ? ' <span class="n">· ' + xoris + ' σε αναμονή</span>' : '')) +
-         '</span></summary>' + pinakas(d, pars, onoma, oria, metriseis) + '</details>';
+         '</span></summary>' + pinakas(d, st, metriseis) + '</details>';
   });
   return h;
 }
