@@ -180,8 +180,10 @@ function enotites(rows, metriseis){
   rows.forEach(x => {
     if (!x['ΠΑΡΑΜΕΤΡΟΣ']) return;
     const k = kleidiPar(x['ΠΑΡΑΜΕΤΡΟΣ']), u = String(x['ΜΟΝΑΔΑ'] || '').trim();
-    let or = katharo(x['ΟΡΙΟ'] || '').trim();
-    if (or === '-') or = '';
+    // ⚠️ Το εργαστήριο χώνει και την αβεβαιότητα μέτρησης μέσα στο όριο
+    // («U:[7x10^1 - 9,2x10^1] max 200») — στην επικεφαλίδα θέλουμε μόνο το όριο.
+    let or = katharo(x['ΟΡΙΟ'] || '').replace(/U\s*:\s*\[[^\]]*\]/g, '').trim();
+    if (or === '-' || or === '') or = '';
     if (st.pars.indexOf(k) < 0) {
       st.pars.push(k); st.onoma[k] = x['ΠΑΡΑΜΕΤΡΟΣ']; st.oria[k] = or; st.mon[k] = u;
     } else {
