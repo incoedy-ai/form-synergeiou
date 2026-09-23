@@ -166,11 +166,24 @@ if (!SCRIPT || !KOD) {
   document.getElementById('katastasi').textContent =
     'Ο σύνδεσμος δεν είναι πλήρης — λείπει ο πελάτης. Ζήτησέ μας καινούργιο σύνδεσμο.';
 } else {
-  fetch(SCRIPT + '?action=katagrafes&kod=' + encodeURIComponent(KOD))
-    .then(r => r.json())
-    .then(d => { if (d && d.ok) render(d); else throw new Error((d && d.error) || 'άγνωστο'); })
-    .catch(e => { document.getElementById('katastasi').textContent =
-      'Δεν φορτώθηκαν τα δεδομένα (' + e.message + '). Δοκίμασε ξανά σε λίγο.'; });
+  // ⚠️ Το Google απαντά κάπου-κάπου 404 στην πρώτη κλήση (στιγμιαίο, φαίνεται και
+  // στα εργαλεία του Sync). Ξαναπροσπαθούμε τρεις φορές πριν πούμε ότι απέτυχε.
+  function fortose(prospatheia){
+    fetch(SCRIPT + '?action=katagrafes&kod=' + encodeURIComponent(KOD) + '&t=' + Date.now())
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(d => { if (d && d.ok) render(d); else throw new Error((d && d.error) || 'άγνωστο'); })
+      .catch(e => {
+        if (prospatheia < 3) {
+          document.getElementById('katastasi').textContent = 'Φόρτωση δεδομένων… (προσπάθεια ' +
+            (prospatheia + 1) + ')';
+          setTimeout(function(){ fortose(prospatheia + 1); }, 2500);
+          return;
+        }
+        document.getElementById('katastasi').textContent =
+          'Δεν φορτώθηκαν τα δεδομένα (' + e.message + '). Δοκίμασε ξανά σε λίγο.';
+      });
+  }
+  fortose(1);
 }
 </script>
 </body></html>
