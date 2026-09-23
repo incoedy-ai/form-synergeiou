@@ -30,6 +30,7 @@ body{font-family:Verdana,Arial,sans-serif;font-size:14px;background:var(--bg);co
 .pt .nm{font-weight:bold;color:var(--navy);font-size:13px}
 .pt .kt{font-size:11.5px;margin-top:3px;color:#667}
 .pt.pote .kt{color:var(--red);font-weight:bold}
+.pt .kt.palies{color:#8a99a8;font-size:11px}
 .foot{font-size:11px;color:#778;padding:10px 14px}
 .empty{padding:16px;color:#889}
 .mini{font-size:11.5px;color:#556;margin-top:6px}
@@ -132,6 +133,10 @@ function render(d){
               '<div class="kt">' + (dates.length
                 ? '✓ ' + minas(dates[dates.length - 1]) + (dates.length > 1 ? ' · ' + dates.length + ' φορές' : '')
                 : 'δεν έχει ελεγχθεί') + '</div>' +
+              // ⚠️ Όλες οι ημερομηνίες, όχι μόνο η τελευταία: ο χρήστης ρώτησε «πού θα
+              // βλέπω τις υπόλοιπες;» (23/09/2026). Νεότερη πρώτη.
+              (dates.length > 1 ? '<div class="kt palies">' +
+                 dates.slice(0, -1).reverse().map(minas).join(' · ') + '</div>' : '') +
               (s['ΣΗΜΕΙΟ'] ? '<div class="kt">' + esc(s['ΣΗΜΕΙΟ']) + '</div>' : '') + '</div>';
     });
     mesa += '</div>';
