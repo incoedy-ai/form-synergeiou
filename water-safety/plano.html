@@ -90,17 +90,23 @@ function render(d){
   const exei3psifia = sim.some(s => (arithmos(s['ΧΩΡΟΣ']) || 0) >= 100);
   const omades = {};
   sim.forEach(s => {
+    const x = String(s['ΧΩΡΟΣ'] || '').toUpperCase();
     const n = arithmos(s['ΧΩΡΟΣ']);
     let g;
-    if (n === null) g = 'ΚΟΙΝΟΧΡΗΣΤΟΙ ΧΩΡΟΙ';
+    // ⚠️ Το SPA είναι ΣΤΟ ΥΠΟΓΕΙΟ, ξεχωριστός χώρος — όχι ισόγειο (ρητό χρήστη
+    // 23/09/2026). Τα «SPA ΝΤΟΥΣ ΔΩΜΑΤΙΟ 1ο» έχουν αριθμό μέσα τους και αλλιώς θα
+    // έπεφταν λάθος στον 1ο όροφο ή στο ισόγειο.
+    if (x.indexOf('SPA') >= 0 || x.indexOf('ΥΠΟΓΕΙ') >= 0) g = 'ΥΠΟΓΕΙΟ · SPA';
+    else if (n === null) g = 'ΚΟΙΝΟΧΡΗΣΤΟΙ ΧΩΡΟΙ';
     else if (!exei3psifia) g = 'ΔΩΜΑΤΙΑ';
     else if (n < 100) g = 'ΙΣΟΓΕΙΟ';
     else g = Math.floor(n / 100) + 'ος ΟΡΟΦΟΣ';
     (omades[g] = omades[g] || []).push(s);
   });
   const seira = Object.keys(omades).sort((a, b) => {
-    const f = x => x === 'ΙΣΟΓΕΙΟ' ? 0 : (x === 'ΔΩΜΑΤΙΑ' ? -1 :
-              (x === 'ΚΟΙΝΟΧΡΗΣΤΟΙ ΧΩΡΟΙ' ? 999 : parseInt(x, 10)));
+    const f = x => x === 'ΥΠΟΓΕΙΟ · SPA' ? -2 : (x === 'ΔΩΜΑΤΙΑ' ? -1 :
+              (x === 'ΙΣΟΓΕΙΟ' ? 0 :
+              (x === 'ΚΟΙΝΟΧΡΗΣΤΟΙ ΧΩΡΟΙ' ? 999 : parseInt(x, 10))));
     return f(a) - f(b);
   });
 
@@ -140,8 +146,13 @@ function render(d){
               (s['ΣΗΜΕΙΟ'] ? '<div class="kt">' + esc(s['ΣΗΜΕΙΟ']) + '</div>' : '') + '</div>';
     });
     mesa += '</div>';
-    html += '<div class="card"><h2>' + esc(g) + '<small>ελέγχθηκαν ' + n_ok + ' από ' + lista.length +
-            '</small></h2><div class="body">' + mesa + '</div></div>';
+    // εύρος αριθμών δωματίων του ορόφου, σε παρένθεση (ρητό χρήστη 23/09/2026)
+    const nums = lista.map(s => arithmos(s['ΧΩΡΟΣ'])).filter(n => n !== null)
+                      .sort((a, b) => a - b);
+    const evros = nums.length ? ' (' + (nums[0] === nums[nums.length - 1] ? nums[0]
+                  : nums[0] + '–' + nums[nums.length - 1]) + ')' : '';
+    html += '<div class="card"><h2>' + esc(g) + evros + '<small>ελέγχθηκαν ' + n_ok + ' από ' +
+            lista.length + '</small></h2><div class="body">' + mesa + '</div></div>';
   });
 
   html += '<div class="foot" style="text-align:center">Πράσινο = έχει ελεγχθεί · κόκκινο = δεν έχει ' +
