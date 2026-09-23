@@ -992,8 +992,14 @@ function fillSkevasmata(selectEl, typVal, methVal) {
     if (typVal && meta && meta.typ !== typVal) return;
     if (methVal && meta && meta.meth && meta.meth.length && !meta.meth.includes(methVal)) return;
     const opt = document.createElement('option');
+    // ⚠️ Η ΤΙΜΗ μένει ΣΚΕΤΗ η ονομασία: ταξιδεύει στην Access και στο
+    // πιστοποιητικό (ταίριασμα με τον κωδικό της τελευταίας παρένθεσης).
+    // Η αντιστοίχιση μπαίνει ΜΟΝΟ στο κείμενο που βλέπει ο τεχνικός.
+    // 23/09/2026, ο χρήστης: «θέλω να μου εμφανίζει τις αντιστοιχίες των
+    // σκευασμάτων -- μέθοδος/σκεύασμα -- όταν επιλέγω σκευάσματα και υλικά».
     opt.value = s;
-    opt.textContent = s;
+    const meth = meta && meta.meth && meta.meth.length ? meta.meth.join(' / ') : '';
+    opt.textContent = meth ? s + '  ·  ' + meth : s;
     selectEl.appendChild(opt);
   });
   const stillThere = Array.from(selectEl.options).some(o => o.value === current);
