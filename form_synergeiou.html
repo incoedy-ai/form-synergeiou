@@ -868,15 +868,21 @@ function openCimex() {
 function openYacht() {
   const g = id => { const el = document.getElementById(id); return el ? (el.textContent || '').trim() : ''; };
   const clean = v => (v === '—' ? '' : v);
-  const qp = new URLSearchParams({
-    boat:    clean(g('inf-onomaskaf')),
-    port:    clean(g('inf-limani')) || clean(g('inf-diey-ef')),
-    date:    clean(g('inf-imer')),
-    kod:     clean(g('inf-kod')),
-    pelatis: clean(g('inf-pelatis')),
-    email:   clean(g('inf-email')),
-    script:  p.get('script') || ''
-  });
+  // Ξεκινάμε από ΟΛΑ όσα έστειλε η Access (όπως eCERT/ΑΥΤΟΨΙΑ) και γράφουμε από
+  // πάνω τις τρέχουσες τιμές. ⚠️ Έτσι περνάει και το `myinco`, που αποφασίζει αν
+  // η βεβαίωση θα σταλεί στον πελάτη ή θα ανέβει σιωπηλά στον φάκελό του.
+  const qp = new URLSearchParams(location.search);
+  const setp = function (k, v) {
+    if (v === undefined || v === null || v === '' || v === '—') qp.delete(k);
+    else qp.set(k, v);
+  };
+  setp('boat', clean(g('inf-onomaskaf')));
+  setp('port', clean(g('inf-limani')) || clean(g('inf-diey-ef')));
+  setp('date', clean(g('inf-imer')));
+  setp('kod', clean(g('inf-kod')));
+  setp('pelatis', clean(g('inf-pelatis')));
+  setp('email', clean(g('inf-email')));
+  setp('script', p.get('script'));
   openDoc('form_yacht_cert.html?' + qp.toString());
 }
 

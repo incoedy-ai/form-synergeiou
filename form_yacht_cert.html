@@ -176,12 +176,59 @@
   });
   document.title = "Yacht Certificate" + (boat ? " — " + boat : "");
 
-  // ⚠️ Η αποστολή δεν είναι συνδεδεμένη ακόμα: περιμένει την αλλαγή στο Apps
-  // Script, που γίνεται ΧΩΡΙΣΤΑ και με έγκριση (23/09/2026 μια αλλαγή εκεί
-  // ακύρωσε όλες τις άδειες και σταμάτησαν τα πιστοποιητικά).
-  document.getElementById("btnSend").addEventListener("click", function () {
-    alert("Η αποστολή δεν έχει συνδεθεί ακόμα.\n\n" +
-          "Προς το παρόν: Εκτύπωση / PDF.");
+  // ---------------- Αποστολή, με το ΙΔΙΟ μονοπάτι που έχει το eCERT ----------------
+  // Το Apps Script φτιάχνει το PDF από HTML και το στέλνει με GmailApp. Η
+  // αρχειοθέτηση στον φάκελο My InCo γίνεται ΜΟΝΗ ΤΗΣ: το file_docs_to_cloud.py
+  // σαρώνει κάθε 15' τα Απεσταλμένα και βάζει το συνημμένο στο
+  // «01.ΕΙΣΕΡΧΟΜΕΝΑ ΕΓΓΡΑΦΑ» του πελάτη -- δεν χρειάζεται τίποτα άλλο.
+  var PDF_SCRIPT = "https://script.google.com/macros/s/AKfycbwjkBC2VoM5n3guIKMNeOw9E43aTzH6IDgK0G05Y5dAEoM9LlXL32JzbrW8MM-GI-SSSA/exec";
+  var ARCHIVE_MAILBOX = "inco.edy@gmail.com";   // ο λογαριασμός που σαρώνει η αρχειοθέτηση
+
+  function standaloneHtml() {
+    var styleText = document.querySelector("style").textContent;
+    var klone = document.querySelector(".sheet").cloneNode(true);
+    var base = location.href.replace(/[^\/]*$/, "");
+
+    // ⚠️ Ο μετατροπέας του Google δεν ξέρει από πού ήρθε η σελίδα: κάθε σχετική
+    // διαδρομή πρέπει να γίνει ΑΠΟΛΥΤΗ, αλλιώς το PDF βγαίνει χωρίς εικόνες.
+    Array.prototype.forEach.call(klone.querySelectorAll("img"), function (im) {
+      var s = im.getAttribute("src");
+      if (s && !/^(https?:|data:)/.test(s)) im.setAttribute("src", base + s);
+    });
+    // ⚠️ ΚΑΙ μέσα στο CSS: το υδατογράφημα είναι background-image, δεν είναι <img>,
+    // οπότε ο βρόχος από πάνω ΔΕΝ το πιάνει. Χωρίς αυτό χανόταν αθόρυβα.
+    styleText = styleText.replace(/url\((['"]?)(?!https?:|data:)([^'")]+)\1\)/g,
+                                  function (_, q1, p1) { return 'url("' + base + p1 + '")'; });
+
+    return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' +
+           styleText + '</style></head><body>' + klone.outerHTML + '</body></html>';
+  }
+
+  document.getElementById("btnSend").addEventListener("click", async function () {
+    var btn = this;
+    // Ίδιος κανόνας με το eCERT: όποιος έχει My InCo ΔΕΝ ειδοποιείται με email --
+    // το έγγραφο ανεβαίνει στον φάκελό του και το βλέπει μόνος του.
+    var pou = q.get("myinco") === "1" ? ARCHIVE_MAILBOX : (q.get("email") || "").trim();
+    if (!pou) { alert("Δεν υπάρχει email παραλήπτη."); return; }
+    var bt = boat || document.querySelector('.fill[data-k="boat"]').textContent.trim();
+    if (!bt) { alert("Συμπλήρωσε πρώτα το όνομα του σκάφους."); return; }
+    var palio = btn.textContent;
+    btn.disabled = true; btn.textContent = "Αποστολή…";
+    try {
+      await fetch(PDF_SCRIPT, {
+        method: "POST", mode: "no-cors",
+        body: JSON.stringify({ form: "sendPdf", doc: "yacht", email: pou,
+                               pelatis: q.get("pelatis") || bt,
+                               kod: q.get("kod") || "", html: standaloneHtml() })
+      });
+      alert(q.get("myinco") === "1"
+        ? "Η βεβαίωση ανεβαίνει στον φάκελο My InCo του πελάτη.\n\nΔΕΝ του στάλθηκε email — τη βλέπει μόνος του."
+        : "Στάλθηκε στο " + pou + " — έλεγξε το inbox σε λίγο.");
+    } catch (e) {
+      alert("Σφάλμα αποστολής: " + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = palio;
+    }
   });
 })();
 </script>
