@@ -53,13 +53,18 @@
      το έτοιμο υδατογράφημα του server:
      Z:\COREL - ΔΗΜΙΟΥΡΓΙΚΑ\2026\LOGOS\ΥΔΑΤΟΓΡΑΦΗΜΑΤΑ\ΥΔΑΤΟΓΡΑΔΗΜΑ ΓΙΑ ΚΟΤΕΡΑ.png
      1585x2867, με τη διαφάνεια (31%) ΨΗΜΕΝΗ μέσα -- μην βάλεις κι άλλη opacity. */
-  .sheet {
-    background-image:url("yacht_watermark.png");
-    background-repeat:no-repeat;
-    background-position:center 54%;
-    /* Το αρχείο του server ειναι 1585x2867 (ψηλο), οποτε το ορίζουμε ΚΑΤΑ ΥΨΟΣ. */
-    background-size:auto 174mm;
+  /* ⚠️⚠️ 25/09/2026 — ΠΡΑΓΜΑΤΙΚΗ ΕΙΚΟΝΑ, ΟΧΙ background-image. Ο μετατροπέας
+     HTML→PDF της Google (DriveApp) ΔΕΝ ζωγραφίζει φόντα CSS: το email έφτανε
+     στον πελάτη ΧΩΡΙΣ υδατογράφημα, ενώ στην οθόνη φαινόταν μια χαρά.
+     Ο λόγος που είχε γίνει φόντο ήταν ότι η εικόνα ξεχείλιζε και έβγαζε δεύτερη
+     κενή σελίδα -- αυτό το λύνει πλέον το overflow:hidden του .sheet. */
+  .sheet { overflow:hidden; }
+  img.ydato {
+    position:absolute; left:50%; top:54%; transform:translate(-50%, -50%);
+    height:174mm; width:auto; z-index:0; pointer-events:none;
   }
+  /* το κείμενο ΠΑΝΩ από το υδατογράφημα */
+  .head, h1, p.body, .sign, footer { position:relative; z-index:1; }
 
   /* ⚠️ 31 απο τα 153 σκαφη ΔΕΝ εχουν καταχωρημενο λιμανι, και 1 το εχει ελληνικα.
      Χωρις αυτο, η βεβαιωση εβγαινε «at ____». Τα τρια μεταβλητα πεδια (σκαφος,
@@ -104,6 +109,7 @@
 <div class="bar" style="justify-content:center; font-size:12px; color:#456;">Τα υπογραμμισμένα (σκάφος · λιμάνι · ημερομηνία) διορθώνονται με κλικ.</div>
 
 <div class="sheet">
+  <img class="ydato" src="yacht_watermark.png" alt="">
   <div class="head"><img src="yacht_header.png" alt=""></div>
 
   <h1>CERTIFICATE</h1>
@@ -224,6 +230,10 @@
         // ΔΕΔΟΜΕΝΩΝ» των φορμών — εκεί υπάρχει παλιό, ανενεργό αντίγραφό του.
         body: JSON.stringify({ form: "sendPdf", doc: "yacht", email: pou,
                                pelatis: q.get("pelatis") || bt,
+                               // ⚠️ Ο ΚΩΔΙΚΟΣ ΔΕΝ πάει στο όνομα αρχείου (χρήστης
+                               // 25/09/2026: «να έχει το όνομα του σκάφους»). Στέλνεται
+                               // όμως, γιατί το Apps Script τον βάζει στα υπόλοιπα έγγραφα.
+                               boat: bt,
                                kod: q.get("kod") || "", html: standaloneHtml() })
       });
       alert(q.get("myinco") === "1"
