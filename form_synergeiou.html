@@ -258,6 +258,8 @@
   <a id="lnkFeromo" href="#" target="_blank" style="display:none; text-decoration:none; padding:6px 14px; border-radius:6px; background:#17a8b8; color:white; font-size:12px; font-weight:bold;">Ε-Ε05</a>
   <a id="lnkEntomo" href="#" target="_blank" style="display:none; text-decoration:none; padding:6px 14px; border-radius:6px; background:#ffe600; color:#000; font-size:12px; font-weight:bold;">Ε-Ε06</a>
   <button id="btnCimex" onclick="openCimex()" style="display:none; padding:6px 14px; border-radius:6px; background:#8a4b2b; color:white; font-size:12px; font-weight:bold; border:none; cursor:pointer;">CIMEX</button>
+  <!-- Μονο σε ΣΚΑΦΟΣ: η αγγλικη βεβαιωση. Εμφανιζεται απο την adaptByCategory(). -->
+  <button id="btnYacht" onclick="openYacht()" style="display:none; padding:6px 14px; border-radius:6px; background:#0d5c7a; color:white; font-size:12px; font-weight:bold; border:none; cursor:pointer;">YACHT CERT</button>
 </div>
 
 <!-- ΣΤΟΙΧΕΙΑ ΡΑΝΤΕΒΟΥ + ΕΞΟΠΛΙΣΜΟΣ -->
@@ -644,6 +646,10 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
       const dief = document.getElementById('inf-diey-ef');
       const cur = (dief.textContent || '').trim();
       if (limani && (cur === '' || cur === '—')) dief.textContent = limani;
+
+      // Η αγγλικη βεβαιωση εκδιδεται ΜΟΝΟ για σκαφη (χρηστης 25/09/2026).
+      const by = document.getElementById('btnYacht');
+      if (by) by.style.display = 'inline-block';
     }
 
     if (isIdiotis) {
@@ -851,6 +857,27 @@ function openCimex() {
     script: p.get('script') || ''
   });
   openDoc('form_cimex.html?' + qp.toString());
+}
+
+// ---- YACHT CERT: αγγλικη βεβαιωση σκαφους ----
+// ⚠️ Το κουμπι υπαρχει ΜΟΝΟ σε πελατες ΚΑΤΗΓΟΡΙΑ = ΣΚΑΦΟΣ.
+// Η ημερομηνια ειναι του ραντεβου (inf-imer), οχι η σημερινη: η βεβαιωση λεει
+// «we proceeded on ...», δηλαδη ποτε εγινε η εφαρμογη.
+// Το λιμανι ερχεται απο το ΛΙΜΑΝΙ_ΕΛΛΙΜΕΝΙΣΜΟΥ· αν λειπει, πεφτουμε στη
+// διευθυνση εφαρμογης, που για τα σκαφη δειχνει ηδη το λιμανι.
+function openYacht() {
+  const g = id => { const el = document.getElementById(id); return el ? (el.textContent || '').trim() : ''; };
+  const clean = v => (v === '—' ? '' : v);
+  const qp = new URLSearchParams({
+    boat:    clean(g('inf-onomaskaf')),
+    port:    clean(g('inf-limani')) || clean(g('inf-diey-ef')),
+    date:    clean(g('inf-imer')),
+    kod:     clean(g('inf-kod')),
+    pelatis: clean(g('inf-pelatis')),
+    email:   clean(g('inf-email')),
+    script:  p.get('script') || ''
+  });
+  openDoc('form_yacht_cert.html?' + qp.toString());
 }
 
 // ---- ΛΙΣΤΑ ΣΚΕΥΑΣΜΑΤΩΝ ----

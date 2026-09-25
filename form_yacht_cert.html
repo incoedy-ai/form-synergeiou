@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yacht Certificate</title>
+<!--
+  ⚠️ 25/09/2026 — Αγγλική βεβαίωση σκάφους, για έκδοση ΑΠΟ ΤΟ TABLET.
+  Ο χρήστης: «θέλω να εκδίδεται η αγγλική βεβαίωση για τα σκάφη» από κουμπί μέσα
+  στην εντολή, «και να περάσουμε τη σφραγίδα την αγγλική με την υπογραφή».
+
+  Πιστό αντίγραφο της αναφοράς ΒΕΒΑΙΩΣΗ_ΣΚΑΦΩΝ_ENGLISH της Access: ίδια κεφαλίδα,
+  ίδιο κείμενο (από την Detail_Format), ίδιο υποσέλιδο. ΔΙΑΦΟΡΑ: εδώ μπαίνει και η
+  σκαναρισμένη σφραγίδα με την υπογραφή, που στην Access δεν υπήρχε.
+
+  Παράμετροι: ?boat=&port=&date=&kod=   (ημερομηνία ΠΠ/ΜΜ/ΕΕΕΕ· κενή = σήμερα)
+-->
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:#eef3f4; }
+  body { font-family:"Calibri","Segoe UI",Arial,sans-serif; color:#000; }
+
+  .sheet {
+    width:210mm; min-height:297mm; margin:12px auto; background:#fff;
+    padding:12mm 14mm 10mm; position:relative;
+    box-shadow:0 2px 14px rgba(0,0,0,.18);
+  }
+  .head img { width:100%; height:auto; display:block; }
+
+  h1 { text-align:center; font-size:17pt; font-weight:700; margin:16mm 0 8mm; }
+  p.body { font-size:12pt; line-height:1.55; margin:0 0 7mm; text-align:left; }
+  p.body b { font-weight:700; }
+
+/* ⚠️ Η σφραγίδα ΠΕΡΙΕΧΕΙ ήδη επωνυμία, όνομα και αριθμό άδειας. Αν μπει κάτω
+     από το τυπωμένο μπλοκ, το κείμενο γράφεται ΤΡΕΙΣ φορές. Μπαίνει λοιπόν
+     ΔΙΠΛΑ, όπως πέφτει η σφραγίδα σε υπογεγραμμένο χαρτί. */
+  /* ⚠️ Η σφραγίδα ήταν πολύ μεγάλη δίπλα στο τυπωμένο κείμενο και το «έπνιγε»
+     (χρήστης 25/09/2026: «να είναι συμμετρικά»). Μικρότερη σφραγίδα + λίγο
+     μεγαλύτερα γράμματα, ώστε τα δύο μπλοκ να έχουν παρόμοιο ύψος. */
+  .sign { margin-top:12mm; display:flex; align-items:center; gap:10mm; }
+  .sign .txt { flex:0 0 auto; }
+  .sign .co { font-weight:700; font-size:13pt; line-height:1.35; }
+  .sign .who { font-size:12.5pt; line-height:1.5; margin-top:2mm; }
+  .sign img.stamp { width:55mm; height:auto; }
+
+  /* ⚠️ Μεγάλο υδατογράφημα (χρήστης 25/09/2026) ως ΦΟΝΤΟ, όχι <img>.
+     Με εικόνα -- ακόμα και απόλυτα τοποθετημένη -- το Chrome έβγαζε ΔΕΥΤΕΡΗ
+     κενή σελίδα από το ξεχείλισμα. Το background δεν ξεχειλίζει ποτέ.
+
+     ⚠️ ΑΝΑΛΥΣΗ: το `yacht_watermark.png` ΔΕΝ βγαίνει από το PDF της Access (εκείνο
+     ήταν 263x477 και μεγεθυμένο ήταν «κάκκιστη ανάλυση», χρήστης 25/09/2026). Είναι
+     το έτοιμο υδατογράφημα του server:
+     Z:\COREL - ΔΗΜΙΟΥΡΓΙΚΑ\2026\LOGOS\ΥΔΑΤΟΓΡΑΦΗΜΑΤΑ\ΥΔΑΤΟΓΡΑΔΗΜΑ ΓΙΑ ΚΟΤΕΡΑ.png
+     1585x2867, με τη διαφάνεια (31%) ΨΗΜΕΝΗ μέσα -- μην βάλεις κι άλλη opacity. */
+  .sheet {
+    background-image:url("yacht_watermark.png");
+    background-repeat:no-repeat;
+    background-position:center 54%;
+    /* Το αρχείο του server ειναι 1585x2867 (ψηλο), οποτε το ορίζουμε ΚΑΤΑ ΥΨΟΣ. */
+    background-size:auto 174mm;
+  }
+
+  /* ⚠️ 31 απο τα 153 σκαφη ΔΕΝ εχουν καταχωρημενο λιμανι, και 1 το εχει ελληνικα.
+     Χωρις αυτο, η βεβαιωση εβγαινε «at ____». Τα τρια μεταβλητα πεδια (σκαφος,
+     λιμανι, ημερομηνια) διορθωνονται λοιπον πανω στο χαρτι πριν την εκτυπωση.
+     Δεν αποθηκευονται πουθενα -- ειναι μονο για το συγκεκριμενο χαρτι. */
+  .fill { font-weight:700; outline:none; }
+  .fill:empty::before { content:attr(data-ph); color:#b00; font-weight:400; }
+  @media screen {
+    .fill { border-bottom:1px dotted #9bb; padding:0 2px; background:#f6fbfc; }
+    .fill:focus { background:#eef7fa; border-bottom:1px solid #287B9B; }
+  }
+
+  footer {
+    position:absolute; left:14mm; right:14mm; bottom:8mm;
+    text-align:center; font-size:8.5pt; font-weight:700; color:#000;
+    border-top:0; white-space:nowrap;
+  }
+
+  .bar { max-width:210mm; margin:10px auto 0; display:flex; gap:8px;
+         justify-content:flex-end; padding:0 4px; }
+  .bar button {
+    font:inherit; font-size:14px; padding:9px 16px; border-radius:8px;
+    border:1px solid #287B9B; background:#287B9B; color:#fff; cursor:pointer;
+  }
+  .bar button.ghost { background:#fff; color:#287B9B; }
+  @media print {
+    body { background:#fff; }
+    /* ⚠️ ΟΧΙ min-height:auto -- τότε η σελίδα «μαζεύεται» στο ύψος του κειμένου
+       και το υποσέλιδο ανεβαίνει κάτω από την υπογραφή αντί να πάει στο πόδι
+       της A4. Κρατάμε ΑΚΡΙΒΩΣ 297mm. */
+    .sheet { margin:0; box-shadow:none; width:210mm; height:297mm; min-height:297mm; }
+    .bar { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <button class="ghost" onclick="window.print()">Εκτύπωση / PDF</button>
+  <button id="btnSend">Αποστολή στον πελάτη</button>
+</div>
+<div class="bar" style="justify-content:center; font-size:12px; color:#456;">Τα υπογραμμισμένα (σκάφος · λιμάνι · ημερομηνία) διορθώνονται με κλικ.</div>
+
+<div class="sheet">
+  <div class="head"><img src="yacht_header.png" alt=""></div>
+
+  <h1>CERTIFICATE</h1>
+
+  <p class="body" id="p1"></p>
+  <p class="body">Both Disinsecticides and Rodenticides which are used are approved by
+     <b>HELLENIC MINISTRY of RURAL DEVELOPMENT AND FOOD</b></p>
+  <p class="body" id="p3"></p>
+
+  <div class="sign">
+    <div class="txt">
+      <div class="co">InCo<br>Public Health Implementations</div>
+      <div class="who">
+        Archimidis L. Tryfonidis<br>
+        T.E Hygienist, MSc<br>
+        Public Health Professional<br>
+        Lic. Num 128762/2009
+      </div>
+    </div>
+    <img class="stamp" src="sfragida_en.png" alt="">
+  </div>
+
+  <footer>Δελφών 140 - Γλυφάδα - 165,61 / τηλ. 210-96.44.310 - κιν. 6988.60.12.13 /
+    email : sales@in-co.gr / www.in-co.gr</footer>
+</div>
+
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  function esc(s) {
+    return String(s || "").replace(/[&<>]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c];
+    });
+  }
+  var boat = esc(q.get("boat") || "").toUpperCase();
+  var port = esc(q.get("port") || "").toUpperCase();
+  var date = esc(q.get("date") || "");
+  if (!date) {
+    var d = new Date();
+    date = ("0" + d.getDate()).slice(-2) + "/" + ("0" + (d.getMonth() + 1)).slice(-2) +
+           "/" + d.getFullYear();
+  }
+  // Ίδιες ακριβώς φράσεις με τη Detail_Format της Access -- μην τις «βελτιώσεις».
+  // Τα μεταβλητα πεδια μπαινουν ως contenteditable: η Access δεν εχει παντα
+  // λιμανι (31 σκαφη κενο, 1 ελληνικα), οποτε συμπληρωνεται εδω πριν τυπωθει.
+  function fld(k, v, ph) {
+    return '<span class="fill" contenteditable="true" spellcheck="false" data-k="' +
+           k + '" data-ph="' + ph + '">' + v + '</span>';
+  }
+  document.getElementById("p1").innerHTML =
+    "InCo &ndash; Public Health Implementations is certifying that we proceeded on " +
+    fld("date", date, "__/__/____") + " at " + fld("port", port, "PORT") +
+    " boarded " + fld("boat", boat, "BOAT NAME") +
+    " and carried out <b>Disinsection &ndash; Rodentification</b> to all ship area.";
+  document.getElementById("p3").innerHTML =
+    "Also <b>InCo &ndash; Public Health Implementations</b> is certifying that " +
+    fld("boat", boat, "BOAT NAME") + " is <b>CLEAR of Insects or Rodents</b>.";
+
+  // Το ονομα του σκαφους γραφεται ΔΥΟ φορες -- οσο διορθωνεται η μια, ακολουθει η αλλη.
+  document.addEventListener("input", function (e) {
+    var el = e.target;
+    if (!el.classList || !el.classList.contains("fill")) return;
+    if (el.dataset.k === "boat") {
+      var t = el.textContent;
+      Array.prototype.forEach.call(
+        document.querySelectorAll('.fill[data-k="boat"]'),
+        function (o) { if (o !== el) o.textContent = t; });
+      document.title = "Yacht Certificate" + (t ? " — " + t : "");
+    }
+  });
+  document.title = "Yacht Certificate" + (boat ? " — " + boat : "");
+
+  // ⚠️ Η αποστολή δεν είναι συνδεδεμένη ακόμα: περιμένει την αλλαγή στο Apps
+  // Script, που γίνεται ΧΩΡΙΣΤΑ και με έγκριση (23/09/2026 μια αλλαγή εκεί
+  // ακύρωσε όλες τις άδειες και σταμάτησαν τα πιστοποιητικά).
+  document.getElementById("btnSend").addEventListener("click", function () {
+    alert("Η αποστολή δεν έχει συνδεθεί ακόμα.\n\n" +
+          "Προς το παρόν: Εκτύπωση / PDF.");
+  });
+})();
+</script>
+</body>
+</html>
