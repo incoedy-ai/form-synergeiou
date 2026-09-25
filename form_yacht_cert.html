@@ -217,7 +217,13 @@
     try {
       await fetch(PDF_SCRIPT, {
         method: "POST", mode: "no-cors",
-        body: JSON.stringify({ form: "sendPdf", doc: "yacht", email: pou,
+        // ⚠️ doc:"ecert" ΕΠΙΤΗΔΕΣ, όχι "yacht". Το Apps Script που στέλνει τα PDF
+        // ξέρει μόνο "ecert" και "autopsia"· οτιδήποτε άλλο πέφτει στο «Έκθεση
+        // Αυτοψίας», που θα ήταν ΛΑΘΟΣ τίτλος. Με "ecert" το email γράφει
+        // «Πιστοποιητικό Εφαρμογών», που είναι σωστό — και δεν χρειάζεται καμία
+        // αλλαγή στο Apps Script (25/09/2026: ο κώδικας αποστολής ζει σε ΑΛΛΟ,
+        // αυτόνομο έργο, όχι στο «ΒΑΣΗ ΔΕΔΟΜΕΝΩΝ» των φορμών).
+        body: JSON.stringify({ form: "sendPdf", doc: "ecert", email: pou,
                                pelatis: q.get("pelatis") || bt,
                                kod: q.get("kod") || "", html: standaloneHtml() })
       });
