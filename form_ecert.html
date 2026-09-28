@@ -523,6 +523,25 @@ function buildStandaloneHtml() {
 
 // Ο λογαριασμός που στέλνει και του οποίου τα Απεσταλμένα σαρώνει η αρχειοθέτηση.
 const ARCHIVE_MAILBOX = 'inco.edy@gmail.com';
+const SYNERGEIO_SCRIPT = 'https://script.google.com/macros/s/AKfycby0DVDdrddETKpizq8JQgGQs3SDRyRNhypnFA7--Q2XtsT6qmisLiR93Gc4b2MkuHcG/exec';
+
+// ⚠️⚠️ 28/09/2026 — «ΕΧΕΙ My InCo;» ΡΩΤΙΕΤΑΙ ΤΩΡΑ, ΟΧΙ ΑΠΟ ΤΟΝ ΣΥΝΔΕΣΜΟ.
+// Η παράμετρος myinco= γράφεται από την Access όταν κλείνεται το ΡΑΝΤΕΒΟΥ και μένει
+// παγωμένη. Ο Α794 (MY ICE) απέκτησε φάκελο 12 λεπτά μετά· τρεις μέρες αργότερα ο
+// τεχνικός άνοιξε τον ίδιο σύνδεσμο και τα έγγραφα έφυγαν στο email του καπετάνιου
+// αντί να ανέβουν σιωπηλά στον φάκελό του.
+// Αν το φύλλο δεν απαντήσει, κρατάμε ό,τι έλεγε ο σύνδεσμος — ποτέ σιωπηλή αλλαγή.
+async function exeiMyIncoTora(kod, efedriko) {
+  const u = (typeof p !== 'undefined' && p.get('script')) || SYNERGEIO_SCRIPT;
+  if (!u || !kod) return efedriko;
+  try {
+    const r = await fetch(u + '?type=myinco&kod=' + encodeURIComponent(kod));
+    const d = await r.json();
+    return !!d.myinco;
+  } catch (e) {
+    return efedriko;
+  }
+}
 
 async function sendPdfEmail() {
   const btn = document.getElementById('btnEmail');
@@ -530,7 +549,8 @@ async function sendPdfEmail() {
   // το συνημμένο και το βάζει στον φάκελο του πελάτη. Αν δεν σταλεί email πουθενά,
   // δεν αρχειοθετείται τίποτα. Γι' αυτό για τους πελάτες του My InCo δεν κόβουμε
   // την αποστολή — την ΓΥΡΝΑΜΕ στο γραφείο. Ο πελάτης δεν ειδοποιείται.
-  const emailVal = exeiMyInco ? ARCHIVE_MAILBOX
+  const myincoTora = await exeiMyIncoTora(kodPel, exeiMyInco);
+  const emailVal = myincoTora ? ARCHIVE_MAILBOX
                               : document.getElementById('custEmail').value.trim();
   if (!emailVal) { alert('Συμπλήρωσε email παραλήπτη.'); return; }
   const prevText = btn.textContent;
@@ -545,7 +565,7 @@ async function sendPdfEmail() {
                              boat: (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ' ? decodeURIComponent(p.get('onomaskaf') || '').trim() : ''),
                              kod: kodPel, html: html })   // kod: 22/09/2026 — μοναδικό ανά πελάτη
     });
-    alert(exeiMyInco
+    alert(myincoTora
       ? 'Το πιστοποιητικό ανεβαίνει στον φάκελο My InCo του πελάτη.\n\nΔΕΝ του στάλθηκε email — το βλέπει μόνος του.'
       : 'Στάλθηκε αίτημα αποστολής στο ' + emailVal + ' — έλεγξε το inbox σε λίγο.');
   } catch (e) {

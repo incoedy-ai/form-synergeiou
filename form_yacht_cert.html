@@ -189,6 +189,21 @@
   // «01.ΕΙΣΕΡΧΟΜΕΝΑ ΕΓΓΡΑΦΑ» του πελάτη -- δεν χρειάζεται τίποτα άλλο.
   var PDF_SCRIPT = "https://script.google.com/macros/s/AKfycbwjkBC2VoM5n3guIKMNeOw9E43aTzH6IDgK0G05Y5dAEoM9LlXL32JzbrW8MM-GI-SSSA/exec";
   var ARCHIVE_MAILBOX = "inco.edy@gmail.com";   // ο λογαριασμός που σαρώνει η αρχειοθέτηση
+  var SYNERGEIO_SCRIPT = "https://script.google.com/macros/s/AKfycby0DVDdrddETKpizq8JQgGQs3SDRyRNhypnFA7--Q2XtsT6qmisLiR93Gc4b2MkuHcG/exec";
+
+  // Ρωτάει το φύλλο ΤΗ ΣΤΙΓΜΗ ΤΗΣ ΑΠΟΣΤΟΛΗΣ. Αν δεν απαντήσει, κρατάμε ό,τι έλεγε
+  // ο σύνδεσμος — ποτέ σιωπηλή αλλαγή παραλήπτη.
+  async function exeiMyIncoTora(kod, efedriko) {
+    var u = q.get("script") || SYNERGEIO_SCRIPT;
+    if (!u || !kod) return efedriko;
+    try {
+      var r = await fetch(u + "?type=myinco&kod=" + encodeURIComponent(kod));
+      var d = await r.json();
+      return !!d.myinco;
+    } catch (e) {
+      return efedriko;
+    }
+  }
 
   function standaloneHtml() {
     var styleText = document.querySelector("style").textContent;
@@ -214,7 +229,11 @@
     var btn = this;
     // Ίδιος κανόνας με το eCERT: όποιος έχει My InCo ΔΕΝ ειδοποιείται με email --
     // το έγγραφο ανεβαίνει στον φάκελό του και το βλέπει μόνος του.
-    var pou = q.get("myinco") === "1" ? ARCHIVE_MAILBOX : (q.get("email") || "").trim();
+    // ⚠️ 28/09/2026 — ο έλεγχος γίνεται ΤΩΡΑ, όχι από την παγωμένη παράμετρο του
+    // συνδέσμου: ο Α794 απέκτησε φάκελο 12 λεπτά μετά τη δημιουργία της και τα
+    // έγγραφα έφυγαν τρεις μέρες αργότερα στο email του καπετάνιου.
+    var myincoTora = await exeiMyIncoTora(q.get("kod") || "", q.get("myinco") === "1");
+    var pou = myincoTora ? ARCHIVE_MAILBOX : (q.get("email") || "").trim();
     if (!pou) { alert("Δεν υπάρχει email παραλήπτη."); return; }
     var bt = boat || document.querySelector('.fill[data-k="boat"]').textContent.trim();
     if (!bt) { alert("Συμπλήρωσε πρώτα το όνομα του σκάφους."); return; }
@@ -236,7 +255,7 @@
                                boat: bt,
                                kod: q.get("kod") || "", html: standaloneHtml() })
       });
-      alert(q.get("myinco") === "1"
+      alert(myincoTora
         ? "Η βεβαίωση ανεβαίνει στον φάκελο My InCo του πελάτη.\n\nΔΕΝ του στάλθηκε email — τη βλέπει μόνος του."
         : "Στάλθηκε στο " + pou + " — έλεγξε το inbox σε λίγο.");
     } catch (e) {
