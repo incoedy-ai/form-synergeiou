@@ -361,7 +361,11 @@ function dieyMePerioxi() {
 
 if (catPel === 'ΣΚΑΦΟΣ') {
   // Σκάφος: Όνομα Σκάφους + Λιμάνι Ελλιμενισμού αντί για επωνυμία/διεύθυνση
+  // ⚠️ 28/09/2026 — ΜΟΝΟ όνομα σκάφους και λιμάνι (εντολή χρήστη): φεύγουν
+  // και ο διακριτικός τίτλος και η δραστηριότητα, όχι μόνο η επωνυμία.
   hidePair('custEponymiaLabel', 'custEponymia');
+  hidePair('custDiakrLabel', 'custDiakr');
+  hidePair('custDrastLabel', 'custDrast');
   document.getElementById('custBoatLabel').style.display = '';
   document.getElementById('custOnomaSkaf').style.display = '';
   document.getElementById('custOnomaSkaf').textContent = decodeURIComponent(p.get('onomaskaf') || '—');
@@ -538,6 +542,7 @@ async function sendPdfEmail() {
       method: 'POST',
       mode: 'no-cors',
       body: JSON.stringify({ form: 'sendPdf', doc: 'ecert', email: emailVal, pelatis: pelatisName,
+                             boat: (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ' ? decodeURIComponent(p.get('onomaskaf') || '').trim() : ''),
                              kod: kodPel, html: html })   // kod: 22/09/2026 — μοναδικό ανά πελάτη
     });
     alert(exeiMyInco

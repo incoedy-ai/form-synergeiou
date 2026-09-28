@@ -148,8 +148,8 @@
 
   <div class="sectionBar navy">ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</div>
   <div class="custGrid">
-    <b>Επωνυμία:</b><span id="custEponymia">—</span>
-    <b>Διακριτικός Τίτλος:</b><span id="custDiakr">—</span>
+    <b id="custEponymiaLabel">Επωνυμία:</b><span id="custEponymia">—</span>
+    <b id="custDiakrLabel">Διακριτικός Τίτλος:</b><span id="custDiakr">—</span>
     <b id="custDrastLabel">Δραστηριότητα:</b><span id="custDrast">—</span>
     <b id="custDieyLabel">Διεύθυνση:</b><span id="custDiey">—</span>
     <b id="custBoatLabel" style="display:none;">Όνομα Σκάφους:</b><span id="custOnomaSkaf" style="display:none;">—</span>
@@ -270,6 +270,15 @@ if (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ') {
   document.getElementById('custBoatLabel').style.display = '';
   document.getElementById('custOnomaSkaf').style.display = '';
   document.getElementById('custOnomaSkaf').textContent = decodeURIComponent(p.get('onomaskaf') || '—');
+  // ⚠️ 28/09/2026 — ΣΚΑΦΟΣ: ΜΟΝΟ όνομα σκάφους και λιμάνι. Η επωνυμία της
+  // εταιρείας, ο διακριτικός τίτλος και η δραστηριότητα ΔΕΝ τυπώνονται:
+  // το έντυπο αφορά το σκάφος, όχι τον ιδιοκτήτη (ρητή, επαναλαμβανόμενη
+  // εντολή του χρήστη -- μην το ξανακάνεις αλλιώς).
+  ['custEponymiaLabel', 'custEponymia', 'custDiakrLabel', 'custDiakr',
+   'custDrastLabel', 'custDrast'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
 } else {
   // η περιοχή ζει σε ξεχωριστό πεδίο -- την ενώνουμε με τη διεύθυνση
   const dieyTxt = decodeURIComponent(p.get('diey') || '').trim();
@@ -760,6 +769,7 @@ async function sendPdfEmail() {
       method: 'POST',
       mode: 'no-cors',
       body: JSON.stringify({ form: 'sendPdf', doc: 'autopsia', email: emailVal, pelatis: pelatisName,
+                             boat: (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ' ? decodeURIComponent(p.get('onomaskaf') || '').trim() : ''),
                              kod: (p.get('kod') || '').toUpperCase().trim(), html: html })
     });
     alert('Στάλθηκε αίτημα αποστολής στο ' + emailVal + ' — έλεγξε το inbox σε λίγο.');
