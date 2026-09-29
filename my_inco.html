@@ -146,7 +146,9 @@
   var dec = function (n) {
     try { return decodeURIComponent(P.get(n) || '').trim(); } catch (e) { return ''; }
   };
-  var epon = dec('pelatis'), kod = dec('kod');
+  // ⚠️ 29/09/2026 — ΣΚΑΦΟΣ: δείχνουμε το όνομα του σκάφους, όχι την επωνυμία
+  // της εταιρείας. Ο φάκελος αφορά το σκάφος.
+  var epon = dec('skafos') || dec('pelatis'), kod = dec('kod');
   if (!epon && !kod) return;
   var el = document.getElementById('who');
   el.innerHTML = (epon ? '<b>' + epon.replace(/[<>&]/g, '') + '</b>' : '') +

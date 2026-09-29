@@ -461,14 +461,20 @@ function setCustHeader(P, kod, pelatis) {
   // Ο διακριτικός τίτλος μπαίνει ΜΟΝΟ αν προσθέτει κάτι. Πολύ συχνά ταυτίζεται
   // με την επωνυμία ή περιέχεται μέσα της («PORCANOVA» μέσα στο «PORCANOVA
   // ΑΥΘΕΝΤΙΚΗ ΓΟΥΡΟΥΝΟΠΟΥΛΑ Ι.Κ.Ε»), οπότε γραφόταν δύο φορές στην κεφαλίδα.
-  const _pel = String(pelatis || '').trim();
+  // ⚠️ 29/09/2026 — ΣΚΑΦΟΣ: στην κεφαλίδα μπαίνει το όνομα του σκάφους και το
+  // λιμάνι, ΟΧΙ η επωνυμία της εταιρείας και η έδρα της. Το έντυπο αφορά το
+  // σκάφος. Ο κωδικός μένει — είναι το εσωτερικό μας αναγνωριστικό.
+  const skafos = dec(P.get('skafos')).trim();
+  const limani = dec(P.get('limani')).trim();
+  const _pel = skafos || String(pelatis || '').trim();
   const _dup = diakr && _pel &&
                _pel.toUpperCase().indexOf(diakr.toUpperCase()) >= 0;
   const parts = [String(kod || '').trim(), _pel,
-                 _dup ? '' : diakr].filter(Boolean);
+                 (skafos || _dup) ? '' : diakr].filter(Boolean);
   let addr = diey;
   if (diey && per && diey.toUpperCase().indexOf(per.toUpperCase()) < 0) addr = diey + ', ' + per;
   else if (!diey) addr = per;
+  if (skafos) addr = limani;              // σκάφος -> λιμάνι ελλιμενισμού
   const nm = document.getElementById('custname') || document.querySelector('.cust .name');
   const mt = document.getElementById('custmeta') || document.querySelector('.cust .meta');
   if (nm) nm.textContent = parts.join(' \u00b7 ');
