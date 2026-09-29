@@ -103,17 +103,71 @@ function arithmosKeimeno(xoros){
   return m ? m[1] : null;
 }
 
-function render(d){
+// Τα είδη που έχει πραγματικά ο πελάτης, με σταθερή σειρά εμφάνισης.
+const SEIRA_EIDON = ['LEGIONELLA', 'ΠΟΣΙΜΟ', 'ΕΠΙΦΑΝΕΙΕΣ', 'ΚΟΛΥΜΒΗΤΙΚΗ'];
+function eidi(d){
+  const yp = {};
+  (d.episkepseis || []).forEach(x => { if (x['ΕΙΔΟΣ']) yp[x['ΕΙΔΟΣ']] = 1; });
+  const out = SEIRA_EIDON.filter(e => yp[e]);
+  Object.keys(yp).forEach(e => { if (out.indexOf(e) < 0) out.push(e); });
+  return out;
+}
+
+// Κοινή εκκίνηση: διαλέγει είδος (θυμάται το τελευταίο), βάζει τίτλο και σχεδιάζει.
+function xekina(d, onoma){
+  if (onoma) d.pelatis = d.pelatis || onoma;
+  const ola = eidi(d);
+  let e = ola[0] || 'LEGIONELLA';
+  try {
+    const p = localStorage.getItem('ws_plano_eidos');
+    if (p && ola.indexOf(p) >= 0) e = p;
+  } catch (x) {}
+  titlos(d, e);
+  render(d, e);
+}
+
+// Οι καρτέλες των ειδών. Εμφανίζονται ΜΟΝΟ όσα είδη έχει πραγματικά ο πελάτης,
+// ώστε να μη βλέπει κενές καρτέλες για αναλύσεις που δεν του κάνουμε.
+function karteles(d, eidos){
+  const ola = eidi(d);
+  if (ola.length < 2) return '';
+  return '<div class="opsi" id="karteles">' + ola.map(e =>
+    '<button data-e="' + esc(e) + '"' + (e === eidos ? ' class="on"' : '') + '>' +
+    esc(e) + '</button>').join('') + '</div>';
+}
+
+function syndese(d, eidos){
+  const k = document.getElementById('karteles');
+  if (!k) return;
+  [...k.querySelectorAll('button')].forEach(b => {
+    b.onclick = function(){
+      const e = this.getAttribute('data-e');
+      try { localStorage.setItem('ws_plano_eidos', e); } catch (x) {}
+      titlos(d, e);
+      render(d, e);
+    };
+  });
+}
+
+function titlos(d, eidos){
+  const t = document.getElementById('titlos');
+  if (t) t.textContent = 'ΠΛΑΝΟ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ ' + eidos +
+        (d.pelatis || PELATIS ? ' — ' + (d.pelatis || PELATIS) : '');
+}
+
+function render(d, eidos){
   let sim = d.simeia || [];
   const ep = d.episkepseis || [], met = d.metriseis || [];
-  const leg = ep.filter(x => x['ΕΙΔΟΣ'] === 'LEGIONELLA');
+  const ola = eidi(d);
+  eidos = eidos || ola[0] || 'LEGIONELLA';
+  const leg = ep.filter(x => x['ΕΙΔΟΣ'] === eidos);
   if (!sim.length) {
     el.innerHTML = '<div class="card"><h2>ΠΛΑΝΟ</h2><div class="empty">Δεν έχουν καταγραφεί ' +
       'ακόμη σημεία δειγματοληψίας για την εγκατάσταση.</div></div>';
     return;
   }
   const legIds = {}; leg.forEach(x => legIds[x['ΕΠΙΣΚΕΨΗ_ID']] = x['ΗΜΕΡΟΜΗΝΙΑ']);
-  // πότε δειγματίστηκε κάθε σημείο (μόνο λεγεωνέλλα)
+  // πότε δειγματίστηκε κάθε σημείο, ΓΙΑ ΤΟ ΕΠΙΛΕΓΜΕΝΟ ΕΙΔΟΣ
   const imer = {};
   met.forEach(x => {
     const d2 = legIds[x['ΕΠΙΣΚΕΨΗ_ID']];
@@ -121,12 +175,22 @@ function render(d){
     (imer[x['ΣΗΜΕΙΟ_ID']] = imer[x['ΣΗΜΕΙΟ_ID']] || {})[d2] = 1;
   });
 
-  // ⚠️ ΜΟΝΟ σημεία λεγεωνέλλας: όσα έχουν δείγμα λεγεωνέλλας, και όσα δεν έχουν
-  // δειγματιστεί ΠΟΤΕ (αυτά είναι τα δωμάτια του πλάνου που περιμένουν σειρά).
-  // Σημεία που υπάρχουν μόνο για πόσιμο/swab/κολυμβητική δεν ανήκουν εδώ.
+  // ⚠️ Στη ΛΕΓΕΩΝΕΛΛΑ δείχνουμε ΚΑΙ τα σημεία που δεν δειγματίστηκαν ποτέ: είναι τα
+  // δωμάτια του πλάνου που περιμένουν σειρά, και αυτό ακριβώς θέλουμε να φαίνεται.
+  // ⚠️ Στα ΑΛΛΑ είδη ΟΧΙ: εκεί το σύνολο είναι όσα σημεία δειγματίζονται γι' αυτό το
+  // είδος — αλλιώς θα γέμιζε η σελίδα με 200 δωμάτια που δεν αφορούν το πόσιμο.
   const alla = {};
   met.forEach(x => { if (x['ΣΗΜΕΙΟ_ID'] && !legIds[x['ΕΠΙΣΚΕΨΗ_ID']]) alla[x['ΣΗΜΕΙΟ_ID']] = 1; });
-  sim = sim.filter(s => imer[s['ΣΗΜΕΙΟ_ID']] || !alla[s['ΣΗΜΕΙΟ_ID']]);
+  sim = (eidos === 'LEGIONELLA')
+      ? sim.filter(s => imer[s['ΣΗΜΕΙΟ_ID']] || !alla[s['ΣΗΜΕΙΟ_ID']])
+      : sim.filter(s => imer[s['ΣΗΜΕΙΟ_ID']]);
+  if (!sim.length) {
+    el.innerHTML = karteles(d, eidos) + '<div class="card"><h2>ΠΛΑΝΟ</h2>' +
+      '<div class="empty">Δεν υπάρχουν σημεία δειγματοληψίας για «' + esc(eidos) +
+      '» σε αυτή την εγκατάσταση.</div></div>';
+    syndese(d, eidos);
+    return;
+  }
 
   const exei3psifia = sim.some(s => (arithmos(s['ΧΩΡΟΣ']) || 0) >= 100);
   const omades = {};
@@ -156,7 +220,8 @@ function render(d){
   const synolo = sim.length;
   const eginan = sim.filter(s => imer[s['ΣΗΜΕΙΟ_ID']]).length;
   const teleftaia = leg.map(x => x['ΗΜΕΡΟΜΗΝΙΑ']).sort().pop();
-  let html = '<div class="card"><div class="body"><div class="tiles">' +
+  let html = karteles(d, eidos) +
+         '<div class="card"><div class="body"><div class="tiles">' +
     '<div class="tile"><div class="l">Σημεία στο πλάνο</div><div class="v">' + synolo + '</div></div>' +
     '<div class="tile"><div class="l">Έχουν ελεγχθεί</div><div class="v ok">' + eginan + '</div></div>' +
     '<div class="tile"><div class="l">Δεν έχουν ελεγχθεί ποτέ</div><div class="v bad">' +
@@ -190,7 +255,7 @@ function render(d){
 
   // --- όψη Α: ένας πίνακας, στήλη ανά δειγματοληψία, κουκκίδα όπου πάρθηκε δείγμα
   let pin = '<div class="card"><h2>ΠΛΑΝΟ ΑΝΑ ΣΗΜΕΙΟ<small>' + stiles.length +
-            ' δειγματοληψίες λεγεωνέλλας</small></h2><div class="body"><div class="scroll">' +
+            ' δειγματοληψίες · ' + esc(eidos) + '</small></h2><div class="body"><div class="scroll">' +
             '<table><tr><th>Σημείο</th>' +
             stiles.map(x => '<th class="c">' + minas(x['ΗΜΕΡΟΜΗΝΙΑ']).slice(3) + '</th>').join('') +
             '<th class="c">Φορές</th></tr>';
@@ -253,6 +318,7 @@ function render(d){
   }
   document.getElementById('bPin').onclick = function(){ deixe('pinakas'); };
   document.getElementById('bKout').onclick = function(){ deixe('koutakia'); };
+  syndese(d, eidos);
   let proti = 'pinakas';
   try { proti = localStorage.getItem('ws_plano_opsi') || 'pinakas'; } catch (e) {}
   deixe(proti);
@@ -262,8 +328,7 @@ if (DEMO) {
   // Το δείγμα είναι ΣΤΑΤΙΚΟ αρχείο δίπλα στη σελίδα — δεν χτυπάει καθόλου τη βάση.
   fetch('deigma.json?t=' + Date.now())
     .then(r => r.json())
-    .then(d => { document.getElementById('titlos').textContent =
-                   'ΠΛΑΝΟ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ LEGIONELLA — ' + (d.pelatis || 'ΔΕΙΓΜΑ'); render(d); })
+    .then(d => { xekina(d, d.pelatis || 'ΔΕΙΓΜΑ'); })
     .catch(e => { document.getElementById('katastasi').textContent =
                    'Δεν φορτώθηκε το δείγμα (' + e.message + ').'; });
 } else if (!SCRIPT || !KOD) {
@@ -274,7 +339,7 @@ if (DEMO) {
   (function fortose(p){
     fetch(SCRIPT + '?action=katagrafes&kod=' + encodeURIComponent(KOD) + '&t=' + Date.now())
       .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(d => { if (d && d.ok) render(d); else throw new Error((d && d.error) || 'άγνωστο'); })
+      .then(d => { if (d && d.ok) xekina(d); else throw new Error((d && d.error) || 'άγνωστο'); })
       .catch(e => {
         if (p < 3) { document.getElementById('katastasi').textContent =
             'Φόρτωση δεδομένων… (προσπάθεια ' + (p + 1) + ')';
