@@ -317,6 +317,35 @@ function render(d){
     '</div><div class="foot" style="padding:10px 0 0"><a class="link" href="' + PLANO +
     '">→ Πλάνο δειγματοληψίας λεγεωνέλλας (πού έχει γίνει και πού όχι)</a></div></div></div>';
 
+  // ΔΙΟΡΘΩΤΙΚΕΣ ΕΝΕΡΓΕΙΕΣ — τι έγινε για κάθε εύρημα εκτός ορίων.
+  // ⚠️ Μπαίνει ΑΜΕΣΩΣ κάτω από τα συγκεντρωτικά, πριν τις καρτέλες: όποιος δει
+  // «ευρήματα εκτός ορίων» πρέπει να βρίσκει στην ίδια οθόνη τι έγινε γι' αυτά.
+  // Η κάρτα εμφανίζεται ΜΟΝΟ όταν υπάρχουν καταγεγραμμένες ενέργειες.
+  const energ = (d.energeies || []).slice().sort((a,b) =>
+    (a['ΗΜ_ΕΥΡΗΜΑΤΟΣ'] < b['ΗΜ_ΕΥΡΗΜΑΤΟΣ'] ? 1 : a['ΗΜ_ΕΥΡΗΜΑΤΟΣ'] > b['ΗΜ_ΕΥΡΗΜΑΤΟΣ'] ? -1 : 0));
+  if (energ.length) {
+    html += '<div class="card"><h2>ΔΙΟΡΘΩΤΙΚΕΣ ΕΝΕΡΓΕΙΕΣ<small>' + energ.length +
+      (energ.length === 1 ? ' εύρημα' : ' ευρήματα') + '</small></h2><div class="scroll"><table>' +
+      '<tr><th>Ημερομηνία</th><th>Σημείο</th><th>Εύρημα</th><th>Τι έγινε</th>' +
+      '<th>Από</th><th class="c">Έκβαση</th></tr>' +
+      energ.map(x => {
+        const kleisto = String(x['ΚΑΤΑΣΤΑΣΗ'] || '').toUpperCase().indexOf('ΚΛΕΙΣΤ') === 0;
+        const epan = x['ΗΜ_ΕΠΑΝΕΛΕΓΧΟΥ'] ? '<br><span style="font-size:11px;color:#778">' +
+          'επανέλεγχος ' + imer(x['ΗΜ_ΕΠΑΝΕΛΕΓΧΟΥ']) + '</span>' : '';
+        return '<tr><td class="imer">' + imer(x['ΗΜ_ΕΥΡΗΜΑΤΟΣ']) + '</td>' +
+          '<td>' + esc(x['ΣΗΜΕΙΟ']) + '</td>' +
+          '<td>' + esc(x['ΠΑΡΑΜΕΤΡΟΣ']) + ' <b class="bad">' + esc(x['ΤΙΜΗ']) + '</b>' +
+            (x['ΟΡΙΟ'] ? '<br><span style="font-size:11px;color:#778">όριο ' + esc(x['ΟΡΙΟ']) +
+             '</span>' : '') + '</td>' +
+          '<td>' + esc(x['ΕΝΕΡΓΕΙΑ']) +
+            (x['ΗΜ_ΕΝΕΡΓΕΙΑΣ'] ? '<br><span style="font-size:11px;color:#778">' +
+             imer(x['ΗΜ_ΕΝΕΡΓΕΙΑΣ']) + '</span>' : '') + '</td>' +
+          '<td>' + esc(x['ΥΠΕΥΘΥΝΟΣ']) + '</td>' +
+          '<td class="c"><span class="' + (kleisto ? 'ok' : 'bad') + '">' +
+            esc(x['ΕΚΒΑΣΗ'] || x['ΚΑΤΑΣΤΑΣΗ']) + '</span>' + epan + '</td></tr>';
+      }).join('') + '</table></div></div>';
+  }
+
   // ΚΑΡΤΕΛΕΣ: μόνο τα είδη που έχουν δειγματοληψίες, πρώτη ανοιχτή η λεγεωνέλλα.
   const diathesima = EIDI.map(e => {
     const rows = met.filter(x => x['ΕΙΔΟΣ'] === e.key)
