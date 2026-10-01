@@ -704,7 +704,10 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
   // επιλέγει ποιο έντυπο θα συμπληρώσει — αποφεύγουμε λάθος/ελλιπή κουμπιά.
   const scriptUrl = p.get('script');
   if (scriptUrl) {
-    const pelatisName = p.get('pelatis') || '';
+    /* ⚠️⚠️ ΣΚΑΦΟΣ: ΤΟ ΟΝΟΜΑ ΤΟΥ ΣΚΑΦΟΥΣ, ΟΧΙ Η ΕΠΩΝΥΜΙΑ (01/10/2026).
+       Ο κανόνας ίσχυε σε έντυπα, email και φακέλους αλλά ΔΕΝ είχε μπει ποτέ στα
+       έντυπα του tablet. Το link φέρνει «skafos» όταν ο πελάτης είναι σκάφος. */
+    const pelatisName = p.get('skafos') || p.get('pelatis') || '';
     const kodPelati = p.get('kod') || '';
     const qp = new URLSearchParams({ script: scriptUrl, pelatis: pelatisName, kod: kodPelati });
 

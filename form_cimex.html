@@ -164,7 +164,11 @@
 
 <script>
 const p = new URLSearchParams(window.location.search);
-document.getElementById('custEponymia').textContent = decodeURIComponent(p.get('pelatis') || '—');
+/* ⚠️⚠️ ΣΚΑΦΟΣ: ΤΟ ΟΝΟΜΑ ΤΟΥ ΣΚΑΦΟΥΣ, ΟΧΙ Η ΕΠΩΝΥΜΙΑ (01/10/2026).
+   Ο κανόνας ίσχυε σε έντυπα, email και φακέλους αλλά ΔΕΝ είχε μπει ποτέ στα
+   έντυπα του tablet. Το link φέρνει «skafos» όταν ο πελάτης είναι σκάφος. */
+document.getElementById('custEponymia').textContent =
+  decodeURIComponent(p.get('skafos') || p.get('pelatis') || '—');
 document.getElementById('custDiakr').textContent = decodeURIComponent(p.get('diakr') || '—');
 // Στα έντυπα προς τον πελάτη: Επωνυμία, Διακριτικός, Δραστηριότητα,
 // Διεύθυνση+Περιοχή. ΟΧΙ τηλέφωνο, ΟΧΙ ΑΦΜ.

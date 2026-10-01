@@ -129,7 +129,10 @@ function sigData() { return sigUsed ? sigCv.toDataURL('image/png') : ''; }
 
 const qs = new URLSearchParams(window.location.search);
 const URL = qs.get('script') || "https://script.google.com/macros/s/AKfycby0DVDdrddETKpizq8JQgGQs3SDRyRNhypnFA7--Q2XtsT6qmisLiR93Gc4b2MkuHcG/exec";
-const pelatis = qs.get('pelatis') || '';
+/* ⚠️⚠️ ΣΚΑΦΟΣ: ΤΟ ΟΝΟΜΑ ΤΟΥ ΣΚΑΦΟΥΣ, ΟΧΙ Η ΕΠΩΝΥΜΙΑ (01/10/2026).
+   Ο κανόνας ίσχυε σε έντυπα, email και φακέλους αλλά ΔΕΝ είχε μπει ποτέ στα
+   έντυπα του tablet. Το link φέρνει «skafos» όταν ο πελάτης είναι σκάφος. */
+const pelatis = qs.get('skafos') || qs.get('pelatis') || '';
 const kod = qs.get('kod') || '';
 if (pelatis) document.getElementById('pageTitle').textContent = 'ΦΕΡΟΜΟΝΙΚΕΣ ΕΝΤΟΜΟΠΑΓΙΔΕΣ — ' + decodeURIComponent(pelatis);
 
