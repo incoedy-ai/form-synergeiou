@@ -88,6 +88,8 @@ td.cnt{text-align:center;font-weight:bold;color:var(--navy);font-size:16px}
 <div class="section">
   <div class="section-title">1 · ΣΤΟΙΧΕΙΑ ΕΠΙΧΕΙΡΗΣΗΣ</div>
   <div class="section-body grid">
+    <div class="item"><label class="l">Ημερομηνία συμπλήρωσης</label><input class="v" type="date" data-k="ΗΜΕΡΟΜΗΝΙΑ" readonly></div>
+    <div class="item w2"><label class="l">Ποιος το συμπλήρωσε <span class="req">*</span></label><input class="v" data-k="ΣΥΜΠΛΗΡΩΘΗΚΕ_ΟΝΟΜΑ" placeholder="Ονοματεπώνυμο"></div>
     <div class="item w2"><label class="l">Επωνυμία <span class="req">*</span></label><input class="v" data-k="ΕΠΩΝΥΜΙΑ"></div>
     <div class="item w2"><label class="l">Διακριτικός τίτλος</label><input class="v" data-k="ΔΙΑΚΡΙΤΙΚΟΣ_ΤΙΤΛΟΣ"></div>
     <div class="item"><label class="l">Δραστηριότητα</label><input class="v" data-k="ΔΡΑΣΤΗΡΙΟΤΗΤΑ"></div>
@@ -193,9 +195,9 @@ function collect(){
     h[k] = v;
   });
   h['ΚΩΔΙΚΟΣ_ΠΕΛΑΤΗ'] = KOD;
-  // ⚠️ ΔΕΝ είναι ημερομηνία αυτοψίας — είναι η μέρα που το συμπλήρωσε ο πελάτης.
-  // Ο συγχρονισμός θέλει ημερομηνία, και το ΣΥΜΠΛΗΡΩΘΗΚΕ_ΑΠΟ ξεκαθαρίζει ποιος το έγραψε.
-  h['ΗΜΕΡΟΜΗΝΙΑ'] = new Date().toISOString().slice(0, 10);
+  // ⚠️ ΔΕΝ είναι ημερομηνία αυτοψίας — είναι η μέρα ΣΥΜΠΛΗΡΩΣΗΣ, και φαίνεται στη
+  // φόρμα (αίτημα χρήστη 02/10/2026). Το ΣΥΜΠΛΗΡΩΘΗΚΕ_ΑΠΟ ξεκαθαρίζει ποιος το έγραψε.
+  if (!h['ΗΜΕΡΟΜΗΝΙΑ']) h['ΗΜΕΡΟΜΗΝΙΑ'] = new Date().toISOString().slice(0, 10);
   h['ΣΥΜΠΛΗΡΩΘΗΚΕ_ΑΠΟ'] = 'ΠΕΛΑΤΗΣ';
   const orofoi = [...document.querySelectorAll('#orofoi tr')].slice(1).map((tr, i) => {
     const o = {}; tr.querySelectorAll('[data-c]').forEach(x => o[x.dataset.c] = x.value.trim());
@@ -216,6 +218,8 @@ function restore(d){
     } else el.value = v;
   });
   (d.orofoi || []).forEach(r => addFloor(r));
+  // ⚠️ Το πρόχειρο μπορεί να είναι άλλης μέρας· η ημερομηνία συμπλήρωσης είναι ΣΗΜΕΡΑ.
+  document.querySelector('[data-k="ΗΜΕΡΟΜΗΝΙΑ"]').value = new Date().toISOString().slice(0, 10);
   UID = d.uid || newUid();
 }
 
@@ -233,6 +237,7 @@ function msg(t, err){
 async function save(){
   const d = collect();
   if (!d.header['ΕΠΩΝΥΜΙΑ']) return msg('Συμπλήρωσε την επωνυμία', true);
+  if (!d.header['ΣΥΜΠΛΗΡΩΘΗΚΕ_ΟΝΟΜΑ']) return msg('Γράψε ποιος συμπλήρωσε τη φόρμα', true);
   try { localStorage.setItem(DRAFT, JSON.stringify(d)); } catch (e) {}
   if (!EP) return msg('Ο σύνδεσμος δεν είναι πλήρης — ζήτησέ μας καινούργιο', true);
   const b = document.getElementById('btnSave');
@@ -273,6 +278,7 @@ document.addEventListener('change', draft);
     const v = P.get(p); if (!v) return;
     const el = document.querySelector('[data-k="' + k + '"]'); if (el) el.value = v;
   });
+  document.querySelector('[data-k="ΗΜΕΡΟΜΗΝΙΑ"]').value = new Date().toISOString().slice(0, 10);
   addFloor();
 })();
 
