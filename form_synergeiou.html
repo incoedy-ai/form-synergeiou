@@ -1033,12 +1033,12 @@ function fillSkevasmata(selectEl, typVal, methVal) {
     const opt = document.createElement('option');
     // ⚠️ Η ΤΙΜΗ μένει ΣΚΕΤΗ η ονομασία: ταξιδεύει στην Access και στο
     // πιστοποιητικό (ταίριασμα με τον κωδικό της τελευταίας παρένθεσης).
-    // Η αντιστοίχιση μπαίνει ΜΟΝΟ στο κείμενο που βλέπει ο τεχνικός.
-    // 23/09/2026, ο χρήστης: «θέλω να μου εμφανίζει τις αντιστοιχίες των
-    // σκευασμάτων -- μέθοδος/σκεύασμα -- όταν επιλέγω σκευάσματα και υλικά».
+    // 23/09/2026 η μέθοδος έμπαινε ΚΑΙ στο κείμενο της επιλογής («TETRAX · ΨΕΚΑΣΜΟΣ»).
+    // ⚠️ 07/10/2026 ο χρήστης: «δεν εννοούσα στο ΙΔΙΟ πεδίο» — η μέθοδος γεμίζει ήδη
+    // μόνη της στο δικό της κουτάκι (autoFillFromSkevasma), οπότε δίπλα στο όνομα
+    // ήταν διπλή και φαινόταν σαν να γράφτηκε μαζί με το σκεύασμα.
     opt.value = s;
-    const meth = meta && meta.meth && meta.meth.length ? meta.meth.join(' / ') : '';
-    opt.textContent = meth ? s + '  ·  ' + meth : s;
+    opt.textContent = s;
     selectEl.appendChild(opt);
   });
   const stillThere = Array.from(selectEl.options).some(o => o.value === current);
