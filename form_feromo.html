@@ -209,12 +209,14 @@ fetch(URL + "?type=feromo-positions&kod=" + encodeURIComponent(kod))
       opt.textContent = p;
       sel.appendChild(opt);
     });
+    prevThesi = sel.value;   // από πού ξεκινάει ο τεχνικός
   })
   .catch(() => {
     document.getElementById('thesi').innerHTML = '<option>Σφάλμα φόρτωσης</option>';
   });
 
 function resetForm() {
+  prevThesi = document.getElementById('thesi').value;
   addedSpecies.length = 0;
   document.getElementById('speciesList').innerHTML = '';
   document.getElementById('empty').style.display = 'block';
@@ -224,6 +226,33 @@ function resetForm() {
   document.getElementById('diorthotikes').value = '';
   refreshPicker();
 }
+
+
+// ── φύλακας αλλαγής θέσης ─────────────────────────────────────────────
+// ⚠️ 08/10/2026: η αλλαγή θέσης ΔΕΝ ενεργοποιούσε τίποτα. Τα είδη της προηγούμενης
+// παγίδας έμεναν στη λίστα — έλειπαν από το μενού («δεν είναι διαθέσιμο για επιλογή»)
+// και, χειρότερα, υποβάλλονταν ΞΑΝΑ για τη δεύτερη παγίδα.
+// Δεν καθαρίζουμε σιωπηλά: θα έσβηνε ό,τι μόλις πληκτρολόγησε ο τεχνικός.
+var prevThesi = '';
+function echeiDedomena() {
+  return addedSpecies.length > 0 ||
+         document.getElementById('kollitiki').value !== '' ||
+         document.getElementById('antikatastasi').value !== '' ||
+         document.getElementById('paratiriseis').value !== '' ||
+         document.getElementById('diorthotikes').value !== '';
+}
+(function () {
+  var sel = document.getElementById('thesi');
+  sel.addEventListener('change', function () {
+    if (!echeiDedomena()) { prevThesi = this.value; return; }
+    var ok = confirm('Δεν υπέβαλες τη θέση «' + prevThesi + '».\n\n' +
+      'Αν αλλάξεις θέση τώρα, τα στοιχεία της χάνονται.\n\n' +
+      'OK = καθάρισμα και συνέχεια στη νέα θέση\n' +
+      'Άκυρο = επιστροφή στη θέση «' + prevThesi + '»');
+    if (ok) { resetForm(); prevThesi = this.value; }
+    else { this.value = prevThesi; }
+  });
+})();
 
 function submitForm() {
   // Το fetch με mode:'no-cors' γυρίζει σχεδόν ακαριαία, οπότε ένα διπλό πάτημα
