@@ -744,8 +744,18 @@ function openECert() {
   for (let i = 0; i < ROWS; i++) {
     const typ = document.getElementById(`sk-typ-${i}`).value;
     const sel = document.getElementById(`sk-sel-${i}`).value;
+    const met = document.getElementById(`sk-met-${i}`).value;
     const meta = SKEVASMA_META[sel];
-    if (sel && (!meta || meta.typ !== 'ΑΠΟΛΥΜΑΝΣΗ')) skev.push({ typos: typ || '', skeuasma: sel });
+    // ⚠️ 09/10/2026: πριν περνούσαν ΜΟΝΟ γραμμές με σκεύασμα (`if (sel && ...)`).
+    // Το **CIMEX δεν έχει υλικό** (ξηρός ατμός — 306 από 308 γραμμές του
+    // ιστορικού είναι χωρίς σκεύασμα), οπότε η γραμμή πεταγόταν και η
+    // εργασία ΔΕΝ ΦΑΙΝΟΤΑΝ στο πιστοποιητικό. Τώρα περνά και με μόνη τη
+    // μέθοδο, και το πιστοποιητικό γράφει τη μέθοδο αντί για όνομα σκευάσματος.
+    // Η ΑΠΟΛΥΜΑΝΣΗ μένει ΕΞΩ όπως πριν — το έντυπο είναι ΑΠΕΝΤΟΜΩΣΗΣ /
+    // ΜΥΟΚΤΟΝΙΑΣ / ΑΠΩΘΗΣΗΣ — και για τις γραμμές χωρίς υλικό κρίνεται από
+    // το ΕΙΔΟΣ της γραμμής, αφού δεν υπάρχει SKEVASMA_META να ρωτηθεί.
+    const apolym = sel ? (meta && meta.typ === 'ΑΠΟΛΥΜΑΝΣΗ') : (typ === 'ΑΠΟΛΥΜΑΝΣΗ');
+    if ((sel || met) && !apolym) skev.push({ typos: typ || '', skeuasma: sel, methodos: met || '' });
   }
 
   const email = document.getElementById('inf-email').textContent;

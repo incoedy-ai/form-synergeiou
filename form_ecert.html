@@ -472,7 +472,11 @@ for (let i = 0; i < slotCount; i++) {
   if (item) {
     const hit = lookupSkevasma(item.skeuasma);
     const info = hit.info;
-    const name = info[0] || item.skeuasma.replace(/\s*\([^)]*\)\s*$/, '');
+    // ⚠️ Γραμμή χωρίς σκεύασμα (CIMEX / ξηρός ατμός): η κάρτα παίρνει τη ΜΕΘΟΔΟ.
+    // Χωρίς αυτό το όνομα έβγαινε κενό και η εργασία φαινόταν σαν άδεια κάρτα.
+    const name = info[0] || (item.skeuasma
+      ? item.skeuasma.replace(/\s*\([^)]*\)\s*$/, '')
+      : (item.methodos || ''));
     const drast = info[1] ? info[1].split('\n').map(function(l){ return '(' + l + ')'; }).join('<br>') : '';
     const adeia = info[2] || '';
     const typos = info[3] || item.typos || '';
