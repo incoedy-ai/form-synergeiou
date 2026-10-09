@@ -111,6 +111,12 @@
   #btnEmail:disabled { opacity: 0.6; cursor: default; }
   .emailRow { display: flex; gap: 8px; margin: 0 16px 16px; align-items: center; }
   .emailRow input { flex: 1; padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+
+  /* ⚠️ 09/10/2026: το placeholder ΤΥΠΩΝΟΤΑΝ στο PDF. Στην έκθεση κοριών του Α796
+     το δείγμα έγραφε «Ενεργή προσβολή στο διπλό κρεβάτι…» πάνω σε έκθεση όπου
+     ΟΛΑ ήταν καθαρά — ο πελάτης μπορούσε να νομίσει ότι βρέθηκαν κοριοί.
+     ⚠️ Μπαίνει στο ΠΡΩΤΟ <style>: αυτό αντιγράφει η buildStandaloneHtml. */
+  @media print { ::placeholder { color: transparent !important; opacity: 0 !important; } }
 </style>
 </head>
 <body>

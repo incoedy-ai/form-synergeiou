@@ -37,6 +37,12 @@
   .myincoBtn img { height: 28px; width: auto; display: block; }
   .myincoBtn:hover { border-color: #2DAFCE; box-shadow: 0 2px 10px rgba(45,175,206,.25); }
   .myincoBtn:disabled { opacity: .6; cursor: default; }
+
+  /* ⚠️ 09/10/2026: το placeholder ΤΥΠΩΝΟΤΑΝ στο PDF. Στην έκθεση κοριών του Α796
+     το δείγμα έγραφε «Ενεργή προσβολή στο διπλό κρεβάτι…» πάνω σε έκθεση όπου
+     ΟΛΑ ήταν καθαρά — ο πελάτης μπορούσε να νομίσει ότι βρέθηκαν κοριοί.
+     ⚠️ Μπαίνει στο ΠΡΩΤΟ <style>: αυτό αντιγράφει η buildStandaloneHtml. */
+  @media print { ::placeholder { color: transparent !important; opacity: 0 !important; } }
 </style>
 </head>
 <body>

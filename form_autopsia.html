@@ -120,6 +120,12 @@
   .legal{margin-top:8px;padding-top:6px;border-top:1px solid #ddd;font-size:7.5px;line-height:1.5;color:#777;text-align:center;}
   .docCtrl { border-top: 1px solid #999; margin-top: 4px; padding: 2px 4px 0; font-size: 10.5px; text-align: center; color: #333; }
   .docCtrl b { font-weight: bold; }
+
+  /* ⚠️ 09/10/2026: το placeholder ΤΥΠΩΝΟΤΑΝ στο PDF. Στην έκθεση κοριών του Α796
+     το δείγμα έγραφε «Ενεργή προσβολή στο διπλό κρεβάτι…» πάνω σε έκθεση όπου
+     ΟΛΑ ήταν καθαρά — ο πελάτης μπορούσε να νομίσει ότι βρέθηκαν κοριοί.
+     ⚠️ Μπαίνει στο ΠΡΩΤΟ <style>: αυτό αντιγράφει η buildStandaloneHtml. */
+  @media print { ::placeholder { color: transparent !important; opacity: 0 !important; } }
 </style>
 </head>
 <body>
@@ -681,6 +687,8 @@ function buildStandaloneHtml() {
   srcEls.forEach(function (el, i) {
     const c = dstEls[i];
     if (!c) return;
+    // ⚠️ Το placeholder ΔΕΝ είναι δεδομένο — να μην φτάνει ποτέ στο PDF.
+    c.removeAttribute('placeholder');
     if (el.type === 'checkbox' || el.type === 'radio') {
       // Οι μετατροπείς HTML→PDF δεν αποδίδουν αξιόπιστα τα form controls.
       // Τα αντικαθιστούμε με ΓΕΜΑΤΟ/ΑΔΕΙΟ κουτάκι -- χωρίς χαρακτήρα μέσα,
