@@ -117,7 +117,11 @@ textarea.v{min-height:60px;resize:vertical}
 .bar button:disabled{background:#9fb3c2;cursor:not-allowed}
 .msg{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:6px;font-size:13px;display:none;z-index:9;max-width:90%;text-align:center}
 .msg.err{background:var(--red)}
+/* Μόνιμη προειδοποίηση όταν το tablet ΔΕΝ μπορεί να κρατήσει ό,τι γράφεται */
+#xorisMnimi{display:none;background:#C0392B;color:#fff;font-weight:bold;font-size:13.5px;padding:12px 16px;text-align:center}
+#ekdosi{position:fixed;right:8px;bottom:62px;font-size:10px;color:#8a96a4;z-index:8;pointer-events:none}
 </style></head><body>
+<div id="xorisMnimi"></div>
 <div class="header"><img class="logo" src="hotelier.jpg" alt="InCo Hotelier Services"><div class="htxt"><h1>ΔΕΛΤΙΟ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ</h1><p>InCo · Δελφών 140, 16561 Γλυφάδα · 210 9644310</p></div></div>
 <div class="stripe"></div>
 <div class="wrap">
@@ -195,6 +199,7 @@ textarea.v{min-height:60px;resize:vertical}
 
 </div>
 <div class="msg" id="msg"></div>
+<div id="ekdosi"></div>
 <div class="bar"><button class="pri" type="button" id="btnSave" onclick="save()">💾 ΑΠΟΘΗΚΕΥΣΗ</button><button type="button" disabled title="Επόμενο βήμα">📄 PDF ΔΕΛΤΙΟΥ</button><button type="button" onclick="newForm()">🆕 ΝΕΟ ΔΕΛΤΙΟ</button><button type="button" id="btnKat" style="display:none" onclick="anoixeKatopseis()">🗺 ΚΑΤΟΨΕΙΣ</button></div>
 
 <script>
@@ -244,6 +249,23 @@ function touEidous(){
 // 16.000 χαρακτήρες). Τα σημεία τα φέρνει η ίδια η σελίδα και τα κρατάει στο tablet,
 // ώστε να ξανανοίγει και χωρίς σύνδεση.
 let RDV = null;
+// ⚠️ ΕΚΔΟΣΗ της σελίδας, γραμμένη κάτω δεξιά. Δύο tablet δίπλα-δίπλα έδειξαν διαφορετική
+// συμπεριφορά (13/10/2026) και δεν υπήρχε τρόπος να φανεί αν το ένα κρατούσε παλιά
+// σελίδα. Άλλαζέ την σε ΚΑΘΕ δημοσίευση.
+const EKDOSI = '13/10 · 8';
+// Κρατάει το tablet ό,τι γράφεται; Σε ιδιωτική καρτέλα ή όταν η σελίδα ανοίγει ΜΕΣΑ σε
+// άλλη εφαρμογή, η αποθήκευση μπορεί να μη δουλεύει — και τότε κάθε αλλαγή δελτίου
+// έσβηνε σιωπηλά ό,τι είχε γραφτεί.
+function mnimiOk(){
+  try {
+    const k = 'ws_dokimi_' + Date.now();
+    localStorage.setItem(k, '1');
+    const ok = localStorage.getItem(k) === '1';
+    localStorage.removeItem(k);
+    return ok;
+  } catch (e) { return false; }
+}
+const MNIMI = mnimiOk();
 // Πότε στάλθηκε το δελτίο που βλέπεις (κενό = όχι ακόμα, ή άλλαξε μετά την αποστολή).
 let STALTHIKE = null;
 const PTSKEY = 'ws_pts_';                // + κωδικός πελάτη
@@ -407,6 +429,7 @@ function fortoseSimeia(kod){
     const apo = JSON.parse(localStorage.getItem(PTSKEY + kod) || 'null');
     if (apo && apo.pts && apo.pts.length) { ALL = mines(apo.pts); COLS = apo.cols || []; KATOPSEIS = apo.kat || ''; deixeKatopseis(); touEidous(); drawPts(); }
   } catch (e) {}
+  if (!ALL.length) msg('Φορτώνω τα σημεία του πελάτη…');
   fetch(EP + '?action=katagrafes&kod=' + encodeURIComponent(kod) + '&t=' + Date.now())
     .then(r => r.json())
     .then(j => {
@@ -604,6 +627,11 @@ function saveNow(){
   drawDrafts();
   return d;
 }
+// Γράφτηκε ΠΡΑΓΜΑΤΙΚΑ το δελτίο στο tablet; (ξαναδιαβάζεται, δεν υποθέτουμε)
+function sothike(){
+  try { const x = JSON.parse(localStorage.getItem(DRAFT + UID) || 'null'); return !!(x && x.uid === UID); }
+  catch (e) { return false; }
+}
 function draft(){ clearTimeout(tmr); tmr = setTimeout(saveNow, 300); }
 // ⚠️ Ρητό χρήστη 13/10/2026: «όταν στέλνεται, να αλλάζει χρώμα και να φαίνεται ότι έχουν
 // σταλεί». Πράσινο σε τρία σημεία: το κουμπί ΑΠΟΘΗΚΕΥΣΗ, το πρόχειρο στη μπάρα, και το
@@ -661,7 +689,14 @@ function delDraft(uid){
 // 13/10/2026: «έτσι πρέπει να πατάω στα link»). Χωρίς ραντεβού μένει όπως ήταν:
 // αλλάζει το είδος του δελτίου που βλέπεις.
 function allaxeDeltio(neo){
-  saveNow();
+  const d = saveNow();
+  // ⚠️ ΔΕΝ φεύγουμε από δελτίο με γραμμένα δείγματα αν δεν σώθηκε στο tablet: η αλλαγή
+  // είδους ξαναφορτώνει τη σελίδα και ό,τι δεν έχει σωθεί χάνεται.
+  if (exeiPeriexomeno(d) && !sothike()) {
+    alert('Αυτό το tablet ΔΕΝ μπορεί να κρατήσει το δελτίο όσο αλλάζεις είδος. ' +
+          'Πάτα πρώτα ΑΠΟΘΗΚΕΥΣΗ για να σταλεί, ή άνοιξε τη σελίδα στο Chrome (όχι σε ιδιωτική καρτέλα).');
+    return;
+  }
   location.href = urlRantevou(neo);
 }
 function urlRantevou(neo){
@@ -768,6 +803,13 @@ document.addEventListener('input', e => {
 document.addEventListener('change', () => { allaxeKati(); draft(); });
 
 (function init(){
+  document.getElementById('ekdosi').textContent = 'έκδοση ' + EKDOSI + (MNIMI ? '' : ' · ΧΩΡΙΣ ΜΝΗΜΗ');
+  if (!MNIMI) {
+    const x = document.getElementById('xorisMnimi');
+    x.textContent = '⚠️ Αυτό το tablet ΔΕΝ κρατάει ό,τι γράφεις (ιδιωτική καρτέλα ή σελίδα ανοιγμένη μέσα σε άλλη εφαρμογή). ' +
+                    'Άνοιξε τη σελίδα στο Chrome. Μέχρι τότε: συμπλήρωσε και πάτα ΑΠΟΘΗΚΕΥΣΗ πριν αλλάξεις δελτίο.';
+    x.style.display = 'block';
+  }
   ALL = b64json('pts') || [];
   PTS = ALL;
   COLS = b64json('cols') || [];
