@@ -555,6 +555,19 @@ function delDraft(uid){
   if (uid === UID) { location.href = location.pathname + '?new=1'; return; }
   drawDrafts();
 }
+// ⚠️ Σε δελτίο που άνοιξε από ΡΑΝΤΕΒΟΥ τα κουμπιά του είδους είναι ΚΑΡΤΕΛΕΣ: ένα πάτημα
+// πάει στο δελτίο του ίδιου ραντεβού για εκείνο το είδος (και το φτιάχνει αν δεν
+// υπάρχει). Έτσι το ημερολόγιο έχει ΕΝΑΝ σύνδεσμο και όχι τέσσερις (ρητό χρήστη
+// 13/10/2026: «έτσι πρέπει να πατάω στα link»). Χωρίς ραντεβού μένει όπως ήταν:
+// αλλάζει το είδος του δελτίου που βλέπεις.
+function allaxeDeltio(neo){
+  const d = collect(), h = d.header;
+  if (d.deigmata.length || idx().some(x => x.uid === UID)) saveNow();
+  const q = new URLSearchParams({ kod: h['ΚΩΔΙΚΟΣ_ΠΕΛΑΤΗ'] || '', eponymia: h['ΕΠΩΝΥΜΙΑ'] || '',
+                                  egk: h['ΕΓΚΑΤΑΣΤΑΣΗ'] || '', eidos: neo, seira: seiraIdx(), rdv: RDV });
+  if (P.get('ep')) q.set('ep', P.get('ep'));
+  location.href = location.pathname + '?' + q.toString();
+}
 // ΝΕΟ ΔΕΛΤΙΟ: ΔΕΝ σβήνει τίποτα — το τωρινό μένει στα πρόχειρα και ανοίγει άδειο.
 function newForm(){
   saveNow();
@@ -634,6 +647,10 @@ document.addEventListener('click', e => {
   if (x) { x.closest('.card, .srow').remove(); renumber(); drawPts(); draft(); return; }
   const seg = e.target.closest('.seg button');
   if (seg) {
+    if (RDV && seg.parentElement.id === 'segEidos') {
+      if (!seg.classList.contains('on')) allaxeDeltio(seg.textContent);
+      return;
+    }
     seg.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('on'));
     seg.classList.add('on');
     hint(); fixLayout(); renumber(); draft();
