@@ -114,6 +114,7 @@ textarea.v{min-height:60px;resize:vertical}
 .bar button{border:0;border-radius:6px;padding:12px 20px;font-weight:bold;font-family:inherit;font-size:13px;color:#fff;background:var(--blue);cursor:pointer;min-width:140px}
 .bar button.pri{background:var(--navy)}
 .bar button.pri.sent{background:#2e9e6b}
+#btnErg.sent{background:#2e9e6b}
 .bar button:disabled{background:#9fb3c2;cursor:not-allowed}
 .msg{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:6px;font-size:13px;display:none;z-index:9;max-width:90%;text-align:center}
 .msg.err{background:var(--red)}
@@ -200,7 +201,7 @@ textarea.v{min-height:60px;resize:vertical}
 </div>
 <div class="msg" id="msg"></div>
 <div id="ekdosi"></div>
-<div class="bar"><button class="pri" type="button" id="btnSave" onclick="save()">💾 ΑΠΟΘΗΚΕΥΣΗ</button><button type="button" disabled title="Επόμενο βήμα">📄 PDF ΔΕΛΤΙΟΥ</button><button type="button" onclick="newForm()">🆕 ΝΕΟ ΔΕΛΤΙΟ</button><button type="button" id="btnKat" style="display:none" onclick="anoixeKatopseis()">🗺 ΚΑΤΟΨΕΙΣ</button></div>
+<div class="bar"><button class="pri" type="button" id="btnSave" onclick="save()">💾 ΑΠΟΘΗΚΕΥΣΗ</button><button type="button" id="btnErg" onclick="ergastirio()">🧪 ΣΤΟ ΕΡΓΑΣΤΗΡΙΟ</button><button type="button" onclick="newForm()">🆕 ΝΕΟ ΔΕΛΤΙΟ</button><button type="button" id="btnKat" style="display:none" onclick="anoixeKatopseis()">🗺 ΚΑΤΟΨΕΙΣ</button></div>
 
 <script>
 // ---------------------------------------------------------------------------
@@ -252,7 +253,7 @@ let RDV = null;
 // ⚠️ ΕΚΔΟΣΗ της σελίδας, γραμμένη κάτω δεξιά. Δύο tablet δίπλα-δίπλα έδειξαν διαφορετική
 // συμπεριφορά (13/10/2026) και δεν υπήρχε τρόπος να φανεί αν το ένα κρατούσε παλιά
 // σελίδα. Άλλαζέ την σε ΚΑΘΕ δημοσίευση.
-const EKDOSI = '13/10 · 11';
+const EKDOSI = '13/10 · 12';
 // Κρατάει το tablet ό,τι γράφεται; Σε ιδιωτική καρτέλα ή όταν η σελίδα ανοίγει ΜΕΣΑ σε
 // άλλη εφαρμογή, η αποθήκευση μπορεί να μη δουλεύει — και τότε κάθε αλλαγή δελτίου
 // έσβηνε σιωπηλά ό,τι είχε γραφτεί.
@@ -288,6 +289,13 @@ function elegxeEkdosi(){
 }
 // Πότε στάλθηκε το δελτίο που βλέπεις (κενό = όχι ακόμα, ή άλλαξε μετά την αποστολή).
 let STALTHIKE = null;
+// ΑΠΟΣΤΟΛΗ ΣΤΟ ΕΡΓΑΣΤΗΡΙΟ από το tablet (απόφαση χρήστη 13/10/2026: «φεύγει κατευθείαν από το
+// cloud, χωρίς υπολογιστή»). Το PDF και το email τα βγάζει ΞΕΧΩΡΙΣΤΟ script του Google — το ίδιο
+// έντυπο με του γραφείου. ERGA = πότε έφυγε αυτό το δελτίο, ERGAR = ο αριθμός ΔΔ που πήρε.
+// ⚠️ Το κλειδί `k` έρχεται ΜΟΝΟ από τον σύνδεσμο του ραντεβού και κρατιέται στο tablet· δεν
+// είναι γραμμένο στη σελίδα, γιατί η σελίδα είναι δημόσια.
+const ERG = 'https://script.google.com/macros/s/AKfycbyDg5yPJ1v1ZyqItELj5vdfWOHhrc6jyJz2yyoxYINxhQNeh8q_POj5L3xLnCiRvWMddg/exec';
+let ERGA = null, ERGAR = '';
 const PTSKEY = 'ws_pts_';                // + κωδικός πελάτη
 
 const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
@@ -590,7 +598,7 @@ function collect(){
     });
     cards.push(Object.assign({}, top, { 'ΣΗΜΕΙΟ_ID': card.dataset.sid ? Number(card.dataset.sid) : null, rows: rows }));
   });
-  return { form: 'ws_deigmatolipsia', uid: UID, sent_at: new Date().toISOString(), rdv: RDV, stalthike: STALTHIKE,
+  return { form: 'ws_deigmatolipsia', uid: UID, sent_at: new Date().toISOString(), rdv: RDV, stalthike: STALTHIKE, erga: ERGA, ergar: ERGAR,
            header: h, deigmata: deigmata, cards: cards };
 }
 function restore(d){
@@ -607,6 +615,7 @@ function restore(d){
   UID = d.uid || newUid();
   RDV = d.rdv || null;
   STALTHIKE = d.stalthike || null;
+  ERGA = d.erga || null; ERGAR = d.ergar || '';
   let cards = d.cards;
   if (!cards) {                     // παλιά πρόχειρα (γραμμές): ομαδοποίηση ανά σημείο
     const map = {};
@@ -650,7 +659,7 @@ function saveNow(){
     const list = idx().filter(x => x.uid !== UID);
     list.push({ uid: UID, pelatis: d.header['ΕΠΩΝΥΜΙΑ'] || '(χωρίς πελάτη)',
                 eidos: d.header['ΕΙΔΟΣ'] || '', plithos: d.deigmata.length, rdv: RDV,
-                stalthike: d.stalthike || null, when: new Date().toISOString() });
+                stalthike: d.stalthike || null, erga: d.erga || null, when: new Date().toISOString() });
     idxSave(list);
   } catch (e) {}
   drawDrafts();
@@ -674,6 +683,11 @@ function zografise(){
     b.classList.toggle('sent', !!STALTHIKE);
     b.textContent = STALTHIKE ? '✓ ΣΤΑΛΘΗΚΕ ' + ora(STALTHIKE) : '💾 ΑΠΟΘΗΚΕΥΣΗ';
   }
+  const be = document.getElementById('btnErg');
+  if (be && !be.disabled) {
+    be.classList.toggle('sent', !!ERGA);
+    be.textContent = ERGA ? '🧪 ΣΤΟ ΕΡΓΑΣΤΗΡΙΟ ✓ ' + ora(ERGA) + (ERGAR ? ' · ' + ERGAR : '') : '🧪 ΣΤΟ ΕΡΓΑΣΤΗΡΙΟ';
+  }
   const list = idx();
   document.querySelectorAll('#segEidos button').forEach(k => {
     const x = RDV ? list.filter(y => String(y.rdv) === String(RDV) && y.eidos === k.textContent).pop() : null;
@@ -693,7 +707,8 @@ function drawDrafts(){
   document.getElementById('drafts').innerHTML = list.map(x =>
     '<div class="draft' + (x.uid === UID ? ' cur' : '') + (x.stalthike ? ' sent' : '') + '" data-uid="' + x.uid + '">' +
     '<span><b>' + esc(x.pelatis) + '</b><br><small>' + esc(x.eidos) + ' · ' +
-    x.plithos + ' δείγματα' + (x.stalthike ? ' · ✓ ΣΤΑΛΘΗΚΕ ' + ora(x.stalthike) : ' · δεν έχει σταλεί') + '</small></span>' +
+    x.plithos + ' δείγματα' + (x.stalthike ? ' · ✓ ΣΤΑΛΘΗΚΕ ' + ora(x.stalthike) : ' · δεν έχει σταλεί') +
+    (x.erga ? ' · 🧪 εργαστήριο ' + ora(x.erga) : '') + '</small></span>' +
     '<button type="button" class="x" title="Διαγραφή">✕</button></div>').join('');
 }
 function openDraft(uid){
@@ -770,23 +785,78 @@ function fixLayout(){
   if (!box.children.length) { if (isLeg()) addCard({}, true); else addSimple({}); }
   renumber();
 }
+function lathosDeltiou(d){
+  if (!d.header['ΕΙΔΟΣ']) return 'Διάλεξε είδος δελτίου';
+  if (!d.header['ΗΜΕΡΟΜΗΝΙΑ']) return 'Λείπει η ημερομηνία';
+  if (!d.header['ΕΠΩΝΥΜΙΑ']) return 'Λείπει ο πελάτης';
+  if (!exeiPeriexomeno(d)) return 'Δεν υπάρχει κανένα δείγμα';
+  return '';
+}
 async function save(){
   const d = collect();
-  if (!d.header['ΕΙΔΟΣ']) return msg('Διάλεξε είδος δελτίου', true);
-  if (!d.header['ΗΜΕΡΟΜΗΝΙΑ']) return msg('Λείπει η ημερομηνία', true);
-  if (!d.header['ΕΠΩΝΥΜΙΑ']) return msg('Λείπει ο πελάτης', true);
-  if (!d.deigmata.length) return msg('Δεν υπάρχει κανένα δείγμα', true);
+  const l = lathosDeltiou(d);
+  if (l) { msg(l, true); return false; }
   saveNow();
-  if (!EP) return msg('Η αποθήκευση στο cloud δεν έχει ενεργοποιηθεί ακόμα — κρατήθηκε ως πρόχειρο στο tablet', true);
+  if (!EP) { msg('Η αποθήκευση στο cloud δεν έχει ενεργοποιηθεί ακόμα — κρατήθηκε ως πρόχειρο στο tablet', true); return false; }
   const b = document.getElementById('btnSave');
   b.disabled = true; b.textContent = '⏳ ΑΠΟΘΗΚΕΥΣΗ…';
+  let ok = false;
   try {
     await fetch(EP, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(d) });
     STALTHIKE = new Date().toISOString();
+    ok = true;
     msg('✓ Το δελτίο στάλθηκε για αποθήκευση');
   } catch (e) {
     msg('Δεν στάλθηκε (σύνδεση;) — κρατήθηκε ως πρόχειρο, ξαναπάτα ΑΠΟΘΗΚΕΥΣΗ', true);
   } finally { b.disabled = false; saveNow(); }
+  return ok;
+}
+
+// --- αποστολή στο εργαστήριο ---------------------------------------------------
+function kleidiErg(){
+  let k = P.get('k') || '';
+  try { if (k) localStorage.setItem('ws_erg_k', k); else k = localStorage.getItem('ws_erg_k') || ''; } catch (e) {}
+  return k;
+}
+function katastasiErg(){
+  return fetch(ERG + '?action=katastasi&uid=' + encodeURIComponent(UID) + '&t=' + Date.now()).then(r => r.json());
+}
+async function ergastirio(){
+  const l = lathosDeltiou(collect());
+  if (l) return msg(l, true);
+  const k = kleidiErg();
+  if (!k) return msg('Η αποστολή στο εργαστήριο δουλεύει όταν ανοίγεις το δελτίο από το ΡΑΝΤΕΒΟΥ του ημερολογίου', true);
+  if (!confirm(ERGA ? 'Το δελτίο έχει ήδη σταλεί στο εργαστήριο στις ' + ora(ERGA) + '. Να ΞΑΝΑΣΤΑΛΕΙ;'
+                    : 'Να σταλεί το δελτίο στο εργαστήριο τώρα;')) return;
+  const xana = !!ERGA;
+  // ⚠️ ΠΡΩΤΑ αποθήκευση: ό,τι φεύγει στο εργαστήριο πρέπει να υπάρχει και στη βάση μας.
+  if (!STALTHIKE && !(await save())) return;
+  const b = document.getElementById('btnErg');
+  b.disabled = true; b.textContent = '⏳ ΣΤΕΛΝΩ ΣΤΟ ΕΡΓΑΣΤΗΡΙΟ…';
+  const prin = ERGA;
+  let apot = null;
+  try {
+    // «no-cors»: η απάντηση δεν διαβάζεται — γι' αυτό μετά ΡΩΤΑΜΕ αν όντως έφυγε.
+    await fetch(ERG, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                       body: JSON.stringify({ action: 'ergastirio', k: k, xana: xana, deltio: collect() }) });
+    for (let i = 0; i < 16 && !apot; i++) {
+      await new Promise(r => setTimeout(r, 2500));
+      try {
+        const j = await katastasiErg();
+        if (j && j.ok && j.stalthike && j.stalthike !== prin) apot = j;
+      } catch (e) {}
+    }
+  } catch (e) {}
+  b.disabled = false;
+  if (apot) {
+    ERGA = apot.stalthike; ERGAR = apot.arithmos || '';
+    saveNow();
+    msg(apot.dokimi ? '✓ ΔΟΚΙΜΗ: το δελτίο ' + ERGAR + ' πήγε ΜΟΝΟ στο δικό μας email, όχι στο εργαστήριο'
+                    : '✓ Το δελτίο ' + ERGAR + ' στάλθηκε στο εργαστήριο');
+  } else {
+    zografise();
+    msg('ΔΕΝ επιβεβαιώθηκε η αποστολή στο εργαστήριο (σύνδεση;) — ξαναπάτα το κουμπί', true);
+  }
 }
 
 // --- συμβάντα --------------------------------------------------------------
@@ -834,6 +904,9 @@ document.addEventListener('change', () => { allaxeKati(); draft(); });
 (function init(){
   document.getElementById('ekdosi').textContent = 'έκδοση ' + EKDOSI + (MNIMI ? '' : ' · ΧΩΡΙΣ ΜΝΗΜΗ');
   setTimeout(elegxeEkdosi, 1500);
+  kleidiErg();
+  setTimeout(() => { if (UID) katastasiErg().then(j => { if (j && j.ok && j.stalthike && j.stalthike !== ERGA) {
+    ERGA = j.stalthike; ERGAR = j.arithmos || ''; if (exeiPeriexomeno(collect())) saveNow(); else zografise(); } }).catch(() => {}); }, 2500);
   if (!MNIMI) {
     const x = document.getElementById('xorisMnimi');
     x.textContent = '⚠️ Αυτό το tablet ΔΕΝ κρατάει ό,τι γράφεις (ιδιωτική καρτέλα ή σελίδα ανοιγμένη μέσα σε άλλη εφαρμογή). ' +
