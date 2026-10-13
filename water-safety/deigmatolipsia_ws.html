@@ -61,6 +61,10 @@ textarea.v{min-height:60px;resize:vertical}
     padding:9px 10px;cursor:pointer;position:relative}
 .pt .nm{font-weight:bold;color:var(--navy);font-size:13px}
 .pt .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+/* Ο ΚΩΔΙΚΟΣ ΣΗΜΕΙΟΥ της κάτοψης (Ν1 · Β1 · Π1 · Κ1). ⚠️ ΑΛΛΟ πράγμα από τον κωδικό
+   δείγματος (01, 02…) που είναι στο σκούρο κουτί της κάρτας. */
+.kodS{display:inline-block;background:#2DAFCE;color:#fff;border-radius:4px;padding:1px 6px;font-size:11.5px;font-weight:bold;margin-right:6px;white-space:nowrap}
+.kodS:empty{display:none}
 .pt .tag{display:inline-block;font-size:11px;font-weight:bold;border-radius:9px;padding:2px 8px;margin-top:6px}
 .pt.pote{border-left-color:var(--red)}     .pt.pote .tag{background:#FDECEA;color:var(--red)}
 .pt.palio{border-left-color:var(--blue)}   .pt.palio .tag{background:#E3F4FA;color:var(--blue)}
@@ -291,7 +295,7 @@ function addCard(d, four){
   el.className = 'card';
   if (d['ΣΗΜΕΙΟ_ID']) el.dataset.sid = d['ΣΗΜΕΙΟ_ID'];
   el.innerHTML =
-    '<div class="top"><span class="kod"></span>' +
+    '<div class="top"><span class="kod"></span><span class="kodS"></span>' +
     '<input data-c="ΧΩΡΟΣ" placeholder="π.χ. 1ος ΔΩΜΑΤΙΟ 105" value="' + esc(d['ΧΩΡΟΣ']) + '">' +
     '<input class="simeio" data-c="ΣΗΜΕΙΟ" placeholder="ντους / βρύση / δεξαμενή" value="' + esc(d['ΣΗΜΕΙΟ']) + '">' +
     '<select data-c="ΧΡΗΣΗ">' + opt(XRISI, d['ΧΡΗΣΗ'] || 'Πόσιμο') + '</select>' +
@@ -310,7 +314,7 @@ function addSimple(d){
   const el = document.createElement('div');
   el.className = 'srow';
   if (d['ΣΗΜΕΙΟ_ID']) el.dataset.sid = d['ΣΗΜΕΙΟ_ID'];
-  el.innerHTML = '<span class="kod"></span>' +
+  el.innerHTML = '<span class="kod"></span><span class="kodS"></span>' +
     '<input class="desc" data-c="ΧΩΡΟΣ" placeholder="Περιγραφή δείγματος" value="' + esc(d['ΧΩΡΟΣ']) + '">' +
     '<select data-c="ΧΡΗΣΗ">' + opt(XRISI, d['ΧΡΗΣΗ'] || prokat) + '</select>' +
     '<select class="anal" data-c="ΑΝΑΛΥΣΗ" title="Αιτούμενες αναλύσεις">' + opt(ANAL, d['ΑΝΑΛΥΣΗ'] || 'Μ') + '</select>' +
@@ -368,6 +372,7 @@ function apoKatagrafes(j){
              'ΧΡΗΣΗ': String(s['ΧΡΗΣΗ'] || ''), 'ΣΗΜΕΙΟ_ID': Number(s['ΣΗΜΕΙΟ_ID']) || null,
              'ΚΡΙΣΙΜΟ': !!Number(s['ΚΡΙΣΙΜΟ']),
              'ΕΙΔΗ': String(s['ΕΙΔΗ'] || '').split(',').filter(Boolean),
+             'ΚΩΔ': String(s['ΚΩΔΙΚΟΣ_ΣΗΜΕΙΟΥ'] || '').trim(),
              'ΤΕΛΕΥΤΑΙΑ': t ? t.slice(8, 10) + '/' + t.slice(5, 7) + '/' + t.slice(0, 4) : '',
              'ΦΟΡΕΣ': ds.length, 'ΣΤΗΛΕΣ': ds.map(d => d.slice(5, 7) + '/' + d.slice(0, 4)),
              _t: t, _s: Number(s['ΣΕΙΡΑ_ΔΕΛΤΙΟΥ']) || 0 };
@@ -428,7 +433,17 @@ function kartaTou(p){
   }) || null;
 }
 function ptChosen(p){ return !!kartaTou(p); }
+// Ο κωδικός σημείου πάνω σε κάθε κάρτα — από το σημείο του καταλόγου που διαλέχτηκε.
+function kodikoiStisKartes(){
+  const ana = {};
+  ALL.forEach(p => { if (p['ΣΗΜΕΙΟ_ID'] && p['ΚΩΔ']) ana[p['ΣΗΜΕΙΟ_ID']] = p['ΚΩΔ']; });
+  [...document.getElementById('cards').children].forEach(c => {
+    const k = c.querySelector('.kodS');
+    if (k) k.textContent = ana[c.dataset.sid] || '';
+  });
+}
 function drawPts(){
+  kodikoiStisKartes();
   document.getElementById('secPts').style.display = PTS.length ? '' : 'none';
   if (!PTS.length) return;
   document.getElementById('pts').innerHTML = PTS.map((p, i) => {
@@ -437,7 +452,7 @@ function drawPts(){
     return '<div class="pt ' + t.cls + (ptChosen(p) ? ' on' : '') + '" data-i="' + i + '"' +
       (show ? '' : ' style="display:none"') + '>' +
       (p['ΚΡΙΣΙΜΟ'] ? '<span class="star">★</span>' : '') +
-      '<div class="nm">' + esc(p['ΧΩΡΟΣ'] || '(χωρίς χώρο)') + '</div>' +
+      '<div class="nm"><span class="kodS">' + esc(p['ΚΩΔ'] || '') + '</span>' + esc(p['ΧΩΡΟΣ'] || '(χωρίς χώρο)') + '</div>' +
       '<div class="sub">' + esc(p['ΣΗΜΕΙΟ'] || '') + '</div>' +
       '<span class="tag">' + t.txt + '</span></div>';
   }).join('');
@@ -449,7 +464,7 @@ function drawHist(){
   h.innerHTML = '<table><tr><th style="text-align:left">Σημείο</th>' +
     COLS.map(c => '<th>' + esc(c) + '</th>').join('') + '<th>Σύνολο</th></tr>' +
     PTS.map(p => '<tr><td class="room">' + (p['ΚΡΙΣΙΜΟ'] ? '★ ' : '') +
-      esc(p['ΧΩΡΟΣ']) + ' · ' + esc(p['ΣΗΜΕΙΟ']) + '</td>' +
+      '<span class="kodS">' + esc(p['ΚΩΔ'] || '') + '</span>' + esc(p['ΧΩΡΟΣ']) + ' · ' + esc(p['ΣΗΜΕΙΟ']) + '</td>' +
       COLS.map(c => ((p['ΣΤΗΛΕΣ'] || []).indexOf(c) >= 0)
         ? '<td><span class="dot"></span></td>' : '<td class="none">—</td>').join('') +
       '<td>' + (p['ΦΟΡΕΣ'] || 0) + '</td></tr>').join('') + '</table>' +
