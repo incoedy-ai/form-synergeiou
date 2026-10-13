@@ -30,6 +30,12 @@ textarea.v{min-height:60px;resize:vertical}
 .seg button{flex:1;border:0;background:var(--soft);font-weight:bold;font-family:inherit;font-size:12.5px;color:var(--navy);cursor:pointer;padding:0 6px}
 .seg button.on{background:var(--blue);color:#fff}
 .seg button+button{border-left:1px solid var(--line)}
+/* ΣΤΑΛΘΗΚΕ = πράσινο, παντού το ίδιο χρώμα: κουμπί είδους, πρόχειρο, κουμπί αποθήκευσης */
+.seg button.sent{background:#e3f4ea;color:#1f7f55}
+.seg button.sent::after{content:' ✓'}
+.seg button.has::after{content:' ●';color:#d97706;font-size:10px}
+.seg button.on.sent{background:#2e9e6b;color:#fff}
+.seg button.on.has::after{color:#ffd9a0}
 .hint{font-size:11px;color:var(--muted);margin-top:6px}
 .total{margin-top:8px;font-size:13px;color:var(--navy)}
 .req{color:var(--red)}
@@ -38,6 +44,8 @@ textarea.v{min-height:60px;resize:vertical}
 .draft{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-left:5px solid var(--blue);
        background:var(--soft);border-radius:6px;padding:8px 10px;font-size:12px;color:var(--navy);cursor:pointer}
 .draft.cur{border-left-color:var(--navy);background:var(--grey)}
+.draft.sent{border-left-color:#2e9e6b;background:#e3f4ea}
+.draft.sent small{color:#1f7f55;font-weight:bold}
 .draft b{font-size:12.5px}
 .draft small{color:var(--muted)}
 .draft .x{border:0;background:transparent;color:#b33;font-size:14px;cursor:pointer;padding:0 2px}
@@ -101,6 +109,7 @@ textarea.v{min-height:60px;resize:vertical}
 .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #ccd;padding:10px;display:flex;gap:10px;justify-content:center;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
 .bar button{border:0;border-radius:6px;padding:12px 20px;font-weight:bold;font-family:inherit;font-size:13px;color:#fff;background:var(--blue);cursor:pointer;min-width:140px}
 .bar button.pri{background:var(--navy)}
+.bar button.pri.sent{background:#2e9e6b}
 .bar button:disabled{background:#9fb3c2;cursor:not-allowed}
 .msg{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:6px;font-size:13px;display:none;z-index:9;max-width:90%;text-align:center}
 .msg.err{background:var(--red)}
@@ -226,6 +235,8 @@ function touEidous(){
 // 16.000 χαρακτήρες). Τα σημεία τα φέρνει η ίδια η σελίδα και τα κρατάει στο tablet,
 // ώστε να ξανανοίγει και χωρίς σύνδεση.
 let RDV = null;
+// Πότε στάλθηκε το δελτίο που βλέπεις (κενό = όχι ακόμα, ή άλλαξε μετά την αποστολή).
+let STALTHIKE = null;
 const PTSKEY = 'ws_pts_';                // + κωδικός πελάτη
 
 const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
@@ -505,7 +516,7 @@ function collect(){
     });
     cards.push(Object.assign({}, top, { 'ΣΗΜΕΙΟ_ID': card.dataset.sid ? Number(card.dataset.sid) : null, rows: rows }));
   });
-  return { form: 'ws_deigmatolipsia', uid: UID, sent_at: new Date().toISOString(), rdv: RDV,
+  return { form: 'ws_deigmatolipsia', uid: UID, sent_at: new Date().toISOString(), rdv: RDV, stalthike: STALTHIKE,
            header: h, deigmata: deigmata, cards: cards };
 }
 function restore(d){
@@ -521,6 +532,7 @@ function restore(d){
   });
   UID = d.uid || newUid();
   RDV = d.rdv || null;
+  STALTHIKE = d.stalthike || null;
   let cards = d.cards;
   if (!cards) {                     // παλιά πρόχειρα (γραμμές): ομαδοποίηση ανά σημείο
     const map = {};
@@ -543,27 +555,66 @@ function restore(d){
 let tmr = null;
 function idx(){ try { return JSON.parse(localStorage.getItem(INDEX) || '[]'); } catch (e) { return []; } }
 function idxSave(list){ try { localStorage.setItem(INDEX, JSON.stringify(list)); } catch (e) {} }
+// ⚠️ ΑΔΕΙΟ δελτίο ΔΕΝ γίνεται πρόχειρο. Κάθε καινούρια σελίδα ανοίγει με μία έτοιμη κενή
+// γραμμή και σωζόταν αμέσως ως «(χωρίς πελάτη) · 4 δείγματα» — έτσι, όταν έσβηνες το
+// πρόχειρο που έβλεπες, στη θέση του εμφανιζόταν άλλο (χρήστης 13/10/2026: «όταν πατάω
+// Διαγραφή δεν διαγράφονται, ξαναεμφανίζονται»).
+function exeiPeriexomeno(d){
+  return (d.deigmata || []).some(r => ['ΧΩΡΟΣ', 'ΣΗΜΕΙΟ', 'ΘΕΡΜΟΚΡΑΣΙΑ', 'ΧΛΩΡΙΟ', 'PH', 'ΠΑΡΑΤΗΡΗΣΕΙΣ']
+    .some(k => String(r[k] == null ? '' : r[k]).trim()));
+}
 function saveNow(){
   const d = collect();
+  if (!exeiPeriexomeno(d)) {
+    try { localStorage.removeItem(DRAFT + UID); } catch (e) {}
+    idxSave(idx().filter(x => x.uid !== UID));
+    drawDrafts();
+    return d;
+  }
   try {
     localStorage.setItem(DRAFT + UID, JSON.stringify(d));
     const list = idx().filter(x => x.uid !== UID);
     list.push({ uid: UID, pelatis: d.header['ΕΠΩΝΥΜΙΑ'] || '(χωρίς πελάτη)',
                 eidos: d.header['ΕΙΔΟΣ'] || '', plithos: d.deigmata.length, rdv: RDV,
-                stalthike: !!d.stalthike, when: new Date().toISOString() });
+                stalthike: d.stalthike || null, when: new Date().toISOString() });
     idxSave(list);
   } catch (e) {}
   drawDrafts();
   return d;
 }
 function draft(){ clearTimeout(tmr); tmr = setTimeout(saveNow, 300); }
+// ⚠️ Ρητό χρήστη 13/10/2026: «όταν στέλνεται, να αλλάζει χρώμα και να φαίνεται ότι έχουν
+// σταλεί». Πράσινο σε τρία σημεία: το κουμπί ΑΠΟΘΗΚΕΥΣΗ, το πρόχειρο στη μπάρα, και το
+// κουμπί του είδους (όταν το δελτίο είναι ραντεβού). Η πορτοκαλί τελεία = έχει γραφτεί
+// κάτι αλλά ΔΕΝ έχει σταλεί. Οποιαδήποτε αλλαγή μετά την αποστολή το ξαναβγάζει από το
+// πράσινο: ό,τι άλλαξε δεν έχει φύγει.
+function ora(iso){ const t = new Date(iso); return isNaN(t) ? '' : t.toTimeString().slice(0, 5); }
+function zografise(){
+  const b = document.getElementById('btnSave');
+  if (b && !b.disabled) {
+    b.classList.toggle('sent', !!STALTHIKE);
+    b.textContent = STALTHIKE ? '✓ ΣΤΑΛΘΗΚΕ ' + ora(STALTHIKE) : '💾 ΑΠΟΘΗΚΕΥΣΗ';
+  }
+  const list = idx();
+  document.querySelectorAll('#segEidos button').forEach(k => {
+    const x = RDV ? list.filter(y => String(y.rdv) === String(RDV) && y.eidos === k.textContent).pop() : null;
+    k.classList.toggle('sent', !!(x && x.stalthike));
+    k.classList.toggle('has', !!(x && !x.stalthike));
+  });
+}
+function allaxeKati(){
+  if (!STALTHIKE) return;
+  STALTHIKE = null;
+  msg('Άλλαξες το δελτίο μετά την αποστολή — πάτα ξανά ΑΠΟΘΗΚΕΥΣΗ για να φύγει η αλλαγή', true);
+}
 function drawDrafts(){
+  zografise();
   const list = idx();
   document.getElementById('secDrafts').style.display = list.length > 1 ? '' : 'none';
   document.getElementById('drafts').innerHTML = list.map(x =>
-    '<div class="draft' + (x.uid === UID ? ' cur' : '') + '" data-uid="' + x.uid + '">' +
+    '<div class="draft' + (x.uid === UID ? ' cur' : '') + (x.stalthike ? ' sent' : '') + '" data-uid="' + x.uid + '">' +
     '<span><b>' + esc(x.pelatis) + '</b><br><small>' + esc(x.eidos) + ' · ' +
-    x.plithos + ' δείγματα' + (x.stalthike ? ' · ✓ στάλθηκε' : '') + '</small></span>' +
+    x.plithos + ' δείγματα' + (x.stalthike ? ' · ✓ ΣΤΑΛΘΗΚΕ ' + ora(x.stalthike) : ' · δεν έχει σταλεί') + '</small></span>' +
     '<button type="button" class="x" title="Διαγραφή">✕</button></div>').join('');
 }
 function openDraft(uid){
@@ -575,7 +626,11 @@ function delDraft(uid){
   if (!confirm('Να διαγραφεί αυτό το πρόχειρο δελτίο;')) return;
   try { localStorage.removeItem(DRAFT + uid); } catch (e) {}
   idxSave(idx().filter(x => x.uid !== uid));
-  if (uid === UID) { location.href = location.pathname + '?new=1'; return; }
+  if (uid === UID) {
+    // Από ραντεβού μένεις στο ΙΔΙΟ ραντεβού και είδος, με καθαρό δελτίο.
+    location.href = RDV ? urlRantevou(eidos()) : location.pathname + '?new=1';
+    return;
+  }
   drawDrafts();
 }
 // ⚠️ Σε δελτίο που άνοιξε από ΡΑΝΤΕΒΟΥ τα κουμπιά του είδους είναι ΚΑΡΤΕΛΕΣ: ένα πάτημα
@@ -584,12 +639,15 @@ function delDraft(uid){
 // 13/10/2026: «έτσι πρέπει να πατάω στα link»). Χωρίς ραντεβού μένει όπως ήταν:
 // αλλάζει το είδος του δελτίου που βλέπεις.
 function allaxeDeltio(neo){
-  const d = collect(), h = d.header;
-  if (d.deigmata.length || idx().some(x => x.uid === UID)) saveNow();
+  saveNow();
+  location.href = urlRantevou(neo);
+}
+function urlRantevou(neo){
+  const h = collect().header;
   const q = new URLSearchParams({ kod: h['ΚΩΔΙΚΟΣ_ΠΕΛΑΤΗ'] || '', eponymia: h['ΕΠΩΝΥΜΙΑ'] || '',
                                   egk: h['ΕΓΚΑΤΑΣΤΑΣΗ'] || '', eidos: neo, seira: seiraIdx(), rdv: RDV });
   if (P.get('ep')) q.set('ep', P.get('ep'));
-  location.href = location.pathname + '?' + q.toString();
+  return location.pathname + '?' + q.toString();
 }
 // ΝΕΟ ΔΕΛΤΙΟ: ΔΕΝ σβήνει τίποτα — το τωρινό μένει στα πρόχειρα και ανοίγει άδειο.
 function newForm(){
@@ -638,10 +696,11 @@ async function save(){
   b.disabled = true; b.textContent = '⏳ ΑΠΟΘΗΚΕΥΣΗ…';
   try {
     await fetch(EP, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(d) });
+    STALTHIKE = new Date().toISOString();
     msg('✓ Το δελτίο στάλθηκε για αποθήκευση');
   } catch (e) {
     msg('Δεν στάλθηκε (σύνδεση;) — κρατήθηκε ως πρόχειρο, ξαναπάτα ΑΠΟΘΗΚΕΥΣΗ', true);
-  } finally { b.disabled = false; b.textContent = '💾 ΑΠΟΘΗΚΕΥΣΗ'; }
+  } finally { b.disabled = false; saveNow(); }
 }
 
 // --- συμβάντα --------------------------------------------------------------
@@ -661,13 +720,13 @@ document.addEventListener('click', e => {
     return;
   }
   const pt = e.target.closest('.pt');
-  if (pt) { pickPt(Number(pt.dataset.i)); return; }
+  if (pt) { allaxeKati(); pickPt(Number(pt.dataset.i)); return; }
   const dx = e.target.closest('.draft .x');
   if (dx) { delDraft(dx.closest('.draft').dataset.uid); return; }
   const dr = e.target.closest('.draft');
   if (dr) { openDraft(dr.dataset.uid); return; }
   const x = e.target.closest('.card .x, .srow .x');
-  if (x) { x.closest('.card, .srow').remove(); renumber(); drawPts(); draft(); return; }
+  if (x) { allaxeKati(); x.closest('.card, .srow').remove(); renumber(); drawPts(); draft(); return; }
   const seg = e.target.closest('.seg button');
   if (seg) {
     if (RDV && seg.parentElement.id === 'segEidos') {
@@ -681,9 +740,10 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('input', e => {
   if (e.target.closest('.card .top') || e.target.closest('.srow')) drawPts();   // ✓ στα διαλεγμένα σημεία
+  allaxeKati();
   draft();
 });
-document.addEventListener('change', draft);
+document.addEventListener('change', () => { allaxeKati(); draft(); });
 
 (function init(){
   ALL = b64json('pts') || [];
