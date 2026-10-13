@@ -396,15 +396,17 @@ function fortoseSimeia(kod){
     });
 }
 
-function ptChosen(p){
+// Η κάρτα (ή η γραμμή) που αντιστοιχεί σε ένα σημείο της λίστας — αν έχει διαλεχτεί.
+function kartaTou(p){
   const k = (p['ΧΩΡΟΣ'] || '') + '|' + (p['ΣΗΜΕΙΟ'] || '');
   const k2 = [p['ΧΩΡΟΣ'], p['ΣΗΜΕΙΟ']].filter(Boolean).join(' · ');
-  return [...document.getElementById('cards').children].some(c => {
+  return [...document.getElementById('cards').children].find(c => {
     const x = c.querySelector('[data-c="ΧΩΡΟΣ"]'), y = c.querySelector('[data-c="ΣΗΜΕΙΟ"]');
     if (!x) return false;
     return y ? ((x.value || '') + '|' + (y.value || '')) === k : (x.value || '') === k2;
-  });
+  }) || null;
 }
+function ptChosen(p){ return !!kartaTou(p); }
 function drawPts(){
   document.getElementById('secPts').style.display = PTS.length ? '' : 'none';
   if (!PTS.length) return;
@@ -434,6 +436,17 @@ function drawHist(){
 }
 function pickPt(i){
   const p = PTS[i]; if (!p) return;
+  // ⚠️ ΔΕΥΤΕΡΟ ΠΑΤΗΜΑ = ΑΠΟΕΠΙΛΟΓΗ (ρητό χρήστη 13/10/2026: «αν κατά λάθος το πατήσω;»).
+  // Πριν, κάθε πάτημα πρόσθετε ΑΛΛΗ ΜΙΑ κάρτα για το ίδιο δωμάτιο. Αν έχουν γραφτεί
+  // μετρήσεις ρωτάει πρώτα — ένα στραβό άγγιγμα δεν πρέπει να σβήνει δουλειά.
+  const yparxei = kartaTou(p);
+  if (yparxei) {
+    const grammena = [...yparxei.querySelectorAll('input[data-c="ΘΕΡΜΟΚΡΑΣΙΑ"], input[data-c="ΧΛΩΡΙΟ"], input[data-c="PH"], input[data-c="ΠΑΡΑΤΗΡΗΣΕΙΣ"]')]
+      .some(x => x.value.trim());
+    if (grammena && !confirm('Στο σημείο αυτό έχεις γράψει μετρήσεις. Να αφαιρεθεί από το δελτίο;')) return;
+    yparxei.remove(); renumber(); drawPts(); draft();
+    return;
+  }
   if (!isLeg()) {
     addSimple({ 'ΧΩΡΟΣ': [p['ΧΩΡΟΣ'], p['ΣΗΜΕΙΟ']].filter(Boolean).join(' · '),
                 'ΧΡΗΣΗ': p['ΧΡΗΣΗ'], 'ΣΗΜΕΙΟ_ID': p['ΣΗΜΕΙΟ_ID'] });
