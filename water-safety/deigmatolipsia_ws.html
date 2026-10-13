@@ -252,7 +252,7 @@ let RDV = null;
 // ⚠️ ΕΚΔΟΣΗ της σελίδας, γραμμένη κάτω δεξιά. Δύο tablet δίπλα-δίπλα έδειξαν διαφορετική
 // συμπεριφορά (13/10/2026) και δεν υπήρχε τρόπος να φανεί αν το ένα κρατούσε παλιά
 // σελίδα. Άλλαζέ την σε ΚΑΘΕ δημοσίευση.
-const EKDOSI = '13/10 · 10';
+const EKDOSI = '13/10 · 11';
 // Κρατάει το tablet ό,τι γράφεται; Σε ιδιωτική καρτέλα ή όταν η σελίδα ανοίγει ΜΕΣΑ σε
 // άλλη εφαρμογή, η αποθήκευση μπορεί να μη δουλεύει — και τότε κάθε αλλαγή δελτίου
 // έσβηνε σιωπηλά ό,τι είχε γραφτεί.
@@ -266,6 +266,26 @@ function mnimiOk(){
   } catch (e) { return false; }
 }
 const MNIMI = mnimiOk();
+// ⚠️ Η σελίδα ΕΛΕΓΧΕΙ ΜΟΝΗ ΤΗΣ αν υπάρχει νεότερη έκδοση και την παίρνει. Ο browser κρατάει
+// τη σελίδα ως 10 λεπτά (έτσι τη σερβίρει το GitHub) και το δεύτερο tablet δούλευε με
+// παλιά έκδοση χωρίς να φαίνεται (χρήστης 13/10/2026: «καθυστερεί να πάρει τη νέα»).
+// Ό,τι έχει γραφτεί σώζεται πρώτα· αν το tablet δεν κρατάει δεδομένα, μόνο ειδοποιεί.
+function elegxeEkdosi(){
+  fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text())
+    .then(t => {
+      const m = /const EKDOSI = '([^']+)'/.exec(t);
+      if (!m || m[1] === EKDOSI) return;
+      const q = new URLSearchParams(location.search);
+      if (q.get('v') === m[1]) return;                 // ήδη δοκιμάστηκε: όχι ατέρμονη ανανέωση
+      const d = saveNow();
+      if (exeiPeriexomeno(d) && !sothike()) { msg('Υπάρχει νεότερη έκδοση της σελίδας — στείλε το δελτίο και ξανάνοιξέ τη', true); return; }
+      if (!q.get('rdv') && !q.get('draft') && exeiPeriexomeno(d)) { q.set('draft', UID); q.delete('new'); }   // να ξανανοίξει το ίδιο δελτίο
+      q.set('v', m[1]);
+      location.replace(location.pathname + '?' + q.toString());
+    })
+    .catch(() => {});
+}
 // Πότε στάλθηκε το δελτίο που βλέπεις (κενό = όχι ακόμα, ή άλλαξε μετά την αποστολή).
 let STALTHIKE = null;
 const PTSKEY = 'ws_pts_';                // + κωδικός πελάτη
@@ -813,6 +833,7 @@ document.addEventListener('change', () => { allaxeKati(); draft(); });
 
 (function init(){
   document.getElementById('ekdosi').textContent = 'έκδοση ' + EKDOSI + (MNIMI ? '' : ' · ΧΩΡΙΣ ΜΝΗΜΗ');
+  setTimeout(elegxeEkdosi, 1500);
   if (!MNIMI) {
     const x = document.getElementById('xorisMnimi');
     x.textContent = '⚠️ Αυτό το tablet ΔΕΝ κρατάει ό,τι γράφεις (ιδιωτική καρτέλα ή σελίδα ανοιγμένη μέσα σε άλλη εφαρμογή). ' +
