@@ -213,6 +213,14 @@ const PARAM = {
   'ΕΠΙΦΑΝΕΙΕΣ': 'Αερόβιοι 30 °C · Κολοβακτηριοειδή · E. coli'
 };
 let UID = null, PTS = [], COLS = [], FILT = 'all';
+// ΟΛΑ τα σημεία του πελάτη· το PTS είναι όσα ανήκουν στο είδος του δελτίου που βλέπεις
+// (ρητό χρήστη 13/10/2026: τα δωμάτια της λεγεωνέλλας δεν έχουν θέση στο πόσιμο, στην
+// κολυμβητική και στις επιφάνειες). Σημείο χωρίς δηλωμένα είδη φαίνεται παντού.
+let ALL = [];
+function touEidous(){
+  const e = eidos();
+  PTS = ALL.filter(p => !p['ΕΙΔΗ'] || !p['ΕΙΔΗ'].length || p['ΕΙΔΗ'].indexOf(e) >= 0);
+}
 // ⚠️ Από ΡΑΝΤΕΒΟΥ (13/10/2026) ο σύνδεσμος είναι ΣΥΝΤΟΜΟΣ: ?kod=&eidos=&rdv= — πρέπει να
 // χωράει στην περιγραφή του Google Calendar (ο παλιός με τα σημεία μέσα έφτανε τους
 // 16.000 χαρακτήρες). Τα σημεία τα φέρνει η ίδια η σελίδα και τα κρατάει στο tablet,
@@ -348,6 +356,7 @@ function apoKatagrafes(j){
     return { 'ΧΩΡΟΣ': String(s['ΧΩΡΟΣ_ΔΕΛΤΙΟΥ'] || s['ΧΩΡΟΣ'] || ''), 'ΣΗΜΕΙΟ': String(s['ΣΗΜΕΙΟ'] || ''),
              'ΧΡΗΣΗ': String(s['ΧΡΗΣΗ'] || ''), 'ΣΗΜΕΙΟ_ID': Number(s['ΣΗΜΕΙΟ_ID']) || null,
              'ΚΡΙΣΙΜΟ': !!Number(s['ΚΡΙΣΙΜΟ']),
+             'ΕΙΔΗ': String(s['ΕΙΔΗ'] || '').split(',').filter(Boolean),
              'ΤΕΛΕΥΤΑΙΑ': t ? t.slice(8, 10) + '/' + t.slice(5, 7) + '/' + t.slice(0, 4) : '',
              'ΦΟΡΕΣ': ds.length, 'ΣΤΗΛΕΣ': ds.map(d => d.slice(5, 7) + '/' + d.slice(0, 4)),
              _t: t, _s: Number(s['ΣΕΙΡΑ_ΔΕΛΤΙΟΥ']) || 0 };
@@ -374,7 +383,7 @@ function fortoseSimeia(kod){
   };
   try {
     const apo = JSON.parse(localStorage.getItem(PTSKEY + kod) || 'null');
-    if (apo && apo.pts && apo.pts.length) { PTS = mines(apo.pts); COLS = apo.cols || []; drawPts(); }
+    if (apo && apo.pts && apo.pts.length) { ALL = mines(apo.pts); COLS = apo.cols || []; touEidous(); drawPts(); }
   } catch (e) {}
   fetch(EP + '?action=katagrafes&kod=' + encodeURIComponent(kod) + '&t=' + Date.now())
     .then(r => r.json())
@@ -386,9 +395,10 @@ function fortoseSimeia(kod){
         adeio();
         return;
       }
-      PTS = mines(n.pts); COLS = n.cols;
-      try { localStorage.setItem(PTSKEY + kod, JSON.stringify({ pts: PTS, cols: COLS, when: new Date().toISOString() })); } catch (e) {}
+      ALL = mines(n.pts); COLS = n.cols; touEidous();
+      try { localStorage.setItem(PTSKEY + kod, JSON.stringify({ pts: ALL, cols: COLS, when: new Date().toISOString() })); } catch (e) {}
       drawPts();
+      adeio();                       // το είδος αυτό δεν έχει σημεία στον πελάτη
     })
     .catch(() => {
       if (!PTS.length) msg('Δεν φορτώθηκαν τα σημεία του πελάτη (σύνδεση;) — γράψ\' τα με το χέρι ή ξανάνοιξε τον σύνδεσμο', true);
@@ -666,7 +676,7 @@ document.addEventListener('click', e => {
     }
     seg.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('on'));
     seg.classList.add('on');
-    hint(); fixLayout(); renumber(); draft();
+    hint(); fixLayout(); touEidous(); drawPts(); renumber(); draft();
   }
 });
 document.addEventListener('input', e => {
@@ -676,7 +686,8 @@ document.addEventListener('input', e => {
 document.addEventListener('change', draft);
 
 (function init(){
-  PTS = b64json('pts') || [];
+  ALL = b64json('pts') || [];
+  PTS = ALL;
   COLS = b64json('cols') || [];
   // Άνοιγμα συγκεκριμένου πρόχειρου (από τη μπάρα) ή του τελευταίου που δούλευες.
   const want = P.get('draft');
@@ -700,7 +711,7 @@ document.addEventListener('change', draft);
     }
   } catch (e) {}
   if (d && d.header) {
-    restore(d); drawPts(); drawDrafts();
+    restore(d); touEidous(); drawPts(); drawDrafts();
     if (!PTS.length && d.header['ΚΩΔΙΚΟΣ_ΠΕΛΑΤΗ']) fortoseSimeia(d.header['ΚΩΔΙΚΟΣ_ΠΕΛΑΤΗ']);
     msg('Συνεχίζεις το δελτίο: ' + (d.header['ΕΠΩΝΥΜΙΑ'] || ''));
     return;
@@ -716,7 +727,7 @@ document.addEventListener('change', draft);
   const now = new Date();
   document.querySelector('[data-k="ΗΜΕΡΟΜΗΝΙΑ"]').value = now.toISOString().slice(0, 10);
   document.querySelector('[data-k="ΩΡΑ"]').value = now.toTimeString().slice(0, 5);
-  hint(); drawPts(); drawDrafts();
+  hint(); touEidous(); drawPts(); drawDrafts();
   if (!PTS.length && P.get('kod')) { fortoseSimeia(P.get('kod')); return; }   // σύντομος σύνδεσμος
   if (!PTS.length) { if (isLeg()) addCard({}, true); else addSimple({}); }   // χωρίς σημεία: μία έτοιμη εγγραφή
 })();
