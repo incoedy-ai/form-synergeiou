@@ -195,7 +195,7 @@ textarea.v{min-height:60px;resize:vertical}
 
 </div>
 <div class="msg" id="msg"></div>
-<div class="bar"><button class="pri" type="button" id="btnSave" onclick="save()">💾 ΑΠΟΘΗΚΕΥΣΗ</button><button type="button" disabled title="Επόμενο βήμα">📄 PDF ΔΕΛΤΙΟΥ</button><button type="button" onclick="newForm()">🆕 ΝΕΟ ΔΕΛΤΙΟ</button></div>
+<div class="bar"><button class="pri" type="button" id="btnSave" onclick="save()">💾 ΑΠΟΘΗΚΕΥΣΗ</button><button type="button" disabled title="Επόμενο βήμα">📄 PDF ΔΕΛΤΙΟΥ</button><button type="button" onclick="newForm()">🆕 ΝΕΟ ΔΕΛΤΙΟ</button><button type="button" id="btnKat" style="display:none" onclick="anoixeKatopseis()">🗺 ΚΑΤΟΨΕΙΣ</button></div>
 
 <script>
 // ---------------------------------------------------------------------------
@@ -230,6 +230,11 @@ let UID = null, PTS = [], COLS = [], FILT = 'all';
 // (ρητό χρήστη 13/10/2026: τα δωμάτια της λεγεωνέλλας δεν έχουν θέση στο πόσιμο, στην
 // κολυμβητική και στις επιφάνειες). Σημείο χωρίς δηλωμένα είδη φαίνεται παντού.
 let ALL = [];
+// Ο φάκελος με τις κατόψεις σημείων δειγματοληψίας στο My InCo του πελάτη (απόφαση
+// χρήστη 13/10/2026). Το κουμπί φαίνεται μόνο όταν ο πελάτης έχει κατόψεις.
+let KATOPSEIS = '';
+function deixeKatopseis(){ document.getElementById('btnKat').style.display = KATOPSEIS ? '' : 'none'; }
+function anoixeKatopseis(){ if (KATOPSEIS) window.open(KATOPSEIS, '_blank'); }
 function touEidous(){
   const e = eidos();
   PTS = ALL.filter(p => !p['ΕΙΔΗ'] || !p['ΕΙΔΗ'].length || p['ΕΙΔΗ'].indexOf(e) >= 0);
@@ -381,7 +386,8 @@ function apoKatagrafes(j){
   const mines = {};
   (j.episkepseis || []).forEach(e => { const d = isoImera(e['ΗΜΕΡΟΜΗΝΙΑ']); if (d) mines[d.slice(0, 7)] = 1; });
   const cols = Object.keys(mines).sort().slice(-6).map(m => m.slice(5, 7) + '/' + m.slice(0, 4));
-  return { pts: pts, cols: cols };
+  const kat = (j.simeia || []).map(s => String(s['ΚΑΤΟΨΕΙΣ'] || '')).find(x => /^https:\/\//.test(x)) || '';
+  return { pts: pts, cols: cols, kat: kat };
 }
 // Το «πριν Χ μήνες» μετριέται ΤΩΡΑ, όχι όταν κατέβηκαν τα σημεία.
 function mines(pts){
@@ -399,7 +405,7 @@ function fortoseSimeia(kod){
   };
   try {
     const apo = JSON.parse(localStorage.getItem(PTSKEY + kod) || 'null');
-    if (apo && apo.pts && apo.pts.length) { ALL = mines(apo.pts); COLS = apo.cols || []; touEidous(); drawPts(); }
+    if (apo && apo.pts && apo.pts.length) { ALL = mines(apo.pts); COLS = apo.cols || []; KATOPSEIS = apo.kat || ''; deixeKatopseis(); touEidous(); drawPts(); }
   } catch (e) {}
   fetch(EP + '?action=katagrafes&kod=' + encodeURIComponent(kod) + '&t=' + Date.now())
     .then(r => r.json())
@@ -412,7 +418,8 @@ function fortoseSimeia(kod){
         return;
       }
       ALL = mines(n.pts); COLS = n.cols; touEidous();
-      try { localStorage.setItem(PTSKEY + kod, JSON.stringify({ pts: ALL, cols: COLS, when: new Date().toISOString() })); } catch (e) {}
+      KATOPSEIS = n.kat || ''; deixeKatopseis();
+      try { localStorage.setItem(PTSKEY + kod, JSON.stringify({ pts: ALL, cols: COLS, kat: KATOPSEIS, when: new Date().toISOString() })); } catch (e) {}
       drawPts();
       adeio();                       // το είδος αυτό δεν έχει σημεία στον πελάτη
     })
