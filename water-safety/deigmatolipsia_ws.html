@@ -213,6 +213,12 @@ const PARAM = {
   'ΕΠΙΦΑΝΕΙΕΣ': 'Αερόβιοι 30 °C · Κολοβακτηριοειδή · E. coli'
 };
 let UID = null, PTS = [], COLS = [], FILT = 'all';
+// ⚠️ Από ΡΑΝΤΕΒΟΥ (13/10/2026) ο σύνδεσμος είναι ΣΥΝΤΟΜΟΣ: ?kod=&eidos=&rdv= — πρέπει να
+// χωράει στην περιγραφή του Google Calendar (ο παλιός με τα σημεία μέσα έφτανε τους
+// 16.000 χαρακτήρες). Τα σημεία τα φέρνει η ίδια η σελίδα και τα κρατάει στο tablet,
+// ώστε να ξανανοίγει και χωρίς σύνδεση.
+let RDV = null;
+const PTSKEY = 'ws_pts_';                // + κωδικός πελάτη
 
 const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 const newUid = () => 'WSD-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
@@ -323,6 +329,73 @@ function tag(p){
   return { cls: (m != null && m >= 12) ? 'palio' : 'prosfato',
            txt: pos + ' · ' + f + (f === 1 ? ' φορά' : ' φορές') };
 }
+// --- σημεία από το φύλλο των καταγραφών (σύνδεσμος ραντεβού) -----------------
+function isoImera(v){
+  const m = String(v == null ? '' : v).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? m[0] : '';
+}
+// Ίδια εικόνα με όσα έστελνε ο μακρύς σύνδεσμος: τελευταία φορά, πόσες φορές, και
+// σε ποιες δειγματοληψίες. Σειρά: τα «ΠΟΤΕ» μπροστά, μετά τα παλαιότερα.
+function apoKatagrafes(j){
+  const ana = {};
+  (j.metriseis || []).forEach(m => {
+    const id = m['ΣΗΜΕΙΟ_ID'], d = isoImera(m['ΗΜΕΡΟΜΗΝΙΑ']);
+    if (id && d) (ana[id] = ana[id] || {})[d] = 1;
+  });
+  const pts = (j.simeia || []).map(s => {
+    const ds = Object.keys(ana[s['ΣΗΜΕΙΟ_ID']] || {}).sort();
+    const t = ds.length ? ds[ds.length - 1] : '';
+    return { 'ΧΩΡΟΣ': String(s['ΧΩΡΟΣ_ΔΕΛΤΙΟΥ'] || s['ΧΩΡΟΣ'] || ''), 'ΣΗΜΕΙΟ': String(s['ΣΗΜΕΙΟ'] || ''),
+             'ΧΡΗΣΗ': String(s['ΧΡΗΣΗ'] || ''), 'ΣΗΜΕΙΟ_ID': Number(s['ΣΗΜΕΙΟ_ID']) || null,
+             'ΚΡΙΣΙΜΟ': !!Number(s['ΚΡΙΣΙΜΟ']),
+             'ΤΕΛΕΥΤΑΙΑ': t ? t.slice(8, 10) + '/' + t.slice(5, 7) + '/' + t.slice(0, 4) : '',
+             'ΦΟΡΕΣ': ds.length, 'ΣΤΗΛΕΣ': ds.map(d => d.slice(5, 7) + '/' + d.slice(0, 4)),
+             _t: t, _s: Number(s['ΣΕΙΡΑ_ΔΕΛΤΙΟΥ']) || 0 };
+  });
+  pts.sort((a, b) => a._t < b._t ? -1 : (a._t > b._t ? 1 : a._s - b._s));
+  const mines = {};
+  (j.episkepseis || []).forEach(e => { const d = isoImera(e['ΗΜΕΡΟΜΗΝΙΑ']); if (d) mines[d.slice(0, 7)] = 1; });
+  const cols = Object.keys(mines).sort().slice(-6).map(m => m.slice(5, 7) + '/' + m.slice(0, 4));
+  return { pts: pts, cols: cols };
+}
+// Το «πριν Χ μήνες» μετριέται ΤΩΡΑ, όχι όταν κατέβηκαν τα σημεία.
+function mines(pts){
+  const t = new Date();
+  pts.forEach(p => {
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(p['ΤΕΛΕΥΤΑΙΑ'] || '');
+    p['ΜΗΝΕΣ'] = m ? (t.getFullYear() - Number(m[3])) * 12 + (t.getMonth() + 1 - Number(m[2])) : null;
+  });
+  return pts;
+}
+function fortoseSimeia(kod){
+  const adeio = () => {             // χωρίς σημεία: μία έτοιμη εγγραφή, όπως πάντα
+    if (PTS.length || document.getElementById('cards').children.length) return;
+    if (isLeg()) addCard({}, true); else addSimple({});
+  };
+  try {
+    const apo = JSON.parse(localStorage.getItem(PTSKEY + kod) || 'null');
+    if (apo && apo.pts && apo.pts.length) { PTS = mines(apo.pts); COLS = apo.cols || []; drawPts(); }
+  } catch (e) {}
+  fetch(EP + '?action=katagrafes&kod=' + encodeURIComponent(kod) + '&t=' + Date.now())
+    .then(r => r.json())
+    .then(j => {
+      if (!j || !j.ok) throw new Error('απάντηση');
+      const n = apoKatagrafes(j);
+      if (!n.pts.length) {
+        if (!PTS.length) msg('Ο πελάτης δεν έχει καταχωρημένα σημεία — γράψ\' τα με το χέρι', true);
+        adeio();
+        return;
+      }
+      PTS = mines(n.pts); COLS = n.cols;
+      try { localStorage.setItem(PTSKEY + kod, JSON.stringify({ pts: PTS, cols: COLS, when: new Date().toISOString() })); } catch (e) {}
+      drawPts();
+    })
+    .catch(() => {
+      if (!PTS.length) msg('Δεν φορτώθηκαν τα σημεία του πελάτη (σύνδεση;) — γράψ\' τα με το χέρι ή ξανάνοιξε τον σύνδεσμο', true);
+      adeio();
+    });
+}
+
 function ptChosen(p){
   const k = (p['ΧΩΡΟΣ'] || '') + '|' + (p['ΣΗΜΕΙΟ'] || '');
   const k2 = [p['ΧΩΡΟΣ'], p['ΣΗΜΕΙΟ']].filter(Boolean).join(' · ');
@@ -409,7 +482,7 @@ function collect(){
     });
     cards.push(Object.assign({}, top, { 'ΣΗΜΕΙΟ_ID': card.dataset.sid ? Number(card.dataset.sid) : null, rows: rows }));
   });
-  return { form: 'ws_deigmatolipsia', uid: UID, sent_at: new Date().toISOString(),
+  return { form: 'ws_deigmatolipsia', uid: UID, sent_at: new Date().toISOString(), rdv: RDV,
            header: h, deigmata: deigmata, cards: cards };
 }
 function restore(d){
@@ -424,6 +497,7 @@ function restore(d){
     } else el.value = v;
   });
   UID = d.uid || newUid();
+  RDV = d.rdv || null;
   let cards = d.cards;
   if (!cards) {                     // παλιά πρόχειρα (γραμμές): ομαδοποίηση ανά σημείο
     const map = {};
@@ -452,7 +526,7 @@ function saveNow(){
     localStorage.setItem(DRAFT + UID, JSON.stringify(d));
     const list = idx().filter(x => x.uid !== UID);
     list.push({ uid: UID, pelatis: d.header['ΕΠΩΝΥΜΙΑ'] || '(χωρίς πελάτη)',
-                eidos: d.header['ΕΙΔΟΣ'] || '', plithos: d.deigmata.length,
+                eidos: d.header['ΕΙΔΟΣ'] || '', plithos: d.deigmata.length, rdv: RDV,
                 stalthike: !!d.stalthike, when: new Date().toISOString() });
     idxSave(list);
   } catch (e) {}
@@ -576,9 +650,18 @@ document.addEventListener('change', draft);
   COLS = b64json('cols') || [];
   // Άνοιγμα συγκεκριμένου πρόχειρου (από τη μπάρα) ή του τελευταίου που δούλευες.
   const want = P.get('draft');
+  const rdv = P.get('rdv');
   let d = null;
   try {
-    if (P.get('new')) d = null;                       // ρητά νέο δελτίο
+    if (rdv) {
+      // ⚠️ Ο σύνδεσμος του ραντεβού πατιέται ΠΟΛΛΕΣ φορές μέσα στη μέρα. Αν υπάρχει ήδη
+      // δελτίο αυτού του ραντεβού και είδους, συνεχίζει ΕΚΕΙΝΟ — αλλιώς κάθε πάτημα θα
+      // άνοιγε καινούριο άδειο δελτίο.
+      const e0 = P.get('eidos') || 'LEGIONELLA';
+      const hit = idx().filter(x => String(x.rdv) === rdv && x.eidos === e0).pop();
+      if (hit) d = JSON.parse(localStorage.getItem(DRAFT + hit.uid) || 'null');
+    }
+    else if (P.get('new')) d = null;                  // ρητά νέο δελτίο
     else if (want) d = JSON.parse(localStorage.getItem(DRAFT + want) || 'null');
     else {
       const list = JSON.parse(localStorage.getItem(INDEX) || '[]');
@@ -588,10 +671,12 @@ document.addEventListener('change', draft);
   } catch (e) {}
   if (d && d.header) {
     restore(d); drawPts(); drawDrafts();
+    if (!PTS.length && d.header['ΚΩΔΙΚΟΣ_ΠΕΛΑΤΗ']) fortoseSimeia(d.header['ΚΩΔΙΚΟΣ_ΠΕΛΑΤΗ']);
     msg('Συνεχίζεις το δελτίο: ' + (d.header['ΕΠΩΝΥΜΙΑ'] || ''));
     return;
   }
   UID = newUid();
+  RDV = rdv ? (Number(rdv) || rdv) : null;
   const map = { kod: 'ΚΩΔΙΚΟΣ_ΠΕΛΑΤΗ', eponymia: 'ΕΠΩΝΥΜΙΑ', egk: 'ΕΓΚΑΤΑΣΤΑΣΗ' };
   Object.entries(map).forEach(([p, k]) => { const v = P.get(p); if (v) { const el = document.querySelector('[data-k="' + k + '"]'); if (el) el.value = v; } });
   const e = P.get('eidos') || 'LEGIONELLA';
@@ -602,6 +687,7 @@ document.addEventListener('change', draft);
   document.querySelector('[data-k="ΗΜΕΡΟΜΗΝΙΑ"]').value = now.toISOString().slice(0, 10);
   document.querySelector('[data-k="ΩΡΑ"]').value = now.toTimeString().slice(0, 5);
   hint(); drawPts(); drawDrafts();
+  if (!PTS.length && P.get('kod')) { fortoseSimeia(P.get('kod')); return; }   // σύντομος σύνδεσμος
   if (!PTS.length) { if (isLeg()) addCard({}, true); else addSimple({}); }   // χωρίς σημεία: μία έτοιμη εγγραφή
 })();
 </script>
