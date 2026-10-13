@@ -252,7 +252,7 @@ let RDV = null;
 // ⚠️ ΕΚΔΟΣΗ της σελίδας, γραμμένη κάτω δεξιά. Δύο tablet δίπλα-δίπλα έδειξαν διαφορετική
 // συμπεριφορά (13/10/2026) και δεν υπήρχε τρόπος να φανεί αν το ένα κρατούσε παλιά
 // σελίδα. Άλλαζέ την σε ΚΑΘΕ δημοσίευση.
-const EKDOSI = '13/10 · 8';
+const EKDOSI = '13/10 · 9';
 // Κρατάει το tablet ό,τι γράφεται; Σε ιδιωτική καρτέλα ή όταν η σελίδα ανοίγει ΜΕΣΑ σε
 // άλλη εφαρμογή, η αποθήκευση μπορεί να μη δουλεύει — και τότε κάθε αλλαγή δελτίου
 // έσβηνε σιωπηλά ό,τι είχε γραφτεί.
@@ -282,11 +282,15 @@ function seiraIdx(){
   const on = document.querySelector('#segSeira button.on');
   return on ? [...document.querySelectorAll('#segSeira button')].indexOf(on) + 1 : 1;
 }
+// ⚠️ Ο κωδικός δείγματος έχει ΓΡΑΜΜΑ ανά είδος, για να μη μπερδεύεται με της λεγεωνέλλας
+// (ρητό χρήστη 13/10/2026 για το πόσιμο: «είναι Π01 ή Π1»). Έτσι ακριβώς είναι γραμμένα
+// και στο ιστορικό: πόσιμο Π1/Π01 · επιφάνειες S1/S01 · κολυμβητική Κ1 · λεγεωνέλλα σκέτο.
+const GRAMMA = { 'ΠΟΣΙΜΟ': 'Π', 'ΕΠΙΦΑΝΕΙΕΣ': 'S', 'ΚΟΛΥΜΒΗΤΙΚΗ': 'Κ' };
 function kodikos(i){                       // i = 1..ν
-  const s = seiraIdx();
-  if (s === 1) return String(i).padStart(2, '0');
-  if (s === 2) return String(i);
-  return '-' + i + '-';
+  const s = seiraIdx(), g = GRAMMA[eidos()] || '';
+  if (s === 1) return g + String(i).padStart(2, '0');
+  if (s === 2) return g + String(i);
+  return g + '-' + i + '-';
 }
 function eidos(){
   const on = document.querySelector('#segEidos button.on');
