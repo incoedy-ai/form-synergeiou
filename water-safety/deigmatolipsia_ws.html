@@ -86,7 +86,7 @@ textarea.v{min-height:60px;resize:vertical}
 .card .top{display:flex;align-items:center;gap:8px;background:var(--grey);padding:8px 10px;flex-wrap:wrap}
 .card .top .kod{background:var(--navy);color:#fff;border-radius:5px;padding:5px 9px;font-size:12px;font-weight:bold;white-space:nowrap}
 .card .top input{width:240px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px;min-height:40px}
-.card .top input.simeio{width:340px}
+.card .top input.simeio,.card .top select.simeio{width:340px}
 .card .top select{width:150px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px;min-height:40px}
 .card .top select.anal{width:86px}
 .card .top .x{margin-left:auto;border:1px solid var(--line);background:#fff;color:#b33;border-radius:6px;width:42px;height:40px;font-size:16px;cursor:pointer}
@@ -221,6 +221,20 @@ const P = new URLSearchParams(location.search);
 const EP = P.get('ep') || ENDPOINT;
 
 const SAMPLES = ['Κ.Α', 'Κ.Ε', 'Ζ.Α', 'Ζ.Ε'];
+// ⚠️ ΣΗΜΕΙΟ = ΕΠΙΛΟΓΗ, όχι πληκτρολόγηση (ρητό χρήστη 14/10/2026: «να το επιλέγω εγώ, να μην
+// το γράφω»). Οι τιμές είναι όσες γράφτηκαν ΣΤΗΝ ΠΡΑΞΗ στα δείγματα λεγεωνέλλας: ΝΤΟΥΣ 299 ·
+// ΝΤΟΥΣ / ΤΗΛΕΦΩΝΟ ~120 (σε τέσσερις γραφές) · ΤΗΛΕΦΩΝΟ 42 · JACUZZI 6 — και όσες είπε ο ίδιος.
+// Σημείο του καταλόγου με άλλο όνομα (π.χ. «ΝΤΟΥΣΙΕΡΑ ΔΙΠΛΑ ΑΠΟ ΣΑΟΥΝΑ») μπαίνει στη λίστα ως έχει.
+const SIMEIA = ['ΝΤΟΥΣ', 'ΤΗΛΕΦΩΝΟ', 'ΝΤΟΥΣ / ΤΗΛΕΦΩΝΟ', 'ΒΡΥΣΗ', 'ΜΠΑΝΙΕΡΑ', 'ΔΕΞΑΜΕΝΗ', 'JACUZZI'];
+// «ΝΤΟΥΣ/ ΤΗΛΕΦΩΝΟ», «ΝΤΟΥΣ/ΤΗΛΕΦΩΝΟ» -> «ΝΤΟΥΣ / ΤΗΛΕΦΩΝΟ»: ίδιο πράγμα, μία γραφή.
+function kanonikoSimeio(v){ return String(v || '').trim().toUpperCase().replace(/\s*\/\s*/g, ' / ').replace(/ΤΗΕΦΩΝΟ/g, 'ΤΗΛΕΦΩΝΟ'); }
+function epilogesSimeiou(v){
+  const k = kanonikoSimeio(v);
+  const lista = SIMEIA.slice();
+  if (k && lista.indexOf(k) < 0) lista.push(k);
+  return '<option value=""' + (k ? '' : ' selected') + '>— σημείο —</option>' +
+    lista.map(x => '<option' + (x === k ? ' selected' : '') + '>' + esc(x) + '</option>').join('');
+}
 const ANAL = ['Μ', 'Χ', 'Μ + Χ'];
 const XRISI = ['Πόσιμο', 'Μαγειρική', 'Ντους / λουτρό', 'Πλύση σκευών', 'Κολύμβηση', 'Καθαρισμός', 'Άλλη'];
 // Κωδικοί εντύπων (εγκρίθηκαν 20/09/2026) — ίδιοι με τα πρότυπα του φακέλου.
@@ -253,7 +267,7 @@ let RDV = null;
 // ⚠️ ΕΚΔΟΣΗ της σελίδας, γραμμένη κάτω δεξιά. Δύο tablet δίπλα-δίπλα έδειξαν διαφορετική
 // συμπεριφορά (13/10/2026) και δεν υπήρχε τρόπος να φανεί αν το ένα κρατούσε παλιά
 // σελίδα. Άλλαζέ την σε ΚΑΘΕ δημοσίευση.
-const EKDOSI = '13/10 · 12';
+const EKDOSI = '14/10 · 13';
 // Κρατάει το tablet ό,τι γράφεται; Σε ιδιωτική καρτέλα ή όταν η σελίδα ανοίγει ΜΕΣΑ σε
 // άλλη εφαρμογή, η αποθήκευση μπορεί να μη δουλεύει — και τότε κάθε αλλαγή δελτίου
 // έσβηνε σιωπηλά ό,τι είχε γραφτεί.
@@ -356,7 +370,7 @@ function addCard(d, four){
   el.innerHTML =
     '<div class="top"><span class="kod"></span><span class="kodS"></span>' +
     '<input data-c="ΧΩΡΟΣ" placeholder="π.χ. 1ος ΔΩΜΑΤΙΟ 105" value="' + esc(d['ΧΩΡΟΣ']) + '">' +
-    '<input class="simeio" data-c="ΣΗΜΕΙΟ" placeholder="ντους / βρύση / δεξαμενή" value="' + esc(d['ΣΗΜΕΙΟ']) + '">' +
+    '<select class="simeio" data-c="ΣΗΜΕΙΟ">' + epilogesSimeiou(d['ΣΗΜΕΙΟ']) + '</select>' +
     '<select data-c="ΧΡΗΣΗ">' + opt(XRISI, d['ΧΡΗΣΗ'] || 'Πόσιμο') + '</select>' +
     '<select class="anal" data-c="ΑΝΑΛΥΣΗ" title="Ανάλυση">' + opt(ANAL, d['ΑΝΑΛΥΣΗ'] || 'Μ') + '</select>' +
     '<button type="button" class="x" title="Διαγραφή σημείου">✕</button></div>' +
@@ -491,6 +505,10 @@ function fortoseSimeia(kod){
 
 // Η κάρτα (ή η γραμμή) που αντιστοιχεί σε ένα σημείο της λίστας — αν έχει διαλεχτεί.
 function kartaTou(p){
+  if (p['ΣΗΜΕΙΟ_ID']) {
+    const ana = [...document.getElementById('cards').children].find(c => c.dataset.sid && Number(c.dataset.sid) === Number(p['ΣΗΜΕΙΟ_ID']));
+    if (ana) return ana;
+  }
   const k = (p['ΧΩΡΟΣ'] || '') + '|' + (p['ΣΗΜΕΙΟ'] || '');
   const k2 = [p['ΧΩΡΟΣ'], p['ΣΗΜΕΙΟ']].filter(Boolean).join(' · ');
   return [...document.getElementById('cards').children].find(c => {
