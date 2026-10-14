@@ -79,6 +79,10 @@ textarea.v{min-height:60px;resize:vertical}
 .hist td{padding:6px;border:1px solid #e6edf3;text-align:center}
 .hist td.room{text-align:left;font-weight:bold;color:var(--navy);white-space:nowrap}
 .hist .dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--blue)}
+/* Η ΗΜΕΡΟΜΗΝΙΑ στη θέση της τελείας (ρητό χρήστη 14/10/2026: «να μπαίνει η ημερομηνία εκεί που
+   είναι η βουλίτσα», μορφή 03/26). */
+.hist .imer{display:inline-block;padding:2px 7px;border-radius:9px;background:var(--blue);color:#fff;
+            font-weight:bold;font-size:11px;white-space:nowrap}
 .hist td.none{color:#cdd6de}
 
 /* --- κάρτα ανά σημείο: ο χώρος γράφεται ΜΙΑ φορά --- */
@@ -267,7 +271,7 @@ let RDV = null;
 // ⚠️ ΕΚΔΟΣΗ της σελίδας, γραμμένη κάτω δεξιά. Δύο tablet δίπλα-δίπλα έδειξαν διαφορετική
 // συμπεριφορά (13/10/2026) και δεν υπήρχε τρόπος να φανεί αν το ένα κρατούσε παλιά
 // σελίδα. Άλλαζέ την σε ΚΑΘΕ δημοσίευση.
-const EKDOSI = '14/10 · 13';
+const EKDOSI = '14/10 · 14';
 // Κρατάει το tablet ό,τι γράφεται; Σε ιδιωτική καρτέλα ή όταν η σελίδα ανοίγει ΜΕΣΑ σε
 // άλλη εφαρμογή, η αποθήκευση μπορεί να μη δουλεύει — και τότε κάθε αλλαγή δελτίου
 // έσβηνε σιωπηλά ό,τι είχε γραφτεί.
@@ -546,14 +550,17 @@ function drawPts(){
 function drawHist(){
   const h = document.getElementById('hist');
   if (!h.classList.contains('open')) return;
+  // ⚠️ Χωρίς γραμμή ημερομηνιών από πάνω: η ημερομηνία γράφεται ΜΕΣΑ στο κελί (μμ/εε).
+  // Οι στήλες μένουν μία ανά δειγματοληψία, ώστε οι ίδιες επισκέψεις να είναι κάτω-κάτω.
+  const mmee = c => c.slice(0, 3) + c.slice(-2);              // 03/2026 -> 03/26
   h.innerHTML = '<table><tr><th style="text-align:left">Σημείο</th>' +
-    COLS.map(c => '<th>' + esc(c) + '</th>').join('') + '<th>Σύνολο</th></tr>' +
+    '<th colspan="' + Math.max(COLS.length, 1) + '">Δειγματοληψίες</th><th>Σύνολο</th></tr>' +
     PTS.map(p => '<tr><td class="room">' + (p['ΚΡΙΣΙΜΟ'] ? '★ ' : '') +
       '<span class="kodS">' + esc(p['ΚΩΔ'] || '') + '</span>' + esc(p['ΧΩΡΟΣ']) + ' · ' + esc(p['ΣΗΜΕΙΟ']) + '</td>' +
       COLS.map(c => ((p['ΣΤΗΛΕΣ'] || []).indexOf(c) >= 0)
-        ? '<td><span class="dot"></span></td>' : '<td class="none">—</td>').join('') +
+        ? '<td><span class="imer">' + esc(mmee(c)) + '</span></td>' : '<td class="none">—</td>').join('') +
       '<td>' + (p['ΦΟΡΕΣ'] || 0) + '</td></tr>').join('') + '</table>' +
-    '<div class="hint">Κάθε στήλη είναι μια δειγματοληψία. Η τελεία σημαίνει ότι πάρθηκε δείγμα από εκείνο το σημείο.</div>';
+    '<div class="hint">Κάθε στήλη είναι μια δειγματοληψία. Όπου γράφει ημερομηνία (μήνας/έτος), πάρθηκε δείγμα από εκείνο το σημείο.</div>';
 }
 function pickPt(i){
   const p = PTS[i]; if (!p) return;
