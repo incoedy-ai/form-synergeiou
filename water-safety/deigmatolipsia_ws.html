@@ -78,6 +78,14 @@ textarea.v{min-height:60px;resize:vertical}
 .hist th{background:var(--grey);color:var(--navy);padding:6px;border:1px solid var(--line);font-size:11px;white-space:nowrap}
 .hist td{padding:6px;border:1px solid #e6edf3;text-align:center}
 .hist td.room{text-align:left;font-weight:bold;color:var(--navy);white-space:nowrap}
+/* Η στήλη του ΣΗΜΕΙΟΥ μένει ΣΤΑΘΕΡΗ και κυλούν μόνο οι ημερομηνίες (ρητό χρήστη 14/10/2026:
+   «να σέρνω τις στήλες με τις ημερομηνίες και να βλέπω την αντιστοίχιση»). */
+.hist td.room,.hist th:first-child{position:sticky;left:0;z-index:2;box-shadow:2px 0 0 var(--line)}
+.hist td.room{background:#fff;white-space:normal;min-width:170px;max-width:250px}
+/* ⚠️ separate, ΟΧΙ collapse: με collapse τα κελιά που κυλούν ζωγραφίζονται ΠΑΝΩ από τη
+   σταθερή στήλη (φαινόταν κομμάτι από τις ημερομηνίες μέσα στο όνομα του σημείου). */
+.hist table{width:auto;min-width:100%;border-collapse:separate;border-spacing:0}
+.hist .hint{position:sticky;left:0}
 .hist .dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--blue)}
 /* Η ΗΜΕΡΟΜΗΝΙΑ στη θέση της τελείας (ρητό χρήστη 14/10/2026: «να μπαίνει η ημερομηνία εκεί που
    είναι η βουλίτσα», μορφή 03/26). */
@@ -271,7 +279,7 @@ let RDV = null;
 // ⚠️ ΕΚΔΟΣΗ της σελίδας, γραμμένη κάτω δεξιά. Δύο tablet δίπλα-δίπλα έδειξαν διαφορετική
 // συμπεριφορά (13/10/2026) και δεν υπήρχε τρόπος να φανεί αν το ένα κρατούσε παλιά
 // σελίδα. Άλλαζέ την σε ΚΑΘΕ δημοσίευση.
-const EKDOSI = '14/10 · 15';
+const EKDOSI = '14/10 · 16';
 // Κρατάει το tablet ό,τι γράφεται; Σε ιδιωτική καρτέλα ή όταν η σελίδα ανοίγει ΜΕΣΑ σε
 // άλλη εφαρμογή, η αποθήκευση μπορεί να μη δουλεύει — και τότε κάθε αλλαγή δελτίου
 // έσβηνε σιωπηλά ό,τι είχε γραφτεί.
