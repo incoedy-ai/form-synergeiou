@@ -260,6 +260,8 @@
   <button id="btnCimex" onclick="openCimex()" style="display:none; padding:6px 14px; border-radius:6px; background:#8a4b2b; color:white; font-size:12px; font-weight:bold; border:none; cursor:pointer;">CIMEX</button>
   <!-- Μονο σε ΣΚΑΦΟΣ: η αγγλικη βεβαιωση. Εμφανιζεται απο την adaptByCategory(). -->
   <button id="btnYacht" onclick="openYacht()" style="display:none; padding:6px 14px; border-radius:6px; background:#0d5c7a; color:white; font-size:12px; font-weight:bold; border:none; cursor:pointer;">YACHT CERT</button>
+  <!-- Η κάτοψη του πελάτη (σφραγισμένο PDF). Μόνο όταν το link φέρνει `katopsi` — ποτέ νεκρό κουμπί. -->
+  <a id="lnkKatopsi" href="#" target="_blank" rel="noopener" style="display:none; text-decoration:none; padding:6px 14px; border-radius:6px; background:#287B9B; color:white; font-size:12px; font-weight:bold;">ΚΑΤΟΨΗ</a>
 </div>
 
 <!-- ΣΤΟΙΧΕΙΑ ΡΑΝΤΕΒΟΥ + ΕΞΟΠΛΙΣΜΟΣ -->
@@ -724,6 +726,12 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
   document.getElementById('btnECert').style.display = 'inline-block';
   document.getElementById('btnAutopsia').style.display = 'inline-block';
   document.getElementById('btnCimex').style.display = 'inline-block';
+  const katopsi = p.get('katopsi');
+  if (katopsi) {
+    const ak = document.getElementById('lnkKatopsi');
+    ak.href = katopsi;
+    ak.style.display = 'inline-block';
+  }
   if (!document.getElementById('checkFormsBar').style.display || document.getElementById('checkFormsBar').style.display === 'none') {
     document.getElementById('checkFormsBar').style.display = 'flex';
   }
