@@ -41,6 +41,7 @@ td.d{width:46px;font-weight:700;text-align:center;font-variant-numeric:tabular-n
 td.miss{color:#9aa8b6;background:#f7f9fb}
 .out{color:var(--bad);font-weight:700}
 .okc{color:var(--ok);font-weight:700}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .halves{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .note{color:var(--muted);font-size:12px;margin:4px 0 0}
 .sum{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:2px 0 6px}
@@ -60,6 +61,7 @@ td.miss{color:#9aa8b6;background:#f7f9fb}
   h3{break-after:avoid}
   tr{break-inside:avoid}
   .sum{break-after:avoid}
+  .tw{overflow:visible}
   .halves{grid-template-columns:1fr 1fr}
   .cust{text-align:right}
   table{font-size:11px}
@@ -106,6 +108,10 @@ async function load() {
   if (!r.ok) return fail(r.error === 'άκυρος σύνδεσμος' ? 'Ο σύνδεσμος δεν ισχύει. Επικοινωνήστε με την InCo.' : r.error);
   M = r.minas;
   render(r);
+  // στο κινητό: κάθε πίνακας κυλά οριζόντια μέσα στο δικό του κουτί, όχι όλη η σελίδα
+  document.querySelectorAll('#doc table').forEach(t => { const w = document.createElement('div'); w.className = 'tw'; t.parentNode.insertBefore(w, t); w.appendChild(t); });
+  const im = document.querySelector('.top img');      // το PDF δεν βγαίνει πριν φορτώσει το λογότυπο
+  if (im && !im.complete) await new Promise(ok => { im.onload = im.onerror = ok; setTimeout(ok, 8000); });
   window.__ready = true;                  // για το PDF: τα δεδομένα φορτώθηκαν
 }
 function fail(msg) { document.getElementById('doc').innerHTML = `<div class="state">${esc(msg)}</div>`; window.__ready = 'error'; }
@@ -184,7 +190,7 @@ function render(r) {
     <h1>Αρχεία τεκμηρίωσης — ${titlos(r.minas)}</h1>
     <div class="sub">${PRINT ? '' : '<span class="badge live">ΖΩΝΤΑΝΑ ΔΕΔΟΜΕΝΑ</span>'}
       <span class="badge ${signed ? 'signed' : 'unsigned'}">${signed ? '✓ ΥΠΟΓΕΓΡΑΜΜΕΝΟΣ ΜΗΝΑΣ' : 'ΧΩΡΙΣ ΥΠΟΓΡΑΦΗ ΑΚΟΜΑ'}</span>
-      <span>Περίοδος ${dmy(r.apo)} – ${dmy(r.mexri)}</span>${PRINT ? '' : `<span>· ενημέρωση ${dmy(r.tora.slice(0, 10))} ${r.tora.slice(11, 16)}</span>`}</div>
+      <span>Περίοδος ${dmy(r.apo)} – ${dmy(r.mexri)}</span>${PRINT ? '' : `<span>ενημέρωση ${dmy(r.tora.slice(0, 10))} ${r.tora.slice(11, 16)}</span>`}</div>
     <div class="ctrl">${ctrl}</div>
     <div class="nav"><button ${prev ? '' : 'disabled'} onclick="go('${prev || ''}')">‹ Προηγούμενος</button>
       <select onchange="go(this.value)" aria-label="Μήνας">${opts}</select>
