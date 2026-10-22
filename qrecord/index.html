@@ -626,7 +626,7 @@ function renderDevice() {
       <button class="btn sec" onclick="key('⌫')" aria-label="Σβήσιμο">⌫</button>
       <button class="btn go" id="save" onclick="saveMetrisi()">Αποθήκευση</button>
     </div>
-    ${todayList ? `<div class="today"><span>Σήμερα:</span>${todayList}</div>` : ''}`);
+    <div class="today"><span><b>Σήμερα ${Math.min(s.simera.length, fores(s))} από ${fores(s)} μετρήσεις</b>${todayList ? ':' : ''}</span>${todayList}</div>`);   // 23/10: 2 φορές την ημέρα
   drawDisp();
 }
 function key(k) {
