@@ -116,6 +116,11 @@ footer{margin-top:28px;text-align:center;color:var(--muted);font-size:13px}
 .scan .frame{position:absolute;left:50%;top:42%;width:68vmin;height:68vmin;transform:translate(-50%,-50%);
   border:4px solid #fff;border-radius:24px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}
 .scan .bar{position:relative;padding:16px 16px calc(18px + env(safe-area-inset-bottom));background:#000;color:#fff;text-align:center;display:flex;flex-direction:column;gap:12px}
+.btn.hero{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:72px;margin-top:14px;font-size:20px;
+  color:#fff;background:linear-gradient(120deg,#2D3A4D 0%,#287B9B 55%,#2DAFCE 100%);box-shadow:0 6px 18px rgba(45,58,77,.25)}
+.btn.hero svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.install{margin-top:14px;padding:14px;border-radius:16px;border:2px dashed #287B9B;background:var(--surface);display:flex;flex-direction:column;gap:10px}
+.install b{color:#287B9B}
 .btn.scanbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#287B9B;color:#fff}
 </style>
 </head>
@@ -384,6 +389,7 @@ function renderHome() {
     <div class="store">${esc(S.pelatis.eponymia)}</div>
     <div class="date">${MERES[d.getDay()]} ${d.getDate()} ${MINON[d.getMonth()]}</div>
     ${alerts}
+    <button class="btn hero" onclick="scan()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M7 12h10"/></svg>Σκανάρισμα QR συσκευής</button>
     <div class="list" style="margin-top:14px">
       ${item('thermokrasies', 'Θερμοκρασίες', 'Μετρήσεις σήμερα', thermo)}
       ${item('katharismos', 'Καθαρισμός', 'Καθαρισμός και απολύμανση',
@@ -392,7 +398,32 @@ function renderHome() {
       ${item('prosopiko', 'Προσωπικό', 'Πιστοποιητικά υγείας',
              pr30 ? ['warn', pr30 + (pr30 === 1 ? ' πιστοποιητικό' : ' πιστοποιητικά')] : ['neutral', pros.length])}
       ${item('ypografi', 'Υπογραφή μήνα', 'Από τον υπεύθυνο', ypg ? ['bad', 'Εκκρεμεί'] : ['ok', '✓'])}
-    </div>`, {home: true});
+    </div>
+    ${installBox()}`, {home: true});
+}
+
+// ---------------------------------------------------------------------- εγκατάσταση στο κινητό (εικονίδιο στην οθόνη)
+// Android/Chrome: το κουμπί ανοίγει την επίσημη ερώτηση εγκατάστασης. iPhone: δεν επιτρέπεται αυτόματα → οδηγίες.
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if (view.name === 'home') render(); });
+window.addEventListener('appinstalled', () => { installEvt = null; LS.set('qr_installed', true); if (view.name === 'home') render(); });
+const standalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function installBox() {
+  if (standalone() || LS.get('qr_installed', false)) return '';
+  if (installEvt) return `<div class="install"><div><b>Βάλτε το QRecord στο κινητό</b><br><span class="muted">Ένα εικονίδιο στην οθόνη σας: το πατάτε και σκανάρετε.</span></div>
+    <button class="btn" style="background:#287B9B;color:#fff" onclick="doInstall()">📲 Εγκατάσταση στο κινητό</button></div>`;
+  if (isIOS()) return `<div class="install"><div><b>Βάλτε το QRecord στο iPhone</b><br><span class="muted">Ένα εικονίδιο στην οθόνη σας: το πατάτε και σκανάρετε.</span></div>
+    <div>1. Πατήστε το κουμπί <b>Κοινοποίηση</b> <span aria-hidden="true">(το τετράγωνο με το βέλος ⬆)</span> κάτω στο Safari.<br>2. Επιλέξτε <b>«Προσθήκη στην οθόνη Αφετηρίας»</b>.</div></div>`;
+  return '';
+}
+async function doInstall() {
+  if (!installEvt) return;
+  installEvt.prompt();
+  const r = await installEvt.userChoice.catch(() => null);
+  installEvt = null;
+  if (r && r.outcome === 'accepted') { LS.set('qr_installed', true); toast('✓ Το QRecord μπήκε στην οθόνη σας'); }
+  render();
 }
 
 function renderThermokrasies() {
