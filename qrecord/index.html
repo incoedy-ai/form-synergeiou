@@ -44,10 +44,6 @@ h2{font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--mute
 .pill{border-radius:999px;padding:5px 11px;font-size:14px;font-weight:700;white-space:nowrap}
 .ok{color:var(--ok);background:var(--ok-bg)}.warn{color:var(--warn);background:var(--warn-bg)}.bad{color:var(--bad);background:var(--bad-bg)}
 .neutral{color:var(--muted);background:var(--key)}
-.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.tile{padding:14px;min-height:96px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;
-  display:flex;flex-direction:column;justify-content:space-between;gap:8px}
-.tile b{font-size:17px}
 .alert{border-radius:16px;padding:14px;margin:10px 0;display:flex;flex-direction:column;gap:10px}
 .alert.bad{border:1px solid color-mix(in srgb,var(--bad) 35%,transparent)}
 .alert.warn{border:1px solid color-mix(in srgb,var(--warn) 35%,transparent)}
@@ -100,6 +96,12 @@ canvas.sig{width:100%;height:190px;background:#fff;border:1px dashed var(--muted
 footer{margin-top:28px;text-align:center;color:var(--muted);font-size:13px}
 .empty-state{padding:40px 10px;text-align:center;color:var(--muted)}
 .empty-state img{width:120px;margin-bottom:12px}
+.scan{position:fixed;inset:0;z-index:25;background:#000;display:flex;flex-direction:column}
+.scan video{flex:1;width:100%;object-fit:cover;min-height:0}
+.scan .frame{position:absolute;left:50%;top:42%;width:68vmin;height:68vmin;transform:translate(-50%,-50%);
+  border:4px solid #fff;border-radius:24px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}
+.scan .bar{position:relative;padding:16px 16px calc(18px + env(safe-area-inset-bottom));background:#000;color:#fff;text-align:center;display:flex;flex-direction:column;gap:12px}
+.btn.scanbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:14px;background:var(--blue);color:#fff}
 </style>
 </head>
 <body>
@@ -142,6 +144,8 @@ const clone = o => JSON.parse(JSON.stringify(o));
 function deftera(day) { const d = new Date(day + 'T12:00:00'); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return fmtLocal(d).slice(0, 10); }
 function periodos(syx, day) { return syx === 'ΕΒΔΟΜΑΔΙΑΙΑ' ? 'W' + deftera(day) : syx === 'ΜΗΝΙΑΙΑ' ? day.slice(0, 7) : day; }
 function apotelesma(s, t) { return (s.apo === null || t >= s.apo) && (s.eos === null || t <= s.eos) ? 'ΕΝΤΟΣ' : 'ΕΚΤΟΣ'; }
+const HOMO = {A:'Α',B:'Β',E:'Ε',Z:'Ζ',H:'Η',I:'Ι',K:'Κ',M:'Μ',N:'Ν',O:'Ο',P:'Ρ',T:'Τ',Y:'Υ',X:'Χ'};
+const kodN = v => String(v || '').trim().toUpperCase().split('').map(c => HOMO[c] || c).join('');
 function zesto(s) { return /ΘΕΡΜ/.test(s.typos || ''); }
 function typosLabel(t) { return ({'ΨΥΓΕΙΟ': 'Ψυγείο', 'ΚΑΤΑΨΥΚΤΗΣ': 'Καταψύκτης', 'ΕΝ ΘΕΡΜΩ ΔΙΑΤΗΡΗΣΗ': 'Εν θερμώ διατήρηση', 'ΕΝ ΨΥΧΡΩ ΔΙΑΤΗΡΗΣΗ': 'Εν ψυχρώ διατήρηση'})[t] || t; }
 
@@ -269,7 +273,7 @@ async function refresh() {
     fatalError = '';
     base = r; LS.set(KEY_STATE, base); online = true; markSync();
     rebuild();
-    if (view.name === 'home' || view.name === 'katharismos' || view.name === 'promitheftes' || view.name === 'prosopiko') render();
+    if (view.name === 'home' || view.name === 'thermokrasies' || view.name === 'katharismos' || view.name === 'promitheftes' || view.name === 'prosopiko') render();
     else drawSync();
   } catch (e) { online = false; drawSync(); }
 }
@@ -305,7 +309,7 @@ function render() {
     shell('', `<div class="empty-state"><p>Φόρτωση…</p><p class="muted">Η πρώτη φορά χρειάζεται σύνδεση στο ίντερνετ.</p></div>`, {home: true});
     return;
   }
-  ({home: renderHome, device: renderDevice, energeia: renderEnergeia, katharismos: renderKatharismos,
+  ({home: renderHome, thermokrasies: renderThermokrasies, device: renderDevice, energeia: renderEnergeia, katharismos: renderKatharismos,
     promitheftes: renderPromitheftes, prom_form: renderPromForm, prosopiko: renderProsopiko, pros_form: renderProsForm,
     ypografi: renderYpografi})[view.name]();
 }
@@ -340,34 +344,42 @@ function renderHome() {
       <button class="btn small sec" onclick="go({name:'device',s:'${esc(a.s)}'})">Νέα μέτρηση</button></div></div>`;
   }).join('');
 
-  const devs = S.syskeves.map(s => {
-    const [cls, txt] = deviceStatus(s);
-    return `<button class="row" onclick="go({name:'device',s:'${esc(s.kod)}'})"><div class="t"><div class="n">${esc(s.onoma)}</div>
-      <div class="s">${esc(typosLabel(s.typos))} · ${esc(s.orio)}</div></div><span class="pill ${cls}">${txt}</span></button>`;
-  }).join('') || '<p class="muted">Δεν έχουν οριστεί συσκευές.</p>';
-
+  // Αρχική = ΠΕΝΤΕ ίσα κουμπιά, ένα ανά αρχείο (22/10 ο χρήστης: η λίστα ψυγείων μαζί με τα άλλα αρχεία μπερδεύει).
+  const need = S.syskeves.reduce((a, s) => a + (s.ana_imera || 1), 0);
+  const done = S.syskeves.reduce((a, s) => a + Math.min(s.simera.length, s.ana_imera || 1), 0);
+  const thermo = S.anoixtes.length ? ['bad', 'Εκτός ορίου'] : !need ? ['neutral', '—'] : done >= need ? ['ok', '✓ ' + done + '/' + need] : [done ? 'warn' : 'neutral', done + '/' + need];
   const kth = S.katharismos, kthPending = kth.filter(k => !k.egine).length;
   const prom = S.promitheftes.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ');
   const pros = S.prosopiko.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ');
   const pr30 = pros.filter(x => certState(x)[0] !== 'ok').length;
   const ypg = S.pros_ypografi.length;
+  const item = (view, title, sub, pill) => `<button class="row" onclick="go({name:'${view}'})"><div class="t"><div class="n">${title}</div>
+    <div class="s">${sub}</div></div><span class="pill ${pill[0]}">${pill[1]}</span></button>`;
 
   shell('', `
     <div class="store">${esc(S.pelatis.eponymia)}</div>
     <div class="date">${MERES[d.getDay()]} ${d.getDate()} ${MINON[d.getMonth()]}</div>
     ${alerts}
-    <h2>Θερμοκρασίες σήμερα</h2><div class="list">${devs}</div>
-    <h2>Αρχεία</h2>
-    <div class="tiles">
-      <button class="tile" onclick="go({name:'katharismos'})"><b>Καθαρισμός</b>
-        <span class="pill ${kth.length ? (kthPending ? 'warn' : 'ok') : 'neutral'}" style="align-self:flex-start">${kth.length ? (kthPending ? kthPending + ' εκκρεμούν' : '✓ όλα') : '—'}</span></button>
-      <button class="tile" onclick="go({name:'promitheftes'})"><b>Προμηθευτές</b>
-        <span class="pill neutral" style="align-self:flex-start">${prom.length}</span></button>
-      <button class="tile" onclick="go({name:'prosopiko'})"><b>Προσωπικό</b>
-        <span class="pill ${pr30 ? 'warn' : 'neutral'}" style="align-self:flex-start">${pr30 ? pr30 + (pr30 === 1 ? ' πιστοποιητικό' : ' πιστοποιητικά') : pros.length}</span></button>
-      <button class="tile" onclick="go({name:'ypografi'})"><b>Υπογραφή μήνα</b>
-        <span class="pill ${ypg ? 'bad' : 'ok'}" style="align-self:flex-start">${ypg ? 'Εκκρεμεί' : '✓'}</span></button>
+    <button class="btn scanbtn" onclick="scan()">📷 Σκανάρισμα QR συσκευής</button>
+    <div class="list" style="margin-top:14px">
+      ${item('thermokrasies', 'Θερμοκρασίες', 'Μετρήσεις σήμερα', thermo)}
+      ${item('katharismos', 'Καθαρισμός', 'Πρόγραμμα καθαρισμού και απολύμανσης',
+             kth.length ? (kthPending ? ['warn', kthPending + ' εκκρεμ' + (kthPending === 1 ? 'εί' : 'ούν')] : ['ok', '✓ όλα']) : ['neutral', '—'])}
+      ${item('promitheftes', 'Προμηθευτές', 'Λίστα προμηθευτών', ['neutral', prom.length])}
+      ${item('prosopiko', 'Προσωπικό', 'Λίστα προσωπικού και πιστοποιητικά υγείας',
+             pr30 ? ['warn', pr30 + (pr30 === 1 ? ' πιστοποιητικό' : ' πιστοποιητικά')] : ['neutral', pros.length])}
+      ${item('ypografi', 'Υπογραφή μήνα', 'Από τον υπεύθυνο της επιχείρησης', ypg ? ['bad', 'Εκκρεμεί'] : ['ok', '✓'])}
     </div>`, {home: true});
+}
+
+function renderThermokrasies() {
+  const devs = S.syskeves.map(s => {
+    const [cls, txt] = deviceStatus(s);
+    return `<button class="row" onclick="go({name:'device',s:'${esc(s.kod)}'})"><div class="t"><div class="n">${esc(s.onoma)}</div>
+      <div class="s">${esc(typosLabel(s.typos))} · ${esc(s.orio)}</div></div><span class="pill ${cls}">${txt}</span></button>`;
+  }).join('') || '<p class="muted">Δεν έχουν οριστεί συσκευές.</p>';
+  shell('Θερμοκρασίες', `<p class="muted" style="margin-top:0">Σκανάρετε το QR της συσκευής ή επιλέξτε την από τη λίστα.</p>
+    <button class="btn scanbtn" onclick="scan()">📷 Σκανάρισμα QR συσκευής</button><div class="spacer"></div><div class="list">${devs}</div>`);
 }
 
 // ---------------------------------------------------------------------- μέτρηση
@@ -429,11 +441,11 @@ async function saveMetrisi() {
     const el = document.createElement('div');
     el.className = 'full ok';
     el.innerHTML = `<div class="big">✓</div><div class="v">${num(v)} °C</div><div>Εντός ορίου${open ? ' · η απόκλιση έκλεισε' : ''}</div>
-      <button class="btn" style="background:#fff;color:var(--ok);min-width:200px" id="done">Τέλος</button>`;
+      <button class="btn" style="background:#fff;color:var(--ok);min-width:260px" id="next">📷 Σκανάρισμα επόμενου</button>
+      <button class="btn" style="background:transparent;color:#fff;border:2px solid #fff;min-width:260px" id="done">Τέλος</button>`;
     document.body.appendChild(el);
-    let closed = false;
-    const close = () => { if (closed) return; closed = true; el.remove(); go({name: 'home'}, true); };
-    $('#done', el).onclick = close; setTimeout(close, 2200);
+    $('#next', el).onclick = () => { el.remove(); scan(true); };
+    $('#done', el).onclick = () => { el.remove(); back(); };
   } else {
     go({name: 'energeia', id: it.id}, true);
   }
@@ -647,6 +659,64 @@ function saveYpografi(m) {
   if (!sigDirty) return toast('Βάλτε την υπογραφή σας', 'bad');
   if (enqueue({typ: 'ypografi', id: newId('Y'), ts: now(), minas: m, onoma: on, eikona: $('#sig').toDataURL('image/png')})) {
     toast('✓ Ο μήνας υπογράφηκε'); go({name: 'home'}, true);
+  }
+}
+
+// ====================================================================== σαρωτής QR μέσα στην εφαρμογή
+// Android: BarcodeDetector του browser. iPhone: jsqr.js (αντίγραφο μέσα στην εφαρμογή, δουλεύει και χωρίς ίντερνετ).
+function loadJsQR() {
+  return window.jsQR ? Promise.resolve() : new Promise((res, rej) => {
+    const sc = document.createElement('script'); sc.src = 'jsqr.js'; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc);
+  });
+}
+async function scan(fromDevice) {
+  const el = document.createElement('div');
+  el.className = 'scan';
+  el.innerHTML = `<video playsinline muted autoplay></video><div class="frame"></div>
+    <div class="bar"><div id="scanMsg">Στρέψτε την κάμερα στο QR της συσκευής</div>
+    <button class="btn sec" id="scanClose">Κλείσιμο</button></div>`;
+  document.body.appendChild(el);
+  const video = $('video', el), msg = $('#scanMsg', el);
+  let stream = null, stopped = false;
+  const stop = () => { stopped = true; if (stream) stream.getTracks().forEach(t => t.stop()); el.remove(); };
+  $('#scanClose', el).onclick = () => { stop(); if (fromDevice) back(); };
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}, audio: false});
+  } catch (e) {
+    stop();
+    toast('Η κάμερα δεν άνοιξε. Δώστε άδεια για την κάμερα ή επιλέξτε τη συσκευή από τη λίστα.', 'bad');
+    go({name: 'thermokrasies'}, !!fromDevice);
+    return;
+  }
+  video.srcObject = stream;
+  await video.play().catch(() => {});
+  let detector = null;
+  try { if ('BarcodeDetector' in window && (await BarcodeDetector.getSupportedFormats()).includes('qr_code')) detector = new BarcodeDetector({formats: ['qr_code']}); } catch (e) {}
+  if (!detector) { try { await loadJsQR(); } catch (e) { msg.textContent = 'Ο σαρωτής δεν φόρτωσε. Κλείστε και επιλέξτε από τη λίστα.'; return; } }
+  const cv = document.createElement('canvas'), g = cv.getContext('2d', {willReadFrequently: true});
+  while (!stopped) {
+    let text = '';
+    try {
+      if (video.readyState >= 2) {
+        if (detector) { const r = await detector.detect(video); text = r[0] ? r[0].rawValue : ''; }
+        else {
+          const w = Math.min(640, video.videoWidth), h = Math.round(video.videoHeight * w / video.videoWidth);
+          cv.width = w; cv.height = h; g.drawImage(video, 0, 0, w, h);
+          const r = jsQR(g.getImageData(0, 0, w, h).data, w, h, {inversionAttempts: 'dontInvert'});
+          text = r ? r.data : '';
+        }
+      }
+    } catch (e) {}
+    if (text) {
+      let u = null; try { u = new URL(text); } catch (e) {}
+      const qp = u ? u.searchParams.get('p') : null, qs = u ? u.searchParams.get('s') : null;
+      if (!u || !qp) msg.textContent = 'Αυτό δεν είναι QR του QRecord';
+      else if (kodN(qp) !== kodN(P)) msg.textContent = 'Αυτό το QR είναι άλλου καταστήματος';
+      else if (!qs) { stop(); go({name: 'home'}, !!fromDevice); return; }
+      else if (!S.syskeves.some(x => x.kod === kodN(qs))) msg.textContent = 'Η συσκευή δεν βρέθηκε. Ίσως αφαιρέθηκε.';
+      else { if (navigator.vibrate) navigator.vibrate(60); stop(); go({name: 'device', s: kodN(qs)}, !!fromDevice); return; }
+    }
+    await sleep(250);
   }
 }
 
