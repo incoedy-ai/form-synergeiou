@@ -135,9 +135,11 @@ footer{margin-top:28px;text-align:center;color:var(--muted);font-size:13px}
 // ====================================================================== ρυθμίσεις
 const API = 'https://script.google.com/macros/s/AKfycbwRoyNlK_CkIEShRA3_hVUpeTT117EprA1xdvi9ZWrvh5w0r-8B2mVLDPnp8_cSGyx9qA/exec';
 
+// «Λάθος πληκτρολόγηση» (23/10): η λάθος τιμή ΜΕΝΕΙ στο αρχείο με αυτή τη σημείωση και η σωστή μπαίνει αμέσως μετά.
+const LATHOS = 'Λάθος πληκτρολόγηση';
 const ENERGEIES_KRYO = ['Η πόρτα είχε μείνει ανοιχτή', 'Μόλις είχαν μπει νέα προϊόντα', 'Ρυθμίστηκε ο θερμοστάτης',
-  'Τα προϊόντα μεταφέρθηκαν σε άλλη συσκευή', 'Απορρίφθηκαν προϊόντα', 'Κλήθηκε τεχνικός'];
-const ENERGEIES_ZESTO = ['Αυξήθηκε η θερμοκρασία της συσκευής', 'Το φαγητό ξαναζεστάθηκε', 'Απορρίφθηκε φαγητό', 'Κλήθηκε τεχνικός'];
+  'Τα προϊόντα μεταφέρθηκαν σε άλλη συσκευή', 'Απορρίφθηκαν προϊόντα', 'Κλήθηκε τεχνικός', LATHOS];
+const ENERGEIES_ZESTO = ['Αυξήθηκε η θερμοκρασία της συσκευής', 'Το φαγητό ξαναζεστάθηκε', 'Απορρίφθηκε φαγητό', 'Κλήθηκε τεχνικός', LATHOS];
 const MINES = ['Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος','Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
 const MINON = ['Ιανουαρίου','Φεβρουαρίου','Μαρτίου','Απριλίου','Μαΐου','Ιουνίου','Ιουλίου','Αυγούστου','Σεπτεμβρίου','Οκτωβρίου','Νοεμβρίου','Δεκεμβρίου'];
 const MERES = ['Κυριακή','Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο'];
@@ -284,6 +286,7 @@ let flushing = false;
 async function flush() {
   if (flushing || !queue.length || !P) return;
   flushing = true; drawSync();
+  let sentLists = false;
   try {
     while (queue.length) {
       const batch = []; let size = 0;
@@ -300,8 +303,10 @@ async function flush() {
       LS.set(KEY_QUEUE, queue);
       if (errors.length) toast('Δεν καταχωρήθηκε: ' + errors.join(', '), 'bad');
       online = true;
+      if (batch.some(b => b.typ === 'promitheftis' || b.typ === 'prosopiko')) sentLists = true;
     }
     markSync();
+    if (sentLists) { await refreshUnl(); rebuild(); if (['promitheftes', 'prosopiko', 'home'].includes(view.name)) render(); }
   } catch (e) { online = false; }
   finally { flushing = false; drawSync(); }
 }
@@ -314,17 +319,31 @@ async function refresh() {
     fatalError = '';
     if (r.tropos !== 'ΕΝΑ') { r.promitheftes = null; r.prosopiko = null; r.v = ''; r.myinco = ''; }   // ποτέ λίστες/κλειδί στη συσκευή όταν κλειδώνουν
     base = r; LS.set(KEY_STATE, base); online = true; markSync();
+    await refreshUnl();
     rebuild();
     if (view.name === 'home' || view.name === 'thermokrasies' || view.name === 'katharismos' || view.name === 'promitheftes' || view.name === 'prosopiko') render();
     else drawSync();
   } catch (e) { online = false; drawSync(); }
 }
+// Ξεκλείδωτο (τρόπος «κάθε υπάλληλος»): οι λίστες ζουν μόνο στη μνήμη, όπως ήταν τη στιγμή του PIN. Χωρίς αυτό,
+// ό,τι προστέθηκε «εξαφανιζόταν» στην πρώτη ανανέωση μετά την αποστολή (23/10) — ξαναφέρνουμε τη φρέσκια λίστα.
+async function refreshUnl() {
+  if (!UNL || UNL.until <= Date.now()) return;
+  try {
+    const r = await api({action: 'pin', p: P, k: K, d: D, pin: UNL.pin});
+    if (r && r.ok && UNL) Object.assign(UNL, {v: r.v, myinco: r.myinco, promitheftes: r.promitheftes, prosopiko: r.prosopiko});
+  } catch (e) {}
+}
 function markSync() { lastSync = now(); LS.set('qr_sync_' + P, lastSync); }
 function drawSync() {
   const el = $('#sync'); if (!el) return;
   const n = queue.length;
-  el.className = 'sync' + (n && !flushing ? ' off' : '');
-  el.textContent = flushing ? 'αποστολή…' : n ? n + ' σε αναμονή' : online ? '✓ συγχρονισμένο' : 'χωρίς σύνδεση';
+  // σύντομο, για να χωράει ο τίτλος στο κινητό (23/10)· η πλήρης φράση στο title
+  const full = flushing ? 'Αποστολή…' : n ? n + ' σε αναμονή για αποστολή' : online ? 'Όλα έχουν σταλεί' : 'Χωρίς σύνδεση στο ίντερνετ';
+  el.className = 'sync' + (n && !flushing || !online ? ' off' : '');
+  el.title = full; el.setAttribute('aria-label', full);
+  el.textContent = flushing ? '⏳' : n ? '⏳ ' + n : online ? '✓' : '⚠ εκτός';
+  el.style.fontSize = n || flushing || !online ? '13px' : '20px';
 }
 
 // ====================================================================== πλοήγηση (το «πίσω» του κινητού δουλεύει)
@@ -590,9 +609,12 @@ function renderDevice() {
   if (view.fresh !== false) { buf = s.typos === 'ΚΑΤΑΨΥΚΤΗΣ' ? '-' : ''; view.fresh = false; history.replaceState(view, '', location.search); }
   const open = S.anoixtes.filter(a => a.s === s.kod).slice(-1)[0];
   const todayList = s.simera.map(m => `<span class="${m.apot === 'ΕΝΤΟΣ' ? 'ok' : 'bad'}">${hhmm(m.ts)} · ${num(m.timi)} °C</span>`).join('');
+  // ο κωδικός της μελέτης ΜΕΓΑΛΟΣ, όπως στο αυτοκόλλητο — να βλέπει ότι σκάναρε τη σωστή συσκευή (23/10)
   shell(s.onoma, `
-    <div class="dev-head"><div class="s">${esc(typosLabel(s.typos))} · όριο ${esc(s.orio)}</div></div>
-    ${open ? `<div class="alert warn">Επαναμέτρηση για τα <b>${num(open.timi)} °C</b> των ${hhmm(open.ts)}.</div>` : ''}
+    <div class="dev-head" style="display:flex;align-items:center;gap:14px">
+      <span class="kodbadge neutral" style="font-size:24px;min-width:76px;height:60px;color:var(--ink)">${esc(s.kod)}</span>
+      <div style="min-width:0"><div class="n">${esc(s.onoma)}</div><div class="s">${esc(typosLabel(s.typos))} · όριο ${esc(s.orio)}</div></div></div>
+    ${open ? `<div class="alert warn"><div>Επαναμέτρηση για τα <b>${num(open.timi)} °C</b> των ${hhmm(open.ts)}.</div></div>` : ''}
     <div class="display" id="disp"></div>
     <div class="keys">
       ${[1,2,3,4,5,6,7,8,9].map(n => `<button onclick="key('${n}')">${n}</button>`).join('')}
@@ -679,6 +701,11 @@ function toggleChoice(b) {
 async function saveEnergeia() {
   const sx = $('#sx').value.trim();
   if (!enqueue({typ: 'energeia', id: newId('E'), metrisi_id: view.id, ts: now(), energeia: chosen.join(', ') || 'Άλλο', sxolio: sx})) return;
+  if (chosen.includes(LATHOS)) {          // λάθος πληκτρολόγηση: η σωστή τιμή γράφεται ΤΩΡΑ, όχι σε 30'
+    const a = S.anoixtes.find(x => x.id === view.id);
+    toast('Γράψτε τώρα τη σωστή τιμή');
+    if (a) { go({name: 'device', s: a.s}, true); return; }
+  }
   await ask('Καταχωρήθηκε', `Ξαναμετρήστε τη θερμοκρασία σε ${REMEASURE_MIN} λεπτά. Η υπενθύμιση φαίνεται στην αρχική οθόνη.`, 'Εντάξει');
   go({name: 'home'}, true);
 }
@@ -853,7 +880,7 @@ async function renderYpografi() {
     <h2>Υπογραφή υπευθύνου</h2>
     ${field('yon', 'Ονοματεπώνυμο υπευθύνου *', S.pelatis.ypefthynos)}
     <label class="f">Υπογράψτε με το δάχτυλο</label><canvas class="sig" id="sig"></canvas>
-    <div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn sec small" onclick="sigClear()">Καθαρισμός</button></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn sec small" onclick="sigClear()">Σβήσιμο υπογραφής</button></div>
     <p class="muted" style="font-size:14px">Με την υπογραφή βεβαιώνω ότι έλεγξα τα αρχεία του μήνα ${minasTitlos(m)}.</p>
     <button class="btn wide go" onclick="saveYpografi('${m}')">Υπογραφή</button>`);
   sigInit();
