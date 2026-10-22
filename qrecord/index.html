@@ -372,7 +372,7 @@ function renderNotRegistered() {
 
 // ---------- ξεκλείδωμα με PIN (τρόπος «κάθε υπάλληλος»)
 function unlock(want) {
-  if (!S.pin_orismeno) { toast('Δεν έχει οριστεί PIN υπευθύνου. Επικοινωνήστε με την InCo.', 'bad'); return; }
+  if (!S.pin_orismeno) return setPin(want);
   const bg = document.createElement('div');
   bg.className = 'modal-bg';
   bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><h3>🔒 Μόνο για τον υπεύθυνο</h3>
@@ -397,6 +397,35 @@ function unlock(want) {
   $('#pinGo', bg).onclick = tryPin;
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') tryPin(); });
 }
+// ---------- ο ΠΕΛΑΤΗΣ ορίζει / αλλάζει το PIN του (το βλέπει μόνο αυτός· στο φύλλο μένει κρυπτογραφημένο)
+function setPin(want, allagi) {
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  const fld = (id, ph) => `<input class="f" id="${id}" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="${ph}" style="text-align:center;font-size:22px;letter-spacing:.3em;margin-bottom:8px">`;
+  bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><h3>🔑 ${allagi ? 'Αλλαγή PIN υπευθύνου' : 'Ορισμός PIN υπευθύνου'}</h3>
+    <p>${allagi ? 'Γράψτε το τωρινό PIN και το νέο.' : 'Επιλέξτε ένα PIN 4 έως 8 ψηφίων. Με αυτό θα ανοίγουν οι λίστες, τα πιστοποιητικά και η υπογραφή του μήνα. Το ξέρετε μόνο εσείς.'}</p>
+    ${allagi ? fld('pOld', 'Τωρινό PIN') : ''}${fld('pNew', 'Νέο PIN')}${fld('pNew2', 'Ξανά το νέο PIN')}
+    <div id="pErr" class="muted" style="color:var(--bad);min-height:22px;margin:4px 0 8px"></div>
+    <div class="acts"><button class="btn wide" id="pGo">Αποθήκευση</button><button class="btn wide sec" id="pNo">Ακύρωση</button></div></div>`;
+  document.body.appendChild(bg);
+  $('#pNo', bg).onclick = () => bg.remove();
+  $('#pGo', bg).onclick = async () => {
+    const err = t => { $('#pErr', bg).textContent = t; };
+    const neo = $('#pNew', bg).value.trim(), neo2 = $('#pNew2', bg).value.trim(), old = allagi ? $('#pOld', bg).value.trim() : '';
+    if (!/^\d{4,8}$/.test(neo)) return err('Το PIN θέλει 4 έως 8 ψηφία.');
+    if (neo !== neo2) return err('Τα δύο PIN δεν είναι ίδια.');
+    err('Αποθήκευση…');
+    let r = null; try { r = await api({action: allagi ? 'allagi_pin' : 'orismos_pin', p: P, k: K, d: D, pin: old, neo}); } catch (e) {}
+    if (!r) return err('Χρειάζεται σύνδεση στο ίντερνετ.');
+    if (!r.ok) return err(r.error);
+    bg.remove();
+    if (base) { base.pin_orismeno = true; LS.set(KEY_STATE, base); rebuild(); }
+    UNL = null;
+    toast('✓ Το PIN αποθηκεύτηκε');
+    if (want) unlock(want); else render();
+  };
+}
+
 setInterval(() => {        // ξανακλείδωμα μετά από 5' χωρίς χρήση
   if (UNL && UNL.until <= Date.now()) {
     UNL = null; rebuild();
@@ -481,6 +510,7 @@ function renderHome() {
     </div>
     <button class="btn wide sec" style="margin-top:14px;display:flex;align-items:center;justify-content:center;gap:10px;color:#287B9B;border-color:#287B9B"
       onclick="openArxeio()">📁 Όλες οι καταγραφές${locked() ? ' 🔒' : ''}</button>
+    ${S.tropos !== 'ΕΝΑ' && S.pin_orismeno ? `<button class="btn wide sec small" style="margin-top:8px;border:0;background:none;color:var(--muted);font-weight:600" onclick="setPin(null, true)">🔑 Αλλαγή PIN υπευθύνου</button>` : ''}
     ${installBox()}`, {home: true});
 }
 
