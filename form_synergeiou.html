@@ -1624,6 +1624,9 @@ async function submitForm() {
   const emailTxt = t => { const v = (document.getElementById(t)?.textContent || '').trim(); return v && v !== '—' ? v : '—'; };
   const emailEpik = emailTxt('inf-email');
   const emailEtim = emailTxt('inf-etim');
+  // 22/10/2026: ο χρήστης θέλει στο email και την πινακίδα του οχήματος.
+  const och = document.getElementById('inf-och').textContent;
+  const ochTxt = (och || '').trim() || '—';
 
   const body =
 `ΕΝΤΟΛΗ ΕΦΑΡΜΟΓΗΣ - INCO
@@ -1635,6 +1638,7 @@ EMAIL ΕΠΙΚΟΙΝΩΝΙΑΣ: ${emailEpik}
 EMAIL E-ΤΙΜΟΛΟΓΙΟΥ: ${emailEtim}
 ΔΙΕΥΘ. ΕΦΑΡΜΟΓΗΣ: ${dieyEf}
 ΗΜΕΡΟΜΗΝΙΑ: ${imer}  ΩΡΑ: ${ora}
+ΠΙΝΑΚΙΔΑ ΟΧΗΜΑΤΟΣ: ${ochTxt}
 
 --- ΣΚΕΥΑΣΜΑΤΑ / ΥΛΙΚΑ ---
 ${skLines.length ? skLines.join('\n') : '(κανένα)'}
@@ -1659,7 +1663,6 @@ ${simSyn}
 [Η υπογραφή του πελάτη έχει ληφθεί ψηφιακά]`;
 
   // ---- ΑΠΟΘΗΚΕΥΣΗ ΕΝΤΟΛΗΣ (Google Sheet) ----
-  const och = document.getElementById('inf-och').textContent;
   const order = {
     efid: p.get('efid') || '',   // ID ραντεβού ΕΦΑΡΜΟΓΕΣ (για match/update στην Access)
     kod, pelatis, diey, dieyEf, imer, ora, och,
