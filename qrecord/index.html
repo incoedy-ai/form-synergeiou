@@ -311,7 +311,7 @@ async function refresh() {
     const r = await api({action: 'init', p: P, k: K, d: D});
     if (!r.ok) { fatalError = r.error || 'σφάλμα'; render(); return; }
     fatalError = '';
-    if (r.tropos !== 'ΕΝΑ') { r.promitheftes = null; r.prosopiko = null; r.v = ''; }   // ποτέ λίστες/κλειδί στη συσκευή όταν κλειδώνουν
+    if (r.tropos !== 'ΕΝΑ') { r.promitheftes = null; r.prosopiko = null; r.v = ''; r.myinco = ''; }   // ποτέ λίστες/κλειδί στη συσκευή όταν κλειδώνουν
     base = r; LS.set(KEY_STATE, base); online = true; markSync();
     rebuild();
     if (view.name === 'home' || view.name === 'thermokrasies' || view.name === 'katharismos' || view.name === 'promitheftes' || view.name === 'prosopiko') render();
@@ -390,9 +390,9 @@ function unlock(want) {
     $('#pinGo', bg).disabled = false;
     if (!r) { $('#pinErr', bg).textContent = 'Χρειάζεται σύνδεση στο ίντερνετ.'; return; }
     if (!r.ok) { $('#pinErr', bg).textContent = r.error === 'λάθος PIN' ? 'Λάθος PIN' : r.error; inp.value = ''; inp.focus(); return; }
-    UNL = {pin, v: r.v, until: Date.now() + LOCK_MIN * 60000, promitheftes: r.promitheftes, prosopiko: r.prosopiko};
+    UNL = {pin, v: r.v, myinco: r.myinco, until: Date.now() + LOCK_MIN * 60000, promitheftes: r.promitheftes, prosopiko: r.prosopiko};
     bg.remove(); rebuild();
-    if (want.name === '__arxeio') openArxeio(); else go(want);
+    if (want.name === '__arxeio') openArxeio(); else if (want.name === '__myinco') openMyInco(); else go(want);
   };
   $('#pinGo', bg).onclick = tryPin;
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') tryPin(); });
@@ -510,6 +510,8 @@ function renderHome() {
     </div>
     <button class="btn wide sec" style="margin-top:14px;display:flex;align-items:center;justify-content:center;gap:10px;color:#287B9B;border-color:#287B9B"
       onclick="openArxeio()">📁 Όλες οι καταγραφές${locked() ? ' 🔒' : ''}</button>
+    ${S.exei_myinco ? `<button class="btn wide sec" style="margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px;color:#2D3A4D;border-color:#2D3A4D"
+      onclick="openMyInco()">📂 My InCo — όλα τα έγγραφα της InCo${locked() ? ' 🔒' : ''}</button>` : ''}
     ${S.tropos !== 'ΕΝΑ' && S.pin_orismeno ? `<button class="btn wide sec small" style="margin-top:8px;border:0;background:none;color:var(--muted);font-weight:600" onclick="setPin(null, true)">🔑 Αλλαγή PIN υπευθύνου</button>` : ''}
     ${installBox()}`, {home: true});
 }
@@ -544,6 +546,13 @@ function openArxeio() {
   if (!v) { if (S.tropos === 'ΕΝΑ') toast('Χρειάζεται σύνδεση στο ίντερνετ.', 'bad'); else unlock({name: '__arxeio'}); return; }
   const url = 'arxeio.html?' + new URLSearchParams({p: P, v});
   if (!window.open(url, '_blank')) location.href = url;
+}
+
+// ---------- My InCo: το QRecord είναι τμήμα του (22/10 ο χρήστης) — ο φάκελος με όλα τα έγγραφα της InCo
+function openMyInco() {
+  const u = S.tropos === 'ΕΝΑ' ? S.myinco : (UNL && UNL.until > Date.now() ? UNL.myinco : '');
+  if (!u) { if (S.tropos === 'ΕΝΑ') toast('Χρειάζεται σύνδεση στο ίντερνετ.', 'bad'); else unlock({name: '__myinco'}); return; }
+  if (!window.open(u, '_blank')) location.href = u;
 }
 
 function renderThermokrasies() {
