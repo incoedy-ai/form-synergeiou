@@ -44,10 +44,20 @@ td.miss{color:#9aa8b6;background:#f7f9fb}
 .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .halves{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .note{color:var(--muted);font-size:12px;margin:4px 0 0}
+.kgrid{overflow-x:auto}
+table.kt{font-size:10.5px;table-layout:fixed;min-width:760px}
+@media print{table.kt{min-width:0;font-size:8.5px}table.kt .kl{width:150px}table.kt th:last-child,table.kt td:last-child{width:34px}}
+table.kt th,table.kt td{padding:3px 1px;text-align:center}
+table.kt .kl{text-align:left;width:190px;padding-left:6px;font-weight:700}
+table.kt td.kc{color:var(--ok);font-weight:800}
+table.kt td.kc.out{color:var(--bad)}
 .sum{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:2px 0 6px}
 .sum b{color:var(--navy)}
 .sig{display:flex;gap:24px;align-items:flex-end;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:14px;background:#fbfcfd}
 .sig img{height:90px;background:#fff;border-bottom:1px solid var(--navy)}
+table.dc{width:auto;margin:0 auto 8px;font-size:11px}
+table.dc th{background:#fff;font-weight:600;color:var(--muted)}
+table.dc td{min-width:90px;color:var(--navy);font-weight:600}
 .legal{margin-top:26px;padding-top:8px;border-top:1px solid var(--line);font-size:10px;color:var(--muted);text-align:center}
 .by{text-align:center;color:var(--muted);font-size:12px;margin-top:8px}
 .state{padding:60px 10px;text-align:center;color:var(--muted)}
@@ -93,6 +103,7 @@ const ddmm = ts => ts ? ts.slice(8, 10) + '/' + ts.slice(5, 7) : '';
 const dmy = d => d ? d.slice(8, 10) + '/' + d.slice(5, 7) + '/' + d.slice(0, 4) : '';
 const titlos = m => MINES[+m.slice(5, 7) - 1] + ' ' + m.slice(0, 4);
 const pad = n => String(n).padStart(2, '0');
+const kefalaia = s => String(s || '').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '');   // ελληνικά κεφαλαία χωρίς τόνους
 
 async function load() {
   if (!P || !V) return fail('Ο σύνδεσμος δεν είναι πλήρης.');
@@ -137,7 +148,7 @@ function render(r) {
     };
     const half = Math.ceil(days.length / 2);
     const tbl = list => `<table>${head}${list.map(row).join('')}</table>`;
-    return `<div class="dev"><h3>${esc(s.onoma)} <small>${esc(TYPOI[s.typos] || s.typos)} · όριο ${esc(s.orio)}</small></h3>
+    return `<div class="dev"><h3>${esc(s.kod)} · ${esc(s.onoma)} <small>${esc(TYPOI[s.typos] || s.typos)} · όριο ${esc(s.orio)}</small></h3>
       <div class="sum"><span><b>${s.plithos}</b> μετρήσεις</span>${s.min !== null ? `<span>από <b>${num(s.min)}</b> έως <b>${num(s.max)}</b> °C</span>` : ''}
       <span><b>${s.apokliseis.length}</b> εκτός ορίου</span><span><b>${s.imeres_xoris.length}</b> ημέρες χωρίς μέτρηση</span></div>
       ${days.length > 10 ? `<div class="halves">${tbl(days.slice(0, half))}${tbl(days.slice(half))}</div>` : tbl(days)}</div>`;
@@ -145,7 +156,7 @@ function render(r) {
 
   // ---- αποκλίσεις
   const apok = [];
-  r.syskeves.forEach(s => s.apokliseis.forEach(a => apok.push(Object.assign({onoma: s.onoma}, a))));
+  r.syskeves.forEach(s => s.apokliseis.forEach(a => apok.push(Object.assign({onoma: s.kod + ' · ' + s.onoma}, a))));
   apok.sort((a, b) => a.ts < b.ts ? -1 : 1);
   const apokT = apok.length ? `<table><tr><th>Ημερομηνία</th><th>Συσκευή</th><th>Τιμή</th><th>Όριο</th><th>Διορθωτική ενέργεια</th><th>Επαναμέτρηση</th></tr>
     ${apok.map(a => `<tr><td>${ddmm(a.ts)} ${hhmm(a.ts)}</td><td>${esc(a.onoma)}</td><td class="out">${num(a.timi)} °C</td><td>${esc(a.orio)}</td>
@@ -153,11 +164,17 @@ function render(r) {
       <td>${a.epomeni ? `<span class="okc">${num(a.epomeni.timi)} °C ✓</span> ${ddmm(a.epomeni.ts)} ${hhmm(a.epomeni.ts)}` : '<span class="out">εκκρεμεί</span>'}</td></tr>`).join('')}</table>`
     : '<p class="note">Καμία μέτρηση εκτός ορίου αυτόν τον μήνα.</p>';
 
-  // ---- καθαρισμός
-  const kath = r.katharismos.length ? `<table><tr><th>Χώρος / εξοπλισμός</th><th>Συχνότητα</th><th>Μέσο</th><th>Ημερομηνίες εκτέλεσης</th><th>Ολοκλήρωση</th></tr>
-    ${r.katharismos.map(k => `<tr><td><b>${esc(k.xoros)}</b></td><td>${SYXN[k.syxnotita] || k.syxnotita}</td><td>${esc(k.meso || '')}</td>
-      <td>${k.imerominies.length ? k.imerominies.map(ddmm).filter((x, i, a) => a.indexOf(x) === i).join(', ') : '—'}</td>
-      <td class="${k.egine >= k.anamenomeno ? 'okc' : 'out'}">${k.egine} από ${k.anamenomeno}</td></tr>`).join('')}</table>`
+  // ---- καθαρισμός: ΟΠΩΣ το «Έντυπο Εφαρμογής Προγράμματος Καθαρισμού / Απολύμανσης» — γραμμές τα σημεία, στήλες οι μέρες
+  const nDays = new Date(+r.minas.slice(0, 4), +r.minas.slice(5, 7), 0).getDate();
+  const SX = {ΗΜΕΡΗΣΙΑ: 'Η', ΕΒΔΟΜΑΔΙΑΙΑ: 'Ε', ΜΗΝΙΑΙΑ: 'Μ'};
+  const kpar = (r.paratiriseis || []).filter(x => x.enotita === 'ΚΑΘΑΡΙΣΜΟΣ');
+  const kath = r.katharismos.length ? `<div class="kgrid"><table class="kt"><tr><th class="kl">ΧΩΡΟΣ ΕΦΑΡΜΟΓΗΣ</th>${Array.from({length: nDays}, (_, i) => `<th>${i + 1}</th>`).join('')}<th>Σύνολο</th></tr>
+    ${r.katharismos.map(k => { const meres = new Set(k.imerominies.map(t => +t.slice(8, 10)));
+      return `<tr><td class="kl">(${SX[k.syxnotita] || 'Η'}) ${esc(kefalaia(k.xoros))}${k.kod_meletis ? ' (' + esc(k.kod_meletis) + ')' : ''}</td>
+        ${Array.from({length: nDays}, (_, i) => `<td class="kc">${meres.has(i + 1) ? '✓' : ''}</td>`).join('')}
+        <td class="kc ${k.egine >= k.anamenomeno ? 'okc' : 'out'}">${k.egine}/${k.anamenomeno}</td></tr>`; }).join('')}</table></div>
+    <p class="note">(Η) Ημερήσιο – (Ε) Εβδομαδιαίο – (Μ) Μηνιαίο · Σύνολο = περίοδοι που έγιναν / περίοδοι που έπρεπε</p>
+    <h3>Παρατηρήσεις</h3>${kpar.length ? `<table>${kpar.map(x => `<tr><td style="width:110px">${ddmm(x.ts)} ${hhmm(x.ts)}</td><td>${esc(x.keimeno)}</td></tr>`).join('')}</table>` : '<p class="note">—</p>'}`
     : '<p class="note">Δεν έχει οριστεί πρόγραμμα καθαρισμού.</p>';
 
   // ---- προμηθευτές / προσωπικό (η τρέχουσα λίστα)
@@ -183,7 +200,9 @@ function render(r) {
       <p class="note">Με την υπογραφή ο υπεύθυνος βεβαιώνει ότι έλεγξε τα αρχεία του μήνα ${titlos(r.minas)}.</p>`
     : `<div class="sig"><div class="note">Ο μήνας ${titlos(r.minas)} δεν έχει υπογραφεί ακόμα από τον υπεύθυνο της επιχείρησης.</div></div>`;
 
-  const ctrl = 'ΣΥΝΤΑΞΗ/ΕΓΚΡΙΣΗ: Αρχιμήδης Λ. Τρυφωνίδης · ΕΚΔ. digital 01 · ΙΣΧΥΕΙ ΑΠΟ 10/2026';
+  // Πίνακας ελέγχου εγγράφου — ΙΔΙΟΣ κανόνας με όλα τα έντυπα της InCo (Σύνταξη / Έγκριση / Έκδοση / Ισχύει από)
+  // ΚΑΝΟΝΑΣ όλων των εντύπων: νομικό υποσέλιδο και ΑΠΟ ΚΑΤΩ η γραμμή ελέγχου (+ «αναπόσπαστο τμήμα του QRecord»)
+  const ctrl = 'ΣΥΝΤΑΞΗ / ΕΓΚΡΙΣΗ : ΑΡΧΙΜΗΔΗΣ Λ. ΤΡΥΦΩΝΙΔΗΣ | ΕΚΔ. : digital 01 | ΙΣΧΥΕΙ ΑΠΟ : 10/2026';
   document.getElementById('doc').innerHTML = `
     <div class="top"><img src="logo.png" alt="QRecord · από την InCo">
       <div class="cust"><b>${esc(r.pelatis.kod)} · ${esc(r.pelatis.eponymia)}</b>${r.pelatis.ypefthynos ? `<div class="m">Υπεύθυνος: ${esc(r.pelatis.ypefthynos)}</div>` : ''}</div></div>
@@ -191,18 +210,17 @@ function render(r) {
     <div class="sub">${PRINT ? '' : '<span class="badge live">ΖΩΝΤΑΝΑ ΔΕΔΟΜΕΝΑ</span>'}
       <span class="badge ${signed ? 'signed' : 'unsigned'}">${signed ? '✓ ΥΠΟΓΕΓΡΑΜΜΕΝΟΣ ΜΗΝΑΣ' : 'ΧΩΡΙΣ ΥΠΟΓΡΑΦΗ ΑΚΟΜΑ'}</span>
       <span>Περίοδος ${dmy(r.apo)} – ${dmy(r.mexri)}</span>${PRINT ? '' : `<span>ενημέρωση ${dmy(r.tora.slice(0, 10))} ${r.tora.slice(11, 16)}</span>`}</div>
-    <div class="ctrl">${ctrl}</div>
     <div class="nav"><button ${prev ? '' : 'disabled'} onclick="go('${prev || ''}')">‹ Προηγούμενος</button>
       <select onchange="go(this.value)" aria-label="Μήνας">${opts}</select>
       <button ${next ? '' : 'disabled'} onclick="go('${next || ''}')">Επόμενος ›</button>
       <button class="print" onclick="print()">Εκτύπωση / PDF</button></div>
     <h2>1. Θερμοκρασίες συσκευών</h2>${devs}
     <h2>2. Μετρήσεις εκτός ορίου και διορθωτικές ενέργειες</h2>${apokT}
-    <h2>3. Πρόγραμμα καθαρισμού και απολύμανσης</h2>${kath}
+    <h2>3. Εφαρμογή προγράμματος καθαρισμού / απολύμανσης</h2>${kath}
     <h2>4. Λίστα προμηθευτών</h2>${prom}
     <h2>5. Λίστα προσωπικού</h2>${pros}
     <h2>6. Υπογραφή υπευθύνου</h2>${sig}
-    <div class="legal">${LEGAL}</div>`;
+    <div class="legal"><div style="font-style:italic;color:var(--navy);margin-bottom:3px">Το παρόν έντυπο αποτελεί αναπόσπαστο τμήμα του QRecord · από την InCo</div>${LEGAL}<div style="margin-top:3px">${ctrl}</div></div>`;
   document.title = 'QRecord · ' + r.pelatis.kod + ' · ' + titlos(r.minas);
 }
 load();

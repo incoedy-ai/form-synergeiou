@@ -56,6 +56,7 @@ h2{font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--mute
 .row.sec-ypo{border-color:#287B9B}.sec-ypo .ico{background:#EEF6F9}
 @media (prefers-color-scheme:dark){.row.sec-prom{border-color:#65C7D7}}
 .row .t{flex:1;min-width:0}
+.kodbadge{min-width:54px;height:44px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:16px;padding:0 6px}
 .row .n{font-weight:700;font-size:17px}
 .row .s{color:var(--muted);font-size:14px}
 .pill{border-radius:999px;padding:5px 11px;font-size:14px;font-weight:700;white-space:nowrap}
@@ -555,14 +556,28 @@ function openMyInco() {
   if (!window.open(u, '_blank')) location.href = u;
 }
 
+// Ομαδοποίηση ανά είδος, με τη σειρά και τους κωδικούς της μελέτης (Ψ, Κ, ΕΨΔ, ΕΘΔ) — 22/10 ο χρήστης
+const OMADES = [['ΨΥΓΕΙΟ', 'Ψυγεία'], ['ΚΑΤΑΨΥΚΤΗΣ', 'Καταψύκτες'], ['ΕΝ ΨΥΧΡΩ ΔΙΑΤΗΡΗΣΗ', 'Εν ψυχρώ διατήρηση'], ['ΕΝ ΘΕΡΜΩ ΔΙΑΤΗΡΗΣΗ', 'Εν θερμώ διατήρηση']];
+const fysikh = (a, b) => a.kod.localeCompare(b.kod, 'el', {numeric: true});
 function renderThermokrasies() {
-  const devs = S.syskeves.map(s => {
-    const [cls, txt] = deviceStatus(s);
-    return `<button class="row" onclick="go({name:'device',s:'${esc(s.kod)}'})"><div class="t"><div class="n">${esc(s.onoma)}</div>
-      <div class="s">${esc(typosLabel(s.typos))} · ${esc(s.orio)}</div></div><span class="pill ${cls}">${txt}</span></button>`;
+  const gnosta = OMADES.map(o => o[0]);
+  const omades = OMADES.concat([['', 'Άλλες συσκευές']]).map(([typ, titlos]) => {
+    const sk = S.syskeves.filter(s => typ ? s.typos === typ : !gnosta.includes(s.typos)).sort(fysikh);
+    if (!sk.length) return '';
+    const need = sk.reduce((a, s) => a + (s.ana_imera || 1), 0), done = sk.reduce((a, s) => a + Math.min(s.simera.length, s.ana_imera || 1), 0);
+    const bad = sk.some(s => S.anoixtes.some(a => a.s === s.kod));
+    return `<h2 style="display:flex;justify-content:space-between;align-items:center">${titlos}
+        <span class="pill ${bad ? 'bad' : done >= need ? 'ok' : 'neutral'}" style="font-size:12px">${done}/${need}</span></h2>
+      <div class="list">${sk.map(s => {
+        const [cls, txt] = deviceStatus(s);
+        return `<button class="row" onclick="go({name:'device',s:'${esc(s.kod)}'})">
+          <span class="kodbadge ${cls}">${esc(s.kod)}</span>
+          <div class="t"><div class="n">${esc(s.onoma)}</div><div class="s">${esc(s.orio)}</div></div>
+          <span class="pill ${cls}">${txt}</span></button>`;
+      }).join('')}</div>`;
   }).join('') || '<p class="muted">Δεν έχουν οριστεί συσκευές.</p>';
   shell('Θερμοκρασίες', `<p class="muted" style="margin-top:0">Σκανάρετε το QR της συσκευής ή επιλέξτε την από τη λίστα.</p>
-    <button class="btn scanbtn" onclick="scan()">📷 Σκανάρισμα QR συσκευής</button><div class="spacer"></div><div class="list">${devs}</div>`);
+    <button class="btn scanbtn" onclick="scan()">📷 Σκανάρισμα QR συσκευής</button>${omades}`);
 }
 
 // ---------------------------------------------------------------------- μέτρηση
@@ -668,22 +683,39 @@ async function saveEnergeia() {
 
 // ---------------------------------------------------------------------- καθαρισμός
 function renderKatharismos() {
-  const groups = ['ΗΜΕΡΗΣΙΑ', 'ΕΒΔΟΜΑΔΙΑΙΑ', 'ΜΗΝΙΑΙΑ'].map(g => {
-    const items = S.katharismos.filter(k => k.syxnotita === g);
-    if (!items.length) return '';
-    return `<h2>${SYXN[g]}</h2><div class="list">${items.map(k => `
-      <button class="row" ${k.egine ? 'disabled' : ''} onclick="saveKatharismos('${esc(k.kod)}')">
-        <span class="choice ${k.egine ? 'on' : ''}" style="padding:0;border:0;min-height:0;width:auto;background:none"><span class="box">${k.egine ? '✓' : ''}</span></span>
-        <div class="t"><div class="n">${esc(k.xoros)}</div><div class="s">${esc(k.meso)}</div></div>
-        <span class="pill ${k.egine ? 'ok' : 'neutral'}">${k.egine ? (k.teleftaia.slice(0, 10) === today() ? hhmm(k.teleftaia) : ddmm(k.teleftaia)) : 'Εκκρεμεί'}</span>
-      </button>`).join('')}</div>`;
-  }).join('');
-  shell('Καθαρισμός', groups || '<p class="muted">Δεν έχει οριστεί πρόγραμμα καθαρισμού.</p>');
+  // Όπως το «Έντυπο Εφαρμογής Προγράμματος Καθαρισμού / Απολύμανσης»: (Η)/(Ε)/(Μ) ΣΗΜΕΙΟ (κωδικός μελέτης).
+  // ΚΑΝΕΝΑ τσεκ από πριν (22/10 ο χρήστης: «τους 3 καθαρίσαμε, οι άλλοι όχι») — γράφεται μόνο ό,τι επιλέχθηκε.
+  const pending = S.katharismos.filter(k => !k.egine), done = S.katharismos.filter(k => k.egine);
+  const row = (k, on) => `<button class="choice${on ? ' on' : ''}" data-k="${esc(k.kod)}" ${k.egine ? 'disabled style="opacity:.6"' : 'onclick="kathToggle(this)"'}>
+      <span class="box">${k.egine ? '✓' : ''}</span><span style="flex:1"><b>${esc(kathLabel(k))}</b>${k.meso ? `<br><span class="muted" style="font-size:14px">${esc(k.meso)}</span>` : ''}</span>
+      ${k.egine ? `<span class="pill ok">${k.teleftaia.slice(0, 10) === today() ? hhmm(k.teleftaia) : ddmm(k.teleftaia)}</span>` : ''}</button>`;
+  shell('Καθαρισμός', S.katharismos.length ? `
+    <p class="muted" style="margin-top:0">Επιλέξτε ό,τι καθαρίστηκε και απολυμάνθηκε. (Η) Ημερήσιο · (Ε) Εβδομαδιαίο · (Μ) Μηνιαίο</p>
+    ${pending.length ? `<button class="btn sec wide" onclick="kathAll()" style="margin-bottom:10px">✓ Όλα</button>
+      <div class="list">${pending.map(k => row(k, false)).join('')}</div>` : '<div class="alert" style="background:var(--ok-bg);color:var(--ok)"><b>✓ Όλα έγιναν για αυτή την περίοδο.</b></div>'}
+    <label class="f" for="kpar">Παρατηρήσεις (προαιρετικά)</label><textarea class="f" id="kpar" maxlength="500"></textarea>
+    <div class="spacer"></div>
+    <button class="btn go wide" id="kathSave" onclick="kathSave()">Αποθήκευση</button>
+    ${done.length ? `<h2>Έγιναν ήδη</h2><div class="list">${done.map(k => row(k, true)).join('')}</div>` : ''}`
+    : '<p class="muted">Δεν έχει οριστεί πρόγραμμα καθαρισμού.</p>');
+  kathCount();
 }
-async function saveKatharismos(kod) {
-  const k = S.katharismos.find(x => x.kod === kod);
-  if (!await ask(k.xoros, 'Έγινε ο καθαρισμός και η απολύμανση;', 'Ναι, έγινε', 'Ακύρωση')) return;
-  if (enqueue({typ: 'katharismos', id: newId('K'), ts: now(), simeio: kod})) { render(); toast('✓ Καταχωρήθηκε'); }
+const kathLabel = k => '(' + ({ΗΜΕΡΗΣΙΑ: 'Η', ΕΒΔΟΜΑΔΙΑΙΑ: 'Ε', ΜΗΝΙΑΙΑ: 'Μ'}[k.syxnotita] || 'Η') + ') ' + k.xoros + (k.kod_meletis ? ' (' + k.kod_meletis + ')' : '');
+function kathToggle(b) { b.classList.toggle('on'); $('.box', b).textContent = b.classList.contains('on') ? '✓' : ''; kathCount(); }
+function kathAll() { document.querySelectorAll('.choice[data-k]:not([disabled])').forEach(b => { b.classList.add('on'); $('.box', b).textContent = '✓'; }); kathCount(); }
+function kathCount() {
+  const n = document.querySelectorAll('.choice.on[data-k]:not([disabled])').length, b = $('#kathSave'); if (!b) return;
+  const par = $('#kpar') && $('#kpar').value.trim();
+  b.textContent = n ? `Αποθήκευση (${n})` : 'Αποθήκευση'; b.disabled = !n && !par;
+  if ($('#kpar') && !$('#kpar').oninput) $('#kpar').oninput = kathCount;
+}
+function kathSave() {
+  const sel = [...document.querySelectorAll('.choice.on[data-k]:not([disabled])')].map(b => b.dataset.k);
+  const par = $('#kpar').value.trim(), ts = now();
+  sel.forEach(kod => enqueue({typ: 'katharismos', id: newId('K'), ts, simeio: kod}));
+  if (par) enqueue({typ: 'paratirisi', id: newId('R'), ts, enotita: 'ΚΑΘΑΡΙΣΜΟΣ', keimeno: par});
+  toast(sel.length ? '✓ Καταχωρήθηκαν ' + sel.length : '✓ Η παρατήρηση καταχωρήθηκε');
+  render();
 }
 
 // ---------------------------------------------------------------------- προμηθευτές / προσωπικό
