@@ -26,6 +26,8 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(10px + 
   display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);margin-bottom:14px}
 header .back{border:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;height:44px;min-width:44px;
   font-size:22px;display:grid;place-items:center;padding:0 10px}
+header .home svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+header .home{color:#287B9B}
 header h1{font-size:19px;margin:0;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 header .logo{height:30px;display:block}
 .sync{font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}
@@ -174,11 +176,24 @@ const Q = new URLSearchParams(location.search);
 let P = Q.get('p') || LS.get('qr_p', ''), K = Q.get('k') || LS.get('qr_k', '');
 if (Q.get('p') && Q.get('k')) { LS.set('qr_p', P); LS.set('qr_k', K); }
 const START_DEVICE = Q.get('s');
-if (P && K && (START_DEVICE || !Q.get('p'))) {
-  // ο σύνδεσμος της αρχικής οθόνης κρατά μόνο πελάτη + κλειδί (για «Προσθήκη στην αρχική οθόνη»)
-  history.replaceState(null, '', location.pathname + '?p=' + encodeURIComponent(P) + '&k=' + encodeURIComponent(K));
+// Τρόπος «ένα κινητό»: d = το κλειδί ΑΥΤΟΥ του κινητού (από την ενεργοποίηση). Μένει και στον σύνδεσμο,
+// ώστε το εικονίδιο στην οθόνη (iPhone: άλλη αποθήκη από το Safari) να το έχει κι αυτό.
+let D = Q.get('d') || LS.get('qr_d_' + P, '');
+if (Q.get('d')) LS.set('qr_d_' + P, D);
+const ACTIVATION = Q.get('e') || '';
+function cleanUrl() {
+  history.replaceState(history.state, '', location.pathname + '?p=' + encodeURIComponent(P) + '&k=' + encodeURIComponent(K) + (D ? '&d=' + encodeURIComponent(D) : ''));
 }
+if (P && K && (START_DEVICE || ACTIVATION || !Q.get('p'))) cleanUrl();
 const KEY_STATE = 'qr_s_' + P, KEY_QUEUE = 'qr_q_' + P;
+
+// Τρόπος «κάθε υπάλληλος»: Προμηθευτές / Προσωπικό / Υπογραφή ανοίγουν με PIN υπευθύνου.
+// Οι λίστες ζουν ΜΟΝΟ στη μνήμη όσο είναι ξεκλείδωτο (ποτέ στη συσκευή) και ξανακλειδώνουν μετά από 5' χωρίς χρήση.
+const LOCK_MIN = 5;
+let UNL = null;              // {pin, until, promitheftes, prosopiko}
+const locked = () => !!S && S.tropos !== 'ΕΝΑ' && !(UNL && UNL.until > Date.now());
+const touchUnlock = () => { if (UNL) UNL.until = Date.now() + LOCK_MIN * 60000; };
+const LOCKED_VIEWS = ['promitheftes', 'prom_form', 'prosopiko', 'pros_form', 'ypografi'];
 
 // ====================================================================== δεδομένα: ό,τι είπε ο server + ό,τι περιμένει να σταλεί
 let base = LS.get(KEY_STATE, null);
@@ -192,6 +207,10 @@ function rebuild() {
   if (st.simera !== t) {            // η αποθηκευμένη εικόνα είναι από άλλη μέρα
     st.syskeves.forEach(s => s.simera = []);
     st.simera = t;
+  }
+  if (st.tropos !== 'ΕΝΑ') {
+    st.promitheftes = UNL && UNL.until > Date.now() ? clone(UNL.promitheftes) : null;
+    st.prosopiko = UNL && UNL.until > Date.now() ? clone(UNL.prosopiko) : null;
   }
   queue.forEach(it => apply(st, it));
   st.katharismos.forEach(k => { k.egine = !!k.teleftaia && periodos(k.syxnotita, k.teleftaia.slice(0, 10)) === periodos(k.syxnotita, t); });
@@ -214,6 +233,7 @@ function apply(st, it) {
     if (k && (!k.teleftaia || it.ts > k.teleftaia)) k.teleftaia = it.ts;
   } else if (it.typ === 'promitheftis' || it.typ === 'prosopiko') {
     const list = it.typ === 'promitheftis' ? st.promitheftes : st.prosopiko;
+    if (!list) return;                       // κλειδωμένο: η λίστα δεν είναι εδώ
     let o = list.find(x => x.id === it.id);
     if (!o) { o = {id: it.id}; list.push(o); }
     if (it.typ === 'promitheftis') Object.assign(o, {'ΕΠΩΝΥΜΙΑ': it.eponymia, 'ΑΦΜ': it.afm, 'ΔΟΥ': it.doy, 'ΔΙΕΥΘΥΝΣΗ': it.dieuthynsi, 'ΤΗΛΕΦΩΝΟ': it.til, 'ΕΙΔΗ': it.eidi});
@@ -271,8 +291,8 @@ async function flush() {
         if (batch.length && (batch.length >= 15 || size + n > 3e6)) break;
         batch.push(it); size += n;
       }
-      const r = await api(null, {action: 'apothikefsi', p: P, k: K, items: batch});
-      if (!r.ok) { if (r.error === 'άκυρος σύνδεσμος') fatalError = r.error; throw new Error(r.error); }
+      const r = await api(null, {action: 'apothikefsi', p: P, k: K, d: D, items: batch});
+      if (!r.ok) { if (r.error === 'άκυρος σύνδεσμος' || r.error === 'μη καταχωρημένη συσκευή') { fatalError = r.error; render(); } throw new Error(r.error); }
       const sent = new Set(batch.map(b => b.id + '|' + (b.vid || '')));
       const errors = r.apotelesmata.filter(x => !x.ok).map(x => x.error);
       queue = queue.filter(it => !sent.has(it.id + '|' + (it.vid || '')));
@@ -288,9 +308,10 @@ async function flush() {
 async function refresh() {
   if (!P) return;
   try {
-    const r = await api({action: 'init', p: P, k: K});
+    const r = await api({action: 'init', p: P, k: K, d: D});
     if (!r.ok) { fatalError = r.error || 'σφάλμα'; render(); return; }
     fatalError = '';
+    if (r.tropos !== 'ΕΝΑ') { r.promitheftes = null; r.prosopiko = null; r.v = ''; }   // ποτέ λίστες/κλειδί στη συσκευή όταν κλειδώνουν
     base = r; LS.set(KEY_STATE, base); online = true; markSync();
     rebuild();
     if (view.name === 'home' || view.name === 'thermokrasies' || view.name === 'katharismos' || view.name === 'promitheftes' || view.name === 'prosopiko') render();
@@ -308,6 +329,7 @@ function drawSync() {
 // ====================================================================== πλοήγηση (το «πίσω» του κινητού δουλεύει)
 let view = {name: 'home'};
 function go(v, replace) { view = v; (replace ? history.replaceState : history.pushState).call(history, v, '', location.search); render(); window.scrollTo(0, 0); }
+function goHome() { go({name: 'home'}); }   // κουμπί «Αρχική» σε κάθε οθόνη (22/10 ο χρήστης)
 function back() { if (history.state && history.state.name !== 'home') history.back(); else go({name: 'home'}, true); }
 window.addEventListener('popstate', e => { view = e.state || {name: 'home'}; render(); });
 
@@ -315,7 +337,9 @@ function shell(title, inner, opts) {
   opts = opts || {};
   const head = opts.home
     ? `<picture><source srcset="logo_dark.png" media="(prefers-color-scheme: dark)"><img class="logo" src="logo.png" alt="QRecord"></picture><h1></h1>`
-    : `<button class="back" onclick="back()" aria-label="Πίσω">‹</button><h1>${esc(title)}</h1>`;
+    : `<button class="back" onclick="back()" aria-label="Πίσω">‹</button>
+       <button class="back home" onclick="goHome()" aria-label="Αρχική"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>
+       <h1>${esc(title)}</h1>`;
   $('#app').innerHTML = `<header>${head}<div class="sync" id="sync"></div></header>${inner}
     <footer>QRecord · από την InCo</footer>`;
   drawSync();
@@ -325,10 +349,13 @@ function shell(title, inner, opts) {
 function render() {
   if (!P || !K) return renderNoLink();
   if (fatalError === 'άκυρος σύνδεσμος') return renderBadLink();
+  if (fatalError === 'μη καταχωρημένη συσκευή') return renderNotRegistered();
   if (!S) {
     shell('', `<div class="empty-state"><p>Φόρτωση…</p><p class="muted">Η πρώτη φορά χρειάζεται σύνδεση στο ίντερνετ.</p></div>`, {home: true});
     return;
   }
+  if (LOCKED_VIEWS.includes(view.name) && locked()) { const want = view; go({name: 'home'}, true); unlock(want); return; }
+  if (LOCKED_VIEWS.includes(view.name)) touchUnlock();
   ({home: renderHome, thermokrasies: renderThermokrasies, device: renderDevice, energeia: renderEnergeia, katharismos: renderKatharismos,
     promitheftes: renderPromitheftes, prom_form: renderPromForm, prosopiko: renderProsopiko, pros_form: renderProsForm,
     ypografi: renderYpografi})[view.name]();
@@ -338,6 +365,57 @@ function renderNoLink() {
   shell('', `<div class="empty-state"><img src="icon-192.png" alt=""><h2 style="text-transform:none;font-size:20px;color:var(--ink)">Καλώς ήρθατε στο QRecord</h2>
     <p>Σκανάρετε με την κάμερα ένα αυτοκόλλητο QR του καταστήματός σας για να ξεκινήσετε.</p></div>`, {home: true});
 }
+function renderNotRegistered() {
+  shell('', `<div class="empty-state"><img src="icon-192.png" alt=""><h2 style="text-transform:none;font-size:20px;color:var(--ink)">Αυτό το κινητό δεν είναι καταχωρημένο</h2>
+    <p>Σε αυτό το κατάστημα οι καταχωρήσεις γίνονται μόνο από το κινητό ή το tablet του καταστήματος.</p></div>`, {home: true});
+}
+
+// ---------- ξεκλείδωμα με PIN (τρόπος «κάθε υπάλληλος»)
+function unlock(want) {
+  if (!S.pin_orismeno) { toast('Δεν έχει οριστεί PIN υπευθύνου. Επικοινωνήστε με την InCo.', 'bad'); return; }
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><h3>🔒 Μόνο για τον υπεύθυνο</h3>
+    <p>Οι λίστες, τα πιστοποιητικά και η υπογραφή του μήνα ανοίγουν με το PIN του υπευθύνου.</p>
+    <input class="f" id="pinIn" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="PIN" style="text-align:center;font-size:26px;letter-spacing:.4em">
+    <div id="pinErr" class="muted" style="color:var(--bad);min-height:22px;margin:8px 0"></div>
+    <div class="acts"><button class="btn wide" id="pinGo">Άνοιγμα</button><button class="btn wide sec" id="pinNo">Ακύρωση</button></div></div>`;
+  document.body.appendChild(bg);
+  const inp = $('#pinIn', bg); setTimeout(() => inp.focus(), 50);
+  $('#pinNo', bg).onclick = () => bg.remove();
+  const tryPin = async () => {
+    const pin = inp.value.trim(); if (!pin) return;
+    $('#pinGo', bg).disabled = true; $('#pinErr', bg).textContent = 'Έλεγχος…';
+    let r = null; try { r = await api({action: 'pin', p: P, k: K, d: D, pin}); } catch (e) {}
+    $('#pinGo', bg).disabled = false;
+    if (!r) { $('#pinErr', bg).textContent = 'Χρειάζεται σύνδεση στο ίντερνετ.'; return; }
+    if (!r.ok) { $('#pinErr', bg).textContent = r.error === 'λάθος PIN' ? 'Λάθος PIN' : r.error; inp.value = ''; inp.focus(); return; }
+    UNL = {pin, v: r.v, until: Date.now() + LOCK_MIN * 60000, promitheftes: r.promitheftes, prosopiko: r.prosopiko};
+    bg.remove(); rebuild();
+    if (want.name === '__arxeio') openArxeio(); else go(want);
+  };
+  $('#pinGo', bg).onclick = tryPin;
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') tryPin(); });
+}
+setInterval(() => {        // ξανακλείδωμα μετά από 5' χωρίς χρήση
+  if (UNL && UNL.until <= Date.now()) {
+    UNL = null; rebuild();
+    if (LOCKED_VIEWS.includes(view.name)) { go({name: 'home'}, true); toast('🔒 Κλειδώθηκε ξανά'); } else if (view.name === 'home') render();
+  }
+}, 15000);
+document.addEventListener('click', () => { if (LOCKED_VIEWS.includes(view.name)) touchUnlock(); }, true);
+
+// ---------- ενεργοποίηση κινητού (τρόπος «ένα κινητό»): μία φορά, με τον σύνδεσμο ενεργοποίησης του γραφείου
+async function activate() {
+  if (!await ask('Ενεργοποίηση κινητού', 'Αυτό το κινητό θα γίνει το κινητό καταχωρήσεων του καταστήματος. Συνέχεια;', 'Ναι, ενεργοποίηση', 'Ακύρωση')) return;
+  let r = null;
+  try { r = await api({action: 'energopoiisi', p: P, k: K, e: ACTIVATION, onoma: /iPhone|iPad/.test(navigator.userAgent) ? 'iPhone/iPad' : /Android/.test(navigator.userAgent) ? 'Android' : 'συσκευή'}); } catch (e) {}
+  if (!r) { toast('Χρειάζεται σύνδεση στο ίντερνετ για την ενεργοποίηση.', 'bad'); return; }
+  if (!r.ok) { await ask('Δεν ενεργοποιήθηκε', r.error, 'Εντάξει'); return; }
+  if (r.d) { D = r.d; LS.set('qr_d_' + P, D); cleanUrl(); }
+  fatalError = ''; toast('✓ Το κινητό ενεργοποιήθηκε'); refresh();
+}
+
 function renderBadLink() {
   shell('', `<div class="empty-state"><h2 style="text-transform:none;font-size:20px;color:var(--ink)">Ο σύνδεσμος δεν ισχύει</h2>
     <p>Επικοινωνήστε με την InCo για νέο αυτοκόλλητο QR.</p></div>`, {home: true});
@@ -369,10 +447,12 @@ function renderHome() {
   const done = S.syskeves.reduce((a, s) => a + Math.min(s.simera.length, s.ana_imera || 1), 0);
   const thermo = S.anoixtes.length ? ['bad', 'Εκτός ορίου'] : !need ? ['neutral', '—'] : done >= need ? ['ok', '✓ ' + done + '/' + need] : [done ? 'warn' : 'neutral', done + '/' + need];
   const kth = S.katharismos, kthPending = kth.filter(k => !k.egine).length;
-  const prom = S.promitheftes.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ');
-  const pros = S.prosopiko.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ');
+  const kl = locked();
+  const prom = (S.promitheftes || []).filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ');
+  const pros = (S.prosopiko || []).filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ');
   const pr30 = pros.filter(x => certState(x)[0] !== 'ok').length;
   const ypg = S.pros_ypografi.length;
+  const LOCK = ['neutral', '🔒'];
   // κάθε ενότητα: δικό της χρώμα + εικονίδιο (22/10 ο χρήστης: «να ξεχωρίζει το ένα από το άλλο»)
   const ICO = {
     thermokrasies: ['thermo', '<path d="M14 14.8V4.5a2.5 2.5 0 0 0-5 0v10.3a4.5 4.5 0 1 0 5 0z"/><path d="M11.5 9v8"/>'],
@@ -394,11 +474,13 @@ function renderHome() {
       ${item('thermokrasies', 'Θερμοκρασίες', 'Μετρήσεις σήμερα', thermo)}
       ${item('katharismos', 'Καθαρισμός', 'Καθαρισμός και απολύμανση',
              kth.length ? (kthPending ? ['warn', kthPending + ' εκκρεμ' + (kthPending === 1 ? 'εί' : 'ούν')] : ['ok', '✓ όλα']) : ['neutral', '—'])}
-      ${item('promitheftes', 'Προμηθευτές', 'Λίστα προμηθευτών', ['neutral', prom.length])}
+      ${item('promitheftes', 'Προμηθευτές', 'Λίστα προμηθευτών', kl ? LOCK : ['neutral', prom.length])}
       ${item('prosopiko', 'Προσωπικό', 'Πιστοποιητικά υγείας',
-             pr30 ? ['warn', pr30 + (pr30 === 1 ? ' πιστοποιητικό' : ' πιστοποιητικά')] : ['neutral', pros.length])}
-      ${item('ypografi', 'Υπογραφή μήνα', 'Από τον υπεύθυνο', ypg ? ['bad', 'Εκκρεμεί'] : ['ok', '✓'])}
+             kl ? LOCK : pr30 ? ['warn', pr30 + (pr30 === 1 ? ' πιστοποιητικό' : ' πιστοποιητικά')] : ['neutral', pros.length])}
+      ${item('ypografi', 'Υπογραφή μήνα', 'Από τον υπεύθυνο', ypg ? ['bad', kl ? 'Εκκρεμεί 🔒' : 'Εκκρεμεί'] : ['ok', '✓'])}
     </div>
+    <button class="btn wide sec" style="margin-top:14px;display:flex;align-items:center;justify-content:center;gap:10px;color:#287B9B;border-color:#287B9B"
+      onclick="openArxeio()">📁 Όλες οι καταγραφές${locked() ? ' 🔒' : ''}</button>
     ${installBox()}`, {home: true});
 }
 
@@ -424,6 +506,14 @@ async function doInstall() {
   installEvt = null;
   if (r && r.outcome === 'accepted') { LS.set('qr_installed', true); toast('✓ Το QRecord μπήκε στην οθόνη σας'); }
   render();
+}
+
+// ---------- «Όλες οι καταγραφές»: η ζωντανή σελίδα αρχείου (ίδια με το My InCo) — για τον επιχειρηματία, από το κινητό
+function openArxeio() {
+  const v = S.tropos === 'ΕΝΑ' ? S.v : (UNL && UNL.until > Date.now() ? UNL.v : '');
+  if (!v) { if (S.tropos === 'ΕΝΑ') toast('Χρειάζεται σύνδεση στο ίντερνετ.', 'bad'); else unlock({name: '__arxeio'}); return; }
+  const url = 'arxeio.html?' + new URLSearchParams({p: P, v});
+  if (!window.open(url, '_blank')) location.href = url;
 }
 
 function renderThermokrasies() {
@@ -571,7 +661,7 @@ function docPill(x) {
   return x['ΕΓΓΡΑΦΟ'] ? '<span class="pill ok">📎</span>' : '<span class="pill bad">χωρίς έγγραφο</span>';
 }
 function renderPromitheftes() {
-  const act = S.promitheftes.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ'), old = S.promitheftes.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ');
+  const L = S.promitheftes || [], act = L.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ'), old = L.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ');
   const row = x => `<button class="row" onclick="go({name:'prom_form',id:'${esc(x.id)}'})"><div class="t"><div class="n">${esc(x['ΕΠΩΝΥΜΙΑ'])}</div>
     <div class="s">${[x['ΑΦΜ'] && 'ΑΦΜ ' + x['ΑΦΜ'], x['ΕΙΔΗ']].filter(Boolean).map(esc).join(' · ')}</div></div>${docPill(x)}</button>`;
   shell('Προμηθευτές', `<button class="btn wide" onclick="go({name:'prom_form'})">+ Νέος προμηθευτής</button>
@@ -579,7 +669,7 @@ function renderPromitheftes() {
     ${old.length ? `<h2>Δεν συνεργαζόμαστε πια</h2><div class="list" style="opacity:.6">${old.map(row).join('')}</div>` : ''}`);
 }
 function renderProsopiko() {
-  const act = S.prosopiko.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ'), old = S.prosopiko.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ');
+  const L = S.prosopiko || [], act = L.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ'), old = L.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ');
   const row = x => { const [c, t] = certState(x); return `<button class="row" onclick="go({name:'pros_form',id:'${esc(x.id)}'})"><div class="t"><div class="n">${esc(x['ΟΝΟΜΑΤΕΠΩΝΥΜΟ'])}</div>
     <div class="s">${esc(x['ΘΕΣΗ'] || '')}</div><span class="pill ${c}" style="display:inline-block;margin-top:6px;font-size:13px">${t}</span></div>${docPill(x)}</button>`; };
   shell('Προσωπικό', `<button class="btn wide" onclick="go({name:'pros_form'})">+ Νέο άτομο</button>
@@ -601,7 +691,7 @@ function statusField(x) {
     <option value="ΕΝΕΡΓΟΣ" ${inactive ? '' : 'selected'}>Ενεργός</option><option value="ΑΝΕΝΕΡΓΟΣ" ${inactive ? 'selected' : ''}>Όχι πια</option></select>`;
 }
 function renderPromForm() {
-  const x = view.id ? S.promitheftes.find(p => p.id === view.id) : null; fotoData = '';
+  const x = view.id ? (S.promitheftes || []).find(p => p.id === view.id) : null; fotoData = '';
   shell(x ? 'Προμηθευτής' : 'Νέος προμηθευτής', `
     ${field('ep', 'Επωνυμία *', x && x['ΕΠΩΝΥΜΙΑ'])}
     ${field('afm', 'ΑΦΜ', x && x['ΑΦΜ'], 'inputmode="numeric" maxlength="9"')}
@@ -613,7 +703,7 @@ function renderPromForm() {
     <div class="spacer"></div><button class="btn wide" onclick="savePerson('promitheftis')">Αποθήκευση</button>`);
 }
 function renderProsForm() {
-  const x = view.id ? S.prosopiko.find(p => p.id === view.id) : null; fotoData = '';
+  const x = view.id ? (S.prosopiko || []).find(p => p.id === view.id) : null; fotoData = '';
   shell(x ? 'Προσωπικό' : 'Νέο άτομο', `
     ${field('on', 'Ονοματεπώνυμο *', x && x['ΟΝΟΜΑΤΕΠΩΝΥΜΟ'])}
     ${field('th', 'Θέση', x && x['ΘΕΣΗ'], 'placeholder="π.χ. μάγειρας, σερβιτόρος"')}
@@ -652,6 +742,7 @@ function savePerson(typ) {
     if (!it.onoma) return toast('Συμπληρώστε το ονοματεπώνυμο', 'bad');
   }
   if (fotoData) it.foto = fotoData;
+  if (UNL) it.pin = UNL.pin;
   if (enqueue(it)) { toast('✓ Αποθηκεύτηκε'); back(); }
 }
 
@@ -666,7 +757,7 @@ async function renderYpografi() {
   }
   shell('Υπογραφή · ' + minasTitlos(m), '<p class="muted center">Φόρτωση της σύνοψης του μήνα…</p>');
   let r;
-  try { r = await api({action: 'minas', p: P, k: K, m}); } catch (e) { r = null; }
+  try { r = await api({action: 'minas', p: P, k: K, d: D, pin: UNL ? UNL.pin : '', m}); } catch (e) { r = null; }
   if (view.name !== 'ypografi') return;
   if (!r || !r.ok) {
     shell('Υπογραφή · ' + minasTitlos(m), `<div class="empty-state"><p>Για την υπογραφή χρειάζεται σύνδεση στο ίντερνετ.</p>
@@ -711,7 +802,7 @@ function saveYpografi(m) {
   const on = $('#yon').value.trim();
   if (!on) return toast('Συμπληρώστε το ονοματεπώνυμο', 'bad');
   if (!sigDirty) return toast('Βάλτε την υπογραφή σας', 'bad');
-  if (enqueue({typ: 'ypografi', id: newId('Y'), ts: now(), minas: m, onoma: on, eikona: $('#sig').toDataURL('image/png')})) {
+  if (enqueue({typ: 'ypografi', id: newId('Y'), ts: now(), minas: m, onoma: on, eikona: $('#sig').toDataURL('image/png'), pin: UNL ? UNL.pin : ''})) {
     toast('✓ Ο μήνας υπογράφηκε'); go({name: 'home'}, true);
   }
 }
@@ -798,6 +889,7 @@ if (START_DEVICE && S && S.syskeves.some(x => x.kod === START_DEVICE)) { history
 else { history.replaceState(view, '', location.search); render(); }
 
 (async () => {
+  if (ACTIVATION && P && K) { await sleep(300); await activate(); }
   await flush();
   await refresh();
   if (START_DEVICE && view.name === 'home' && S && S.syskeves.some(x => x.kod === START_DEVICE)) {
