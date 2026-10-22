@@ -171,6 +171,8 @@ function periodos(syx, day) { return syx === 'ΕΒΔΟΜΑΔΙΑΙΑ' ? 'W' + de
 function apotelesma(s, t) { return (s.apo === null || t >= s.apo) && (s.eos === null || t <= s.eos) ? 'ΕΝΤΟΣ' : 'ΕΚΤΟΣ'; }
 const HOMO = {A:'Α',B:'Β',E:'Ε',Z:'Ζ',H:'Η',I:'Ι',K:'Κ',M:'Μ',N:'Ν',O:'Ο',P:'Ρ',T:'Τ',Y:'Υ',X:'Χ'};
 const kodN = v => String(v || '').trim().toUpperCase().split('').map(c => HOMO[c] || c).join('');
+// 23/10: 2 μετρήσεις την ημέρα σε κάθε συσκευή — ΥΠΟΧΡΕΩΣΗ (ελάχιστο), όχι προεπιλογή
+const fores = s => Math.max(2, +s.ana_imera || 0);
 function zesto(s) { return /ΘΕΡΜ/.test(s.typos || ''); }
 function typosLabel(t) { return ({'ΨΥΓΕΙΟ': 'Ψυγείο', 'ΚΑΤΑΨΥΚΤΗΣ': 'Καταψύκτης', 'ΕΝ ΘΕΡΜΩ ΔΙΑΤΗΡΗΣΗ': 'Εν θερμώ διατήρηση', 'ΕΝ ΨΥΧΡΩ ΔΙΑΤΗΡΗΣΗ': 'Εν ψυχρώ διατήρηση'})[t] || t; }
 
@@ -473,7 +475,7 @@ function renderBadLink() {
 function deviceStatus(s) {
   const open = S.anoixtes.filter(a => a.s === s.kod);
   if (open.length) return ['bad', 'Εκτός ορίου'];
-  const n = s.simera.length, need = s.ana_imera || 1;
+  const n = s.simera.length, need = fores(s);
   if (n >= need) return ['ok', '✓ ' + need + '/' + need];
   return [n ? 'warn' : 'neutral', n + '/' + need];
 }
@@ -492,8 +494,8 @@ function renderHome() {
   }).join('');
 
   // Αρχική = ΠΕΝΤΕ ίσα κουμπιά, ένα ανά αρχείο (22/10 ο χρήστης: η λίστα ψυγείων μαζί με τα άλλα αρχεία μπερδεύει).
-  const need = S.syskeves.reduce((a, s) => a + (s.ana_imera || 1), 0);
-  const done = S.syskeves.reduce((a, s) => a + Math.min(s.simera.length, s.ana_imera || 1), 0);
+  const need = S.syskeves.reduce((a, s) => a + fores(s), 0);
+  const done = S.syskeves.reduce((a, s) => a + Math.min(s.simera.length, fores(s)), 0);
   const thermo = S.anoixtes.length ? ['bad', 'Εκτός ορίου'] : !need ? ['neutral', '—'] : done >= need ? ['ok', '✓ ' + done + '/' + need] : [done ? 'warn' : 'neutral', done + '/' + need];
   const kth = S.katharismos, kthPending = kth.filter(k => !k.egine).length;
   const kl = locked();
@@ -585,7 +587,7 @@ function renderThermokrasies() {
   const omades = OMADES.concat([['', 'Άλλες συσκευές']]).map(([typ, titlos]) => {
     const sk = S.syskeves.filter(s => typ ? s.typos === typ : !gnosta.includes(s.typos)).sort(fysikh);
     if (!sk.length) return '';
-    const need = sk.reduce((a, s) => a + (s.ana_imera || 1), 0), done = sk.reduce((a, s) => a + Math.min(s.simera.length, s.ana_imera || 1), 0);
+    const need = sk.reduce((a, s) => a + fores(s), 0), done = sk.reduce((a, s) => a + Math.min(s.simera.length, fores(s)), 0);
     const bad = sk.some(s => S.anoixtes.some(a => a.s === s.kod));
     return `<h2 style="display:flex;justify-content:space-between;align-items:center">${titlos}
         <span class="pill ${bad ? 'bad' : done >= need ? 'ok' : 'neutral'}" style="font-size:12px">${done}/${need}</span></h2>
@@ -866,7 +868,7 @@ async function renderYpografi() {
   }
   const devs = r.syskeves.map(s => `<div class="card dev-block"><div class="n">${esc(s.onoma)}</div>
     <div class="muted" style="font-size:14px">${esc(s.orio)} · ${s.plithos} ${s.plithos === 1 ? 'μέτρηση' : 'μετρήσεις'}${s.min !== null ? ' · από ' + num(s.min) + ' έως ' + num(s.max) + ' °C' : ''}</div>
-    ${s.imeres_xoris.length ? `<div class="pill warn" style="display:inline-block;margin-top:8px;font-size:13px">${s.imeres_xoris.length} μέρες χωρίς μέτρηση</div>` : ''}
+    ${s.imeres_xoris.length ? `<div class="pill warn" style="display:inline-block;margin-top:8px;font-size:13px">${s.imeres_xoris.length} μέρες χωρίς και τις ${fores(s)} μετρήσεις</div>` : ''}
     ${s.apokliseis.length ? `<table class="sum" style="margin-top:8px"><tr><th>Πότε</th><th>Τιμή</th><th>Ενέργεια</th><th>Μετά</th></tr>
       ${s.apokliseis.map(a => `<tr><td>${ddmm(a.ts)} ${hhmm(a.ts)}</td><td>${num(a.timi)} °C</td>
         <td>${esc(a.energeies.map(e => e.energeia).join(', ') || '—')}</td>

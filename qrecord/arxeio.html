@@ -138,19 +138,20 @@ function render(r) {
   // ---- θερμοκρασίες: ανά συσκευή, μία γραμμή ανά ημέρα
   const devs = r.syskeves.map(s => {
     const byDay = {}; s.metriseis.forEach(m => (byDay[m.ts.slice(0, 10)] = byDay[m.ts.slice(0, 10)] || []).push(m));
-    const cols = Math.max(1, ...Object.values(byDay).map(a => a.length));
+    const need = Math.max(2, +s.ana_imera || 0);   // 23/10: 2 μετρήσεις/ημέρα = υποχρέωση → πάντα 2 στήλες
+    const cols = Math.max(need, ...Object.values(byDay).map(a => a.length));
     const head = `<tr><th>Ημ.</th>${Array.from({length: cols}, (_, i) => `<th>${cols === 1 ? 'Μέτρηση' : cols <= 3 ? (i + 1) + 'η μέτρηση' : (i + 1) + 'η'}</th>`).join('')}</tr>`;
     const row = d => {
       const ms = byDay[d] || [];
       if (!ms.length) return `<tr><td class="d">${d.slice(8, 10)}</td><td class="miss" colspan="${cols}">—</td></tr>`;
       return `<tr><td class="d">${d.slice(8, 10)}</td>${Array.from({length: cols}, (_, i) => { const m = ms[i];
-        return m ? `<td class="${m.apot === 'ΕΚΤΟΣ' ? 'out' : ''}">${hhmm(m.ts)} · ${num(m.timi)} °C${m.apot === 'ΕΚΤΟΣ' ? ' ⚠' : ''}</td>` : '<td></td>'; }).join('')}</tr>`;
+        return m ? `<td class="${m.apot === 'ΕΚΤΟΣ' ? 'out' : ''}">${hhmm(m.ts)} · ${num(m.timi)} °C${m.apot === 'ΕΚΤΟΣ' ? ' ⚠' : ''}</td>` : (i < need ? '<td class="miss">—</td>' : '<td></td>'); }).join('')}</tr>`;
     };
     const half = Math.ceil(days.length / 2);
     const tbl = list => `<table>${head}${list.map(row).join('')}</table>`;
     return `<div class="dev"><h3>${esc(s.kod)} · ${esc(s.onoma)} <small>${esc(TYPOI[s.typos] || s.typos)} · όριο ${esc(s.orio)}</small></h3>
       <div class="sum"><span><b>${s.plithos}</b> μετρήσεις</span>${s.min !== null ? `<span>από <b>${num(s.min)}</b> έως <b>${num(s.max)}</b> °C</span>` : ''}
-      <span><b>${s.apokliseis.length}</b> εκτός ορίου</span><span><b>${s.imeres_xoris.length}</b> ημέρες χωρίς μέτρηση</span></div>
+      <span><b>${s.apokliseis.length}</b> εκτός ορίου</span><span><b>${s.imeres_xoris.length}</b> ημέρες χωρίς και τις ${need} μετρήσεις</span></div>
       ${days.length > 10 ? `<div class="halves">${tbl(days.slice(0, half))}${tbl(days.slice(half))}</div>` : tbl(days)}</div>`;
   }).join('') || '<p class="note">Δεν υπάρχουν μετρήσεις αυτόν τον μήνα.</p>';
 
