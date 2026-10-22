@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>QRecord</title>
+<meta name="description" content="QRecord · από την InCo — ψηφιακά αρχεία τεκμηρίωσης">
+<meta name="theme-color" content="#2D3A4D">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="QRecord">
+<style>
+:root{--bg:#F3F8FA;--surface:#fff;--ink:#2D3A4D;--muted:#5B6B80;--line:#DCE8EE;--accent:#2DAFCE;--blue:#287B9B;
+  --ok:#17875A;--ok-bg:#E2F4EB;--warn:#9A6700;--warn-bg:#FFF3D1;--bad:#C93030;--bad-bg:#FCE6E6;--key:#EAF2F6}
+@media (prefers-color-scheme:dark){:root{--bg:#18212D;--surface:#212C3A;--ink:#EEF3F7;--muted:#A9B8C8;--line:#2F3D4E;
+  --accent:#65C7D7;--blue:#65C7D7;--ok:#4CC38A;--ok-bg:#163428;--warn:#F0B429;--warn-bg:#3A2F12;--bad:#FF7070;--bad-bg:#3D1E22;--key:#2A3747}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px calc(28px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(10px + env(safe-area-inset-top)) 0 10px;
+  display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);margin-bottom:14px}
+header .back{border:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;height:44px;min-width:44px;
+  font-size:22px;display:grid;place-items:center;padding:0 10px}
+header h1{font-size:19px;margin:0;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+header .logo{height:30px;display:block}
+.sync{font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}
+.sync.off{color:var(--warn)}
+h2{font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px;font-weight:700}
+.store{font-size:22px;font-weight:800;margin:4px 0 0}
+.date{color:var(--muted);margin:2px 0 6px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.list{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;gap:12px;padding:14px;min-height:64px;width:100%;text-align:left;
+  background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.row:disabled{cursor:default;color:inherit}
+.row .t{flex:1;min-width:0}
+.row .n{font-weight:700;font-size:17px}
+.row .s{color:var(--muted);font-size:14px}
+.pill{border-radius:999px;padding:5px 11px;font-size:14px;font-weight:700;white-space:nowrap}
+.ok{color:var(--ok);background:var(--ok-bg)}.warn{color:var(--warn);background:var(--warn-bg)}.bad{color:var(--bad);background:var(--bad-bg)}
+.neutral{color:var(--muted);background:var(--key)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{padding:14px;min-height:96px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;
+  display:flex;flex-direction:column;justify-content:space-between;gap:8px}
+.tile b{font-size:17px}
+.alert{border-radius:16px;padding:14px;margin:10px 0;display:flex;flex-direction:column;gap:10px}
+.alert.bad{border:1px solid color-mix(in srgb,var(--bad) 35%,transparent)}
+.alert.warn{border:1px solid color-mix(in srgb,var(--warn) 35%,transparent)}
+.alert .acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;min-height:52px;padding:0 18px;font-weight:700;font-size:17px;background:var(--ink);color:var(--bg)}
+.btn.sec{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn.small{min-height:42px;font-size:15px;padding:0 14px}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.45}
+.btn.go{background:var(--ok);color:#fff}
+.btn.stop{background:var(--bad);color:#fff}
+.dev-head .n{font-size:22px;font-weight:800}
+.dev-head .s{color:var(--muted)}
+.display{font-size:64px;font-weight:800;text-align:center;padding:18px 0 10px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.display small{font-size:28px;color:var(--muted);font-weight:700;margin-left:4px}
+.display.empty{color:var(--muted)}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.keys button{height:62px;border:0;border-radius:14px;background:var(--key);font-size:26px;font-weight:700}
+.keys button:active{transform:scale(.97)}
+.today{margin-top:14px;color:var(--muted);font-size:14px;display:flex;flex-wrap:wrap;gap:6px}
+.today span{border-radius:999px;padding:3px 10px}
+.full{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;padding:24px;text-align:center}
+.full.ok{background:var(--ok);color:#fff}.full .big{font-size:84px;line-height:1}.full .v{font-size:40px;font-weight:800}
+.choice{display:flex;align-items:center;gap:12px;padding:14px;min-height:56px;background:var(--surface);
+  border:1px solid var(--line);border-radius:14px;font-size:16px;width:100%;text-align:left}
+.choice .box{width:24px;height:24px;border-radius:7px;border:2px solid var(--muted);flex:none;display:grid;place-items:center;font-size:16px}
+.choice.on{border-color:var(--ink)}.choice.on .box{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+label.f{display:block;font-size:14px;color:var(--muted);margin:14px 0 6px;font-weight:600}
+input.f,textarea.f,select.f{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:10px 12px;font-size:17px}
+textarea.f{min-height:80px;resize:vertical}
+.photo{display:flex;align-items:center;gap:12px;margin-top:8px}
+.photo img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.spacer{height:14px}
+.modal-bg{position:fixed;inset:0;z-index:30;background:rgba(10,16,24,.55);display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--surface);width:100%;max-width:560px;border-radius:22px 22px 0 0;padding:22px 16px calc(20px + env(safe-area-inset-bottom))}
+.modal h3{margin:0 0 8px;font-size:21px}.modal p{margin:0 0 18px;color:var(--muted)}
+.modal .acts{display:flex;flex-direction:column;gap:8px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;
+  background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:600;max-width:calc(100% - 32px);box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.toast.bad{background:var(--bad);color:#fff}
+table.sum{width:100%;border-collapse:collapse;font-size:14px}
+table.sum td,table.sum th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.sum th{color:var(--muted);font-weight:600}
+.dev-block{padding:14px;margin-bottom:8px}
+.dev-block .n{font-weight:700}
+canvas.sig{width:100%;height:190px;background:#fff;border:1px dashed var(--muted);border-radius:14px;touch-action:none;display:block}
+footer{margin-top:28px;text-align:center;color:var(--muted);font-size:13px}
+.empty-state{padding:40px 10px;text-align:center;color:var(--muted)}
+.empty-state img{width:120px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+'use strict';
+// ====================================================================== ρυθμίσεις
+const API = 'https://script.google.com/macros/s/AKfycbwRoyNlK_CkIEShRA3_hVUpeTT117EprA1xdvi9ZWrvh5w0r-8B2mVLDPnp8_cSGyx9qA/exec';
+
+const ENERGEIES_KRYO = ['Η πόρτα είχε μείνει ανοιχτή', 'Μόλις είχαν μπει νέα προϊόντα', 'Ρυθμίστηκε ο θερμοστάτης',
+  'Τα προϊόντα μεταφέρθηκαν σε άλλη συσκευή', 'Απορρίφθηκαν προϊόντα', 'Κλήθηκε τεχνικός'];
+const ENERGEIES_ZESTO = ['Αυξήθηκε η θερμοκρασία της συσκευής', 'Το φαγητό ξαναζεστάθηκε', 'Απορρίφθηκε φαγητό', 'Κλήθηκε τεχνικός'];
+const MINES = ['Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος','Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
+const MINON = ['Ιανουαρίου','Φεβρουαρίου','Μαρτίου','Απριλίου','Μαΐου','Ιουνίου','Ιουλίου','Αυγούστου','Σεπτεμβρίου','Οκτωβρίου','Νοεμβρίου','Δεκεμβρίου'];
+const MERES = ['Κυριακή','Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο'];
+const SYXN = {'ΗΜΕΡΗΣΙΑ': 'Κάθε μέρα', 'ΕΒΔΟΜΑΔΙΑΙΑ': 'Μία φορά την εβδομάδα', 'ΜΗΝΙΑΙΑ': 'Μία φορά τον μήνα'};
+const REMEASURE_MIN = 30;
+
+// ====================================================================== βοηθητικά
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const pad = n => String(n).padStart(2, '0');
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+};
+function fmtLocal(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+const now = () => fmtLocal(new Date());
+const today = () => now().slice(0, 10);
+const newId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const num = v => (v === null || v === undefined || v === '') ? '' : String(v).replace('.', ',');
+const hhmm = ts => (ts || '').slice(11, 16);
+const ddmm = ts => ts ? ts.slice(8, 10) + '/' + ts.slice(5, 7) : '';
+const ddmmyyyy = d => d ? d.slice(8, 10) + '/' + d.slice(5, 7) + '/' + d.slice(0, 4) : '';
+const minasTitlos = m => MINES[+m.slice(5, 7) - 1] + ' ' + m.slice(0, 4);
+const tsToDate = ts => new Date(ts.slice(0, 10) + 'T' + ts.slice(11, 16) + ':00');
+const clone = o => JSON.parse(JSON.stringify(o));
+function deftera(day) { const d = new Date(day + 'T12:00:00'); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return fmtLocal(d).slice(0, 10); }
+function periodos(syx, day) { return syx === 'ΕΒΔΟΜΑΔΙΑΙΑ' ? 'W' + deftera(day) : syx === 'ΜΗΝΙΑΙΑ' ? day.slice(0, 7) : day; }
+function apotelesma(s, t) { return (s.apo === null || t >= s.apo) && (s.eos === null || t <= s.eos) ? 'ΕΝΤΟΣ' : 'ΕΚΤΟΣ'; }
+function zesto(s) { return /ΘΕΡΜ/.test(s.typos || ''); }
+function typosLabel(t) { return ({'ΨΥΓΕΙΟ': 'Ψυγείο', 'ΚΑΤΑΨΥΚΤΗΣ': 'Καταψύκτης', 'ΕΝ ΘΕΡΜΩ ΔΙΑΤΗΡΗΣΗ': 'Εν θερμώ διατήρηση', 'ΕΝ ΨΥΧΡΩ ΔΙΑΤΗΡΗΣΗ': 'Εν ψυχρώ διατήρηση'})[t] || t; }
+
+// ====================================================================== ποιος πελάτης (από τον σύνδεσμο του QR)
+const Q = new URLSearchParams(location.search);
+let P = Q.get('p') || LS.get('qr_p', ''), K = Q.get('k') || LS.get('qr_k', '');
+if (Q.get('p') && Q.get('k')) { LS.set('qr_p', P); LS.set('qr_k', K); }
+const START_DEVICE = Q.get('s');
+if (P && K && (START_DEVICE || !Q.get('p'))) {
+  // ο σύνδεσμος της αρχικής οθόνης κρατά μόνο πελάτη + κλειδί (για «Προσθήκη στην αρχική οθόνη»)
+  history.replaceState(null, '', location.pathname + '?p=' + encodeURIComponent(P) + '&k=' + encodeURIComponent(K));
+}
+const KEY_STATE = 'qr_s_' + P, KEY_QUEUE = 'qr_q_' + P;
+
+// ====================================================================== δεδομένα: ό,τι είπε ο server + ό,τι περιμένει να σταλεί
+let base = LS.get(KEY_STATE, null);
+let queue = LS.get(KEY_QUEUE, []);
+let S = null, online = navigator.onLine, lastSync = LS.get('qr_sync_' + P, '');
+let fatalError = '';
+
+function rebuild() {
+  if (!base) { S = null; return; }
+  const st = clone(base), t = today();
+  if (st.simera !== t) {            // η αποθηκευμένη εικόνα είναι από άλλη μέρα
+    st.syskeves.forEach(s => s.simera = []);
+    st.simera = t;
+  }
+  queue.forEach(it => apply(st, it));
+  st.katharismos.forEach(k => { k.egine = !!k.teleftaia && periodos(k.syxnotita, k.teleftaia.slice(0, 10)) === periodos(k.syxnotita, t); });
+  S = st;
+}
+
+function apply(st, it) {
+  if (it.typ === 'metrisi') {
+    const s = st.syskeves.find(x => x.kod === it.s); if (!s) return;
+    const m = {id: it.id, ts: it.ts, s: it.s, timi: Number(it.timi), apot: it.apot, orio: s.orio};
+    if (!s.simera.some(x => x.id === m.id) && it.ts.slice(0, 10) === st.simera) s.simera.push(m);
+    s.teleftaia = m;
+    if (m.apot === 'ΕΝΤΟΣ') st.anoixtes = st.anoixtes.filter(a => a.s !== it.s || a.ts > it.ts);
+    else if (!st.anoixtes.some(a => a.id === m.id)) st.anoixtes.push(Object.assign({energeies: [], kleisti: false}, m));
+  } else if (it.typ === 'energeia') {
+    const a = st.anoixtes.find(x => x.id === it.metrisi_id);
+    if (a && !a.energeies.some(e => e.id === it.id)) a.energeies.push({id: it.id, ts: it.ts, energeia: it.energeia, sxolio: it.sxolio});
+  } else if (it.typ === 'katharismos') {
+    const k = st.katharismos.find(x => x.kod === it.simeio);
+    if (k && (!k.teleftaia || it.ts > k.teleftaia)) k.teleftaia = it.ts;
+  } else if (it.typ === 'promitheftis' || it.typ === 'prosopiko') {
+    const list = it.typ === 'promitheftis' ? st.promitheftes : st.prosopiko;
+    let o = list.find(x => x.id === it.id);
+    if (!o) { o = {id: it.id}; list.push(o); }
+    if (it.typ === 'promitheftis') Object.assign(o, {'ΕΠΩΝΥΜΙΑ': it.eponymia, 'ΑΦΜ': it.afm, 'ΔΟΥ': it.doy, 'ΔΙΕΥΘΥΝΣΗ': it.dieuthynsi, 'ΤΗΛΕΦΩΝΟ': it.til, 'ΕΙΔΗ': it.eidi});
+    else Object.assign(o, {'ΟΝΟΜΑΤΕΠΩΝΥΜΟ': it.onoma, 'ΘΕΣΗ': it.thesi, 'ΛΗΞΗ ΠΙΣΤΟΠΟΙΗΤΙΚΟΥ ΥΓΕΙΑΣ': it.lixi});
+    o['ΚΑΤΑΣΤΑΣΗ'] = it.katastasi || 'ΕΝΕΡΓΟΣ';
+    if (it.foto) o._foto_anamoni = true;
+  } else if (it.typ === 'ypografi') {
+    st.ypografes[it.minas] = {onoma: it.onoma, ts: it.ts};
+    st.pros_ypografi = st.pros_ypografi.filter(m => m !== it.minas);
+  }
+}
+
+function enqueue(it) {
+  queue.push(it);
+  if (!LS.set(KEY_QUEUE, queue)) {
+    queue.pop();
+    toast('Δεν υπάρχει χώρος στη συσκευή. Συνδεθείτε στο ίντερνετ και δοκιμάστε ξανά.', 'bad');
+    return false;
+  }
+  rebuild();
+  flush();
+  return true;
+}
+
+// ====================================================================== επικοινωνία με το Google
+async function api(params, body) {
+  let url = API, opt = {method: 'GET', cache: 'no-store', redirect: 'follow'};
+  if (body) opt = {method: 'POST', body: JSON.stringify(body), headers: {'Content-Type': 'text/plain;charset=utf-8'}, redirect: 'follow'};
+  else url += '?' + new URLSearchParams(params);
+  let last;
+  // Το Google δίνει πού και πού ένα προσωρινό σφάλμα· η επανάληψη είναι ασφαλής (κάθε εγγραφή έχει δικό της id).
+  for (let i = 0; i < 4; i++) {
+    const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 45000);
+    try {
+      const res = await fetch(url, Object.assign({signal: ctl.signal}, opt));
+      clearTimeout(tm);
+      if (res.ok) return await res.json();
+      last = new Error('HTTP ' + res.status);
+      if (![404, 429, 500, 502, 503].includes(res.status)) break;
+    } catch (e) { clearTimeout(tm); last = e; if (!navigator.onLine) break; }
+    await sleep(1500 * (i + 1));
+  }
+  throw last;
+}
+
+let flushing = false;
+async function flush() {
+  if (flushing || !queue.length || !P) return;
+  flushing = true; drawSync();
+  try {
+    while (queue.length) {
+      const batch = []; let size = 0;
+      for (const it of queue) {
+        const n = JSON.stringify(it).length;
+        if (batch.length && (batch.length >= 15 || size + n > 3e6)) break;
+        batch.push(it); size += n;
+      }
+      const r = await api(null, {action: 'apothikefsi', p: P, k: K, items: batch});
+      if (!r.ok) { if (r.error === 'άκυρος σύνδεσμος') fatalError = r.error; throw new Error(r.error); }
+      const sent = new Set(batch.map(b => b.id + '|' + (b.vid || '')));
+      const errors = r.apotelesmata.filter(x => !x.ok).map(x => x.error);
+      queue = queue.filter(it => !sent.has(it.id + '|' + (it.vid || '')));
+      LS.set(KEY_QUEUE, queue);
+      if (errors.length) toast('Δεν καταχωρήθηκε: ' + errors.join(', '), 'bad');
+      online = true;
+    }
+    markSync();
+  } catch (e) { online = false; }
+  finally { flushing = false; drawSync(); }
+}
+
+async function refresh() {
+  if (!P) return;
+  try {
+    const r = await api({action: 'init', p: P, k: K});
+    if (!r.ok) { fatalError = r.error || 'σφάλμα'; render(); return; }
+    fatalError = '';
+    base = r; LS.set(KEY_STATE, base); online = true; markSync();
+    rebuild();
+    if (view.name === 'home' || view.name === 'katharismos' || view.name === 'promitheftes' || view.name === 'prosopiko') render();
+    else drawSync();
+  } catch (e) { online = false; drawSync(); }
+}
+function markSync() { lastSync = now(); LS.set('qr_sync_' + P, lastSync); }
+function drawSync() {
+  const el = $('#sync'); if (!el) return;
+  const n = queue.length;
+  el.className = 'sync' + (n && !flushing ? ' off' : '');
+  el.textContent = flushing ? 'αποστολή…' : n ? n + ' σε αναμονή' : online ? '✓ συγχρονισμένο' : 'χωρίς σύνδεση';
+}
+
+// ====================================================================== πλοήγηση (το «πίσω» του κινητού δουλεύει)
+let view = {name: 'home'};
+function go(v, replace) { view = v; (replace ? history.replaceState : history.pushState).call(history, v, '', location.search); render(); window.scrollTo(0, 0); }
+function back() { if (history.state && history.state.name !== 'home') history.back(); else go({name: 'home'}, true); }
+window.addEventListener('popstate', e => { view = e.state || {name: 'home'}; render(); });
+
+function shell(title, inner, opts) {
+  opts = opts || {};
+  const head = opts.home
+    ? `<picture><source srcset="logo_dark.png" media="(prefers-color-scheme: dark)"><img class="logo" src="logo.png" alt="QRecord"></picture><h1></h1>`
+    : `<button class="back" onclick="back()" aria-label="Πίσω">‹</button><h1>${esc(title)}</h1>`;
+  $('#app').innerHTML = `<header>${head}<div class="sync" id="sync"></div></header>${inner}
+    <footer>QRecord · από την InCo</footer>`;
+  drawSync();
+}
+
+// ====================================================================== οθόνες
+function render() {
+  if (!P || !K) return renderNoLink();
+  if (fatalError === 'άκυρος σύνδεσμος') return renderBadLink();
+  if (!S) {
+    shell('', `<div class="empty-state"><p>Φόρτωση…</p><p class="muted">Η πρώτη φορά χρειάζεται σύνδεση στο ίντερνετ.</p></div>`, {home: true});
+    return;
+  }
+  ({home: renderHome, device: renderDevice, energeia: renderEnergeia, katharismos: renderKatharismos,
+    promitheftes: renderPromitheftes, prom_form: renderPromForm, prosopiko: renderProsopiko, pros_form: renderProsForm,
+    ypografi: renderYpografi})[view.name]();
+}
+
+function renderNoLink() {
+  shell('', `<div class="empty-state"><img src="icon-192.png" alt=""><h2 style="text-transform:none;font-size:20px;color:var(--ink)">Καλώς ήρθατε στο QRecord</h2>
+    <p>Σκανάρετε με την κάμερα ένα αυτοκόλλητο QR του καταστήματός σας για να ξεκινήσετε.</p></div>`, {home: true});
+}
+function renderBadLink() {
+  shell('', `<div class="empty-state"><h2 style="text-transform:none;font-size:20px;color:var(--ink)">Ο σύνδεσμος δεν ισχύει</h2>
+    <p>Επικοινωνήστε με την InCo για νέο αυτοκόλλητο QR.</p></div>`, {home: true});
+}
+
+function deviceStatus(s) {
+  const open = S.anoixtes.filter(a => a.s === s.kod);
+  if (open.length) return ['bad', 'Εκτός ορίου'];
+  const n = s.simera.length, need = s.ana_imera || 1;
+  if (n >= need) return ['ok', '✓ ' + n + '/' + need];
+  return [n ? 'warn' : 'neutral', n + '/' + need];
+}
+
+function renderHome() {
+  const d = new Date();
+  const alerts = S.anoixtes.map(a => {
+    const s = S.syskeves.find(x => x.kod === a.s) || {onoma: a.s};
+    const mins = (Date.now() - tsToDate(a.ts)) / 60000;
+    const when = mins < REMEASURE_MIN ? 'Ξαναμετρήστε μετά τις ' + hhmm(fmtLocal(new Date(tsToDate(a.ts).getTime() + REMEASURE_MIN * 60000))) : 'Ξαναμετρήστε τώρα';
+    const noAction = !a.energeies.length;
+    return `<div class="alert bad"><div><b>${esc(s.onoma)}: ${num(a.timi)} °C</b> στις ${hhmm(a.ts)} (όριο ${esc(a.orio)})<br>
+      <span>${noAction ? 'Καταγράψτε τι έγινε και ' + when.toLowerCase() : when}.</span></div>
+      <div class="acts">${noAction ? `<button class="btn small stop" onclick="go({name:'energeia',id:'${a.id}'})">Τι έγινε;</button>` : ''}
+      <button class="btn small sec" onclick="go({name:'device',s:'${esc(a.s)}'})">Νέα μέτρηση</button></div></div>`;
+  }).join('');
+
+  const devs = S.syskeves.map(s => {
+    const [cls, txt] = deviceStatus(s);
+    return `<button class="row" onclick="go({name:'device',s:'${esc(s.kod)}'})"><div class="t"><div class="n">${esc(s.onoma)}</div>
+      <div class="s">${esc(typosLabel(s.typos))} · ${esc(s.orio)}</div></div><span class="pill ${cls}">${txt}</span></button>`;
+  }).join('') || '<p class="muted">Δεν έχουν οριστεί συσκευές.</p>';
+
+  const kth = S.katharismos, kthPending = kth.filter(k => !k.egine).length;
+  const prom = S.promitheftes.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ');
+  const pros = S.prosopiko.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ');
+  const pr30 = pros.filter(x => certState(x)[0] !== 'ok').length;
+  const ypg = S.pros_ypografi.length;
+
+  shell('', `
+    <div class="store">${esc(S.pelatis.eponymia)}</div>
+    <div class="date">${MERES[d.getDay()]} ${d.getDate()} ${MINON[d.getMonth()]}</div>
+    ${alerts}
+    <h2>Θερμοκρασίες σήμερα</h2><div class="list">${devs}</div>
+    <h2>Αρχεία</h2>
+    <div class="tiles">
+      <button class="tile" onclick="go({name:'katharismos'})"><b>Καθαρισμός</b>
+        <span class="pill ${kth.length ? (kthPending ? 'warn' : 'ok') : 'neutral'}" style="align-self:flex-start">${kth.length ? (kthPending ? kthPending + ' εκκρεμούν' : '✓ όλα') : '—'}</span></button>
+      <button class="tile" onclick="go({name:'promitheftes'})"><b>Προμηθευτές</b>
+        <span class="pill neutral" style="align-self:flex-start">${prom.length}</span></button>
+      <button class="tile" onclick="go({name:'prosopiko'})"><b>Προσωπικό</b>
+        <span class="pill ${pr30 ? 'warn' : 'neutral'}" style="align-self:flex-start">${pr30 ? pr30 + (pr30 === 1 ? ' πιστοποιητικό' : ' πιστοποιητικά') : pros.length}</span></button>
+      <button class="tile" onclick="go({name:'ypografi'})"><b>Υπογραφή μήνα</b>
+        <span class="pill ${ypg ? 'bad' : 'ok'}" style="align-self:flex-start">${ypg ? 'Εκκρεμεί' : '✓'}</span></button>
+    </div>`, {home: true});
+}
+
+// ---------------------------------------------------------------------- μέτρηση
+let buf = '';
+function renderDevice() {
+  const s = S.syskeves.find(x => x.kod === view.s);
+  if (!s) { shell('Συσκευή', '<p class="muted">Η συσκευή δεν βρέθηκε. Ίσως αφαιρέθηκε.</p>'); return; }
+  if (view.fresh !== false) { buf = s.typos === 'ΚΑΤΑΨΥΚΤΗΣ' ? '-' : ''; view.fresh = false; history.replaceState(view, '', location.search); }
+  const open = S.anoixtes.filter(a => a.s === s.kod).slice(-1)[0];
+  const todayList = s.simera.map(m => `<span class="${m.apot === 'ΕΝΤΟΣ' ? 'ok' : 'bad'}">${hhmm(m.ts)} · ${num(m.timi)} °C</span>`).join('');
+  shell(s.onoma, `
+    <div class="dev-head"><div class="s">${esc(typosLabel(s.typos))} · όριο ${esc(s.orio)}</div></div>
+    ${open ? `<div class="alert warn">Επαναμέτρηση για τα <b>${num(open.timi)} °C</b> των ${hhmm(open.ts)}.</div>` : ''}
+    <div class="display" id="disp"></div>
+    <div class="keys">
+      ${[1,2,3,4,5,6,7,8,9].map(n => `<button onclick="key('${n}')">${n}</button>`).join('')}
+      <button onclick="key('±')" aria-label="Πρόσημο">±</button><button onclick="key('0')">0</button><button onclick="key(',')">,</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
+      <button class="btn sec" onclick="key('⌫')" aria-label="Σβήσιμο">⌫</button>
+      <button class="btn go" id="save" onclick="saveMetrisi()">Αποθήκευση</button>
+    </div>
+    ${todayList ? `<div class="today"><span>Σήμερα:</span>${todayList}</div>` : ''}`);
+  drawDisp();
+}
+function key(k) {
+  if (k === '⌫') buf = buf.slice(0, -1);
+  else if (k === '±') buf = buf.startsWith('-') ? buf.slice(1) : '-' + buf;
+  else if (k === ',') { if (!buf.includes(',')) buf = (buf === '' || buf === '-' ? buf + '0' : buf) + ','; }
+  else {
+    const digits = buf.replace('-', '').split(',');
+    if (digits[1] !== undefined && digits[1].length >= 1) return;     // ένα δεκαδικό
+    if (digits[1] === undefined && digits[0].length >= 3) return;
+    buf = (buf === '0' ? '' : buf === '-0' ? '-' : buf) + k;
+  }
+  drawDisp();
+}
+function value() { const v = parseFloat(buf.replace(',', '.')); return isFinite(v) ? v : null; }
+function drawDisp() {
+  const el = $('#disp'); if (!el) return;
+  const v = value();
+  el.className = 'display' + (v === null ? ' empty' : '');
+  el.innerHTML = (buf && buf !== '-' ? esc(buf.replace('-', '−')) : (buf === '-' ? '−' : '—')) + '<small>°C</small>';
+  $('#save').disabled = v === null;
+}
+async function saveMetrisi() {
+  const s = S.syskeves.find(x => x.kod === view.s), v = value();
+  if (v === null) return;
+  const apot = apotelesma(s, v);
+  if (apot === 'ΕΚΤΟΣ') {
+    const ok = await ask('Εκτός ορίου', `Η τιμή ${num(v)} °C είναι εκτός ορίου (${s.orio}). Είναι σωστή;`, 'Ναι, είναι σωστή', 'Όχι, θα τη διορθώσω');
+    if (!ok) return;
+  }
+  const open = S.anoixtes.filter(a => a.s === s.kod).slice(-1)[0];
+  const it = {typ: 'metrisi', id: newId('M'), ts: now(), s: s.kod, timi: v, apot};
+  if (open) it.epanametrisi_tou = open.id;
+  if (!enqueue(it)) return;
+  if (apot === 'ΕΝΤΟΣ') {
+    const el = document.createElement('div');
+    el.className = 'full ok';
+    el.innerHTML = `<div class="big">✓</div><div class="v">${num(v)} °C</div><div>Εντός ορίου${open ? ' · η απόκλιση έκλεισε' : ''}</div>
+      <button class="btn" style="background:#fff;color:var(--ok);min-width:200px" id="done">Τέλος</button>`;
+    document.body.appendChild(el);
+    let closed = false;
+    const close = () => { if (closed) return; closed = true; el.remove(); go({name: 'home'}, true); };
+    $('#done', el).onclick = close; setTimeout(close, 2200);
+  } else {
+    go({name: 'energeia', id: it.id}, true);
+  }
+}
+
+// ---------------------------------------------------------------------- διορθωτική ενέργεια
+let chosen = [];
+function renderEnergeia() {
+  const a = S.anoixtes.find(x => x.id === view.id);
+  if (!a) { go({name: 'home'}, true); return; }
+  const s = S.syskeves.find(x => x.kod === a.s) || {onoma: a.s};
+  const opts = zesto(s) ? ENERGEIES_ZESTO : ENERGEIES_KRYO;
+  chosen = [];
+  shell('Τι έγινε;', `
+    <div class="alert bad"><div><b>${esc(s.onoma)}: ${num(a.timi)} °C</b> στις ${hhmm(a.ts)} · όριο ${esc(a.orio)}</div></div>
+    <p class="muted">Επιλέξτε τι κάνατε. Μπορείτε να επιλέξετε περισσότερα από ένα.</p>
+    <div class="list">${opts.map((o, i) => `<button class="choice" data-i="${i}" onclick="toggleChoice(this)"><span class="box"></span>${esc(o)}</button>`).join('')}</div>
+    <label class="f" for="sx">Σχόλιο (προαιρετικό)</label><textarea class="f" id="sx" maxlength="300"></textarea>
+    <div class="spacer"></div>
+    <button class="btn wide" id="saveE" onclick="saveEnergeia()" disabled>Αποθήκευση</button>`);
+  $('#sx').addEventListener('input', () => { $('#saveE').disabled = !chosen.length && !$('#sx').value.trim(); });
+  window._opts = opts;
+}
+function toggleChoice(b) {
+  const o = window._opts[+b.dataset.i];
+  b.classList.toggle('on');
+  $('.box', b).textContent = b.classList.contains('on') ? '✓' : '';
+  chosen = b.classList.contains('on') ? chosen.concat(o) : chosen.filter(x => x !== o);
+  $('#saveE').disabled = !chosen.length && !$('#sx').value.trim();
+}
+async function saveEnergeia() {
+  const sx = $('#sx').value.trim();
+  if (!enqueue({typ: 'energeia', id: newId('E'), metrisi_id: view.id, ts: now(), energeia: chosen.join(', ') || 'Άλλο', sxolio: sx})) return;
+  await ask('Καταχωρήθηκε', `Ξαναμετρήστε τη θερμοκρασία σε ${REMEASURE_MIN} λεπτά. Η υπενθύμιση φαίνεται στην αρχική οθόνη.`, 'Εντάξει');
+  go({name: 'home'}, true);
+}
+
+// ---------------------------------------------------------------------- καθαρισμός
+function renderKatharismos() {
+  const groups = ['ΗΜΕΡΗΣΙΑ', 'ΕΒΔΟΜΑΔΙΑΙΑ', 'ΜΗΝΙΑΙΑ'].map(g => {
+    const items = S.katharismos.filter(k => k.syxnotita === g);
+    if (!items.length) return '';
+    return `<h2>${SYXN[g]}</h2><div class="list">${items.map(k => `
+      <button class="row" ${k.egine ? 'disabled' : ''} onclick="saveKatharismos('${esc(k.kod)}')">
+        <span class="choice ${k.egine ? 'on' : ''}" style="padding:0;border:0;min-height:0;width:auto;background:none"><span class="box">${k.egine ? '✓' : ''}</span></span>
+        <div class="t"><div class="n">${esc(k.xoros)}</div><div class="s">${esc(k.meso)}</div></div>
+        <span class="pill ${k.egine ? 'ok' : 'neutral'}">${k.egine ? (k.teleftaia.slice(0, 10) === today() ? hhmm(k.teleftaia) : ddmm(k.teleftaia)) : 'Εκκρεμεί'}</span>
+      </button>`).join('')}</div>`;
+  }).join('');
+  shell('Καθαρισμός', groups || '<p class="muted">Δεν έχει οριστεί πρόγραμμα καθαρισμού.</p>');
+}
+async function saveKatharismos(kod) {
+  const k = S.katharismos.find(x => x.kod === kod);
+  if (!await ask(k.xoros, 'Έγινε ο καθαρισμός και η απολύμανση;', 'Ναι, έγινε', 'Ακύρωση')) return;
+  if (enqueue({typ: 'katharismos', id: newId('K'), ts: now(), simeio: kod})) { render(); toast('✓ Καταχωρήθηκε'); }
+}
+
+// ---------------------------------------------------------------------- προμηθευτές / προσωπικό
+function certState(x) {
+  const l = x['ΛΗΞΗ ΠΙΣΤΟΠΟΙΗΤΙΚΟΥ ΥΓΕΙΑΣ'];
+  if (!l) return ['warn', 'Χωρίς ημερομηνία λήξης'];
+  const in30 = fmtLocal(new Date(Date.now() + 30 * 864e5)).slice(0, 10);
+  if (l < today()) return ['bad', 'Έληξε ' + ddmmyyyy(l)];
+  if (l <= in30) return ['warn', 'Λήγει ' + ddmmyyyy(l)];
+  return ['ok', 'Ισχύει έως ' + ddmmyyyy(l)];
+}
+function docPill(x) {
+  if (x._foto_anamoni) return '<span class="pill neutral">📎 σε αναμονή</span>';
+  return x['ΕΓΓΡΑΦΟ'] ? '<span class="pill ok">📎</span>' : '<span class="pill bad">χωρίς έγγραφο</span>';
+}
+function renderPromitheftes() {
+  const act = S.promitheftes.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ'), old = S.promitheftes.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ');
+  const row = x => `<button class="row" onclick="go({name:'prom_form',id:'${esc(x.id)}'})"><div class="t"><div class="n">${esc(x['ΕΠΩΝΥΜΙΑ'])}</div>
+    <div class="s">${[x['ΑΦΜ'] && 'ΑΦΜ ' + x['ΑΦΜ'], x['ΕΙΔΗ']].filter(Boolean).map(esc).join(' · ')}</div></div>${docPill(x)}</button>`;
+  shell('Προμηθευτές', `<button class="btn wide" onclick="go({name:'prom_form'})">+ Νέος προμηθευτής</button>
+    <div class="spacer"></div><div class="list">${act.map(row).join('') || '<p class="muted">Δεν υπάρχουν προμηθευτές ακόμα.</p>'}</div>
+    ${old.length ? `<h2>Δεν συνεργαζόμαστε πια</h2><div class="list" style="opacity:.6">${old.map(row).join('')}</div>` : ''}`);
+}
+function renderProsopiko() {
+  const act = S.prosopiko.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ'), old = S.prosopiko.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ');
+  const row = x => { const [c, t] = certState(x); return `<button class="row" onclick="go({name:'pros_form',id:'${esc(x.id)}'})"><div class="t"><div class="n">${esc(x['ΟΝΟΜΑΤΕΠΩΝΥΜΟ'])}</div>
+    <div class="s">${esc(x['ΘΕΣΗ'] || '')}</div><span class="pill ${c}" style="display:inline-block;margin-top:6px;font-size:13px">${t}</span></div>${docPill(x)}</button>`; };
+  shell('Προσωπικό', `<button class="btn wide" onclick="go({name:'pros_form'})">+ Νέο άτομο</button>
+    <div class="spacer"></div><div class="list">${act.map(row).join('') || '<p class="muted">Δεν υπάρχει προσωπικό ακόμα.</p>'}</div>
+    ${old.length ? `<h2>Δεν εργάζονται πια</h2><div class="list" style="opacity:.6">${old.map(row).join('')}</div>` : ''}`);
+}
+
+let fotoData = '';
+function field(id, label, val, attrs) { return `<label class="f" for="${id}">${label}</label><input class="f" id="${id}" value="${esc(val || '')}" ${attrs || ''}>`; }
+function fotoField(has) {
+  return `<label class="f">Φωτογραφία εγγράφου ${has ? '(υπάρχει ήδη — βάλτε νέα μόνο αν άλλαξε)' : ''}</label>
+    <div class="photo"><img id="fprev" alt="" hidden><label class="btn sec small" style="display:inline-flex;align-items:center">📷 Φωτογραφία
+    <input type="file" accept="image/*" capture="environment" hidden onchange="takeFoto(this)"></label></div>`;
+}
+function statusField(x) {
+  if (!x) return '';
+  const inactive = x['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ';
+  return `<label class="f" for="kat">Κατάσταση</label><select class="f" id="kat">
+    <option value="ΕΝΕΡΓΟΣ" ${inactive ? '' : 'selected'}>Ενεργός</option><option value="ΑΝΕΝΕΡΓΟΣ" ${inactive ? 'selected' : ''}>Όχι πια</option></select>`;
+}
+function renderPromForm() {
+  const x = view.id ? S.promitheftes.find(p => p.id === view.id) : null; fotoData = '';
+  shell(x ? 'Προμηθευτής' : 'Νέος προμηθευτής', `
+    ${field('ep', 'Επωνυμία *', x && x['ΕΠΩΝΥΜΙΑ'])}
+    ${field('afm', 'ΑΦΜ', x && x['ΑΦΜ'], 'inputmode="numeric" maxlength="9"')}
+    ${field('doy', 'ΔΟΥ', x && x['ΔΟΥ'])}
+    ${field('di', 'Διεύθυνση', x && x['ΔΙΕΥΘΥΝΣΗ'])}
+    ${field('til', 'Τηλέφωνο', x && x['ΤΗΛΕΦΩΝΟ'], 'inputmode="tel"')}
+    ${field('eidi', 'Τι προμηθεύει', x && x['ΕΙΔΗ'], 'placeholder="π.χ. κρέατα, λαχανικά, γαλακτοκομικά"')}
+    ${fotoField(x && x['ΕΓΓΡΑΦΟ'])}${statusField(x)}
+    <div class="spacer"></div><button class="btn wide" onclick="savePerson('promitheftis')">Αποθήκευση</button>`);
+}
+function renderProsForm() {
+  const x = view.id ? S.prosopiko.find(p => p.id === view.id) : null; fotoData = '';
+  shell(x ? 'Προσωπικό' : 'Νέο άτομο', `
+    ${field('on', 'Ονοματεπώνυμο *', x && x['ΟΝΟΜΑΤΕΠΩΝΥΜΟ'])}
+    ${field('th', 'Θέση', x && x['ΘΕΣΗ'], 'placeholder="π.χ. μάγειρας, σερβιτόρος"')}
+    ${field('lx', 'Λήξη πιστοποιητικού υγείας', x && x['ΛΗΞΗ ΠΙΣΤΟΠΟΙΗΤΙΚΟΥ ΥΓΕΙΑΣ'], 'type="date"')}
+    ${fotoField(x && x['ΕΓΓΡΑΦΟ'])}${statusField(x)}
+    <div class="spacer"></div><button class="btn wide" onclick="savePerson('prosopiko')">Αποθήκευση</button>`);
+}
+async function takeFoto(inp) {
+  const f = inp.files && inp.files[0]; if (!f) return;
+  try {
+    fotoData = await shrink(f, 1600, .72);
+    const im = $('#fprev'); im.src = fotoData; im.hidden = false;
+  } catch (e) { toast('Η φωτογραφία δεν διαβάστηκε', 'bad'); }
+}
+function shrink(file, max, q) {
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const r = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', q));
+    };
+    img.onerror = rej; img.src = url;
+  });
+}
+function savePerson(typ) {
+  const v = id => ($('#' + id) ? $('#' + id).value.trim() : '');
+  const it = {typ, id: view.id || newId(typ === 'promitheftis' ? 'PR' : 'PS'), vid: newId('V'), ts: now(), katastasi: v('kat') || 'ΕΝΕΡΓΟΣ'};
+  if (typ === 'promitheftis') {
+    Object.assign(it, {eponymia: v('ep'), afm: v('afm'), doy: v('doy'), dieuthynsi: v('di'), til: v('til'), eidi: v('eidi')});
+    if (!it.eponymia) return toast('Συμπληρώστε την επωνυμία', 'bad');
+    if (it.afm && !/^\d{9}$/.test(it.afm)) return toast('Ο ΑΦΜ έχει 9 ψηφία', 'bad');
+  } else {
+    Object.assign(it, {onoma: v('on'), thesi: v('th'), lixi: v('lx')});
+    if (!it.onoma) return toast('Συμπληρώστε το ονοματεπώνυμο', 'bad');
+  }
+  if (fotoData) it.foto = fotoData;
+  if (enqueue(it)) { toast('✓ Αποθηκεύτηκε'); back(); }
+}
+
+// ---------------------------------------------------------------------- υπογραφή μήνα
+async function renderYpografi() {
+  const m = view.m || S.pros_ypografi[0] || '';
+  if (!m) {
+    const last = Object.keys(S.ypografes).sort().slice(-1)[0];
+    shell('Υπογραφή μήνα', `<div class="empty-state"><div style="font-size:54px">✓</div><p>Δεν εκκρεμεί υπογραφή.</p>
+      ${last ? `<p class="muted">Τελευταία: ${minasTitlos(last)} — ${esc(S.ypografes[last].onoma)}</p>` : ''}</div>`);
+    return;
+  }
+  shell('Υπογραφή · ' + minasTitlos(m), '<p class="muted center">Φόρτωση της σύνοψης του μήνα…</p>');
+  let r;
+  try { r = await api({action: 'minas', p: P, k: K, m}); } catch (e) { r = null; }
+  if (view.name !== 'ypografi') return;
+  if (!r || !r.ok) {
+    shell('Υπογραφή · ' + minasTitlos(m), `<div class="empty-state"><p>Για την υπογραφή χρειάζεται σύνδεση στο ίντερνετ.</p>
+      <button class="btn" onclick="render()">Δοκιμή ξανά</button></div>`);
+    return;
+  }
+  const devs = r.syskeves.map(s => `<div class="card dev-block"><div class="n">${esc(s.onoma)}</div>
+    <div class="muted" style="font-size:14px">${esc(s.orio)} · ${s.plithos} ${s.plithos === 1 ? 'μέτρηση' : 'μετρήσεις'}${s.min !== null ? ' · από ' + num(s.min) + ' έως ' + num(s.max) + ' °C' : ''}</div>
+    ${s.imeres_xoris.length ? `<div class="pill warn" style="display:inline-block;margin-top:8px;font-size:13px">${s.imeres_xoris.length} μέρες χωρίς μέτρηση</div>` : ''}
+    ${s.apokliseis.length ? `<table class="sum" style="margin-top:8px"><tr><th>Πότε</th><th>Τιμή</th><th>Ενέργεια</th><th>Μετά</th></tr>
+      ${s.apokliseis.map(a => `<tr><td>${ddmm(a.ts)} ${hhmm(a.ts)}</td><td>${num(a.timi)} °C</td>
+        <td>${esc(a.energeies.map(e => e.energeia).join(', ') || '—')}</td>
+        <td>${a.epomeni ? num(a.epomeni.timi) + ' °C ✓' : '<b style="color:var(--bad)">ανοιχτή</b>'}</td></tr>`).join('')}</table>` : ''}
+  </div>`).join('');
+  const kth = r.katharismos.map(k => `<tr><td>${esc(k.xoros)}</td><td>${k.egine} από ${k.anamenomeno}</td></tr>`).join('');
+  shell('Υπογραφή · ' + minasTitlos(m), `
+    <p class="muted">Ελέγξτε τη σύνοψη του μήνα και υπογράψτε ως υπεύθυνος.</p>
+    <h2>Θερμοκρασίες</h2>${devs || '<p class="muted">Καμία μέτρηση.</p>'}
+    ${kth ? `<h2>Καθαρισμός</h2><div class="card" style="padding:4px 10px"><table class="sum">${kth}</table></div>` : ''}
+    <h2>Υπογραφή υπευθύνου</h2>
+    ${field('yon', 'Ονοματεπώνυμο υπευθύνου *', S.pelatis.ypefthynos)}
+    <label class="f">Υπογράψτε με το δάχτυλο</label><canvas class="sig" id="sig"></canvas>
+    <div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn sec small" onclick="sigClear()">Καθαρισμός</button></div>
+    <p class="muted" style="font-size:14px">Με την υπογραφή βεβαιώνω ότι έλεγξα τα αρχεία του μήνα ${minasTitlos(m)}.</p>
+    <button class="btn wide go" onclick="saveYpografi('${m}')">Υπογραφή</button>`);
+  sigInit();
+}
+let sigDirty = false;
+function sigInit() {
+  const c = $('#sig'), r = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  c.width = r.width * dpr; c.height = r.height * dpr;
+  const g = c.getContext('2d'); g.scale(dpr, dpr); g.lineWidth = 2.6; g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = '#1b2533';
+  g.fillStyle = '#fff'; g.fillRect(0, 0, r.width, r.height);
+  sigDirty = false; let drawing = false;
+  const pt = e => { const b = c.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; };
+  c.onpointerdown = e => { drawing = true; c.setPointerCapture(e.pointerId); g.beginPath(); g.moveTo(...pt(e)); };
+  c.onpointermove = e => { if (!drawing) return; g.lineTo(...pt(e)); g.stroke(); sigDirty = true; };
+  c.onpointerup = c.onpointercancel = () => { drawing = false; };
+}
+function sigClear() { sigInit(); }
+function saveYpografi(m) {
+  const on = $('#yon').value.trim();
+  if (!on) return toast('Συμπληρώστε το ονοματεπώνυμο', 'bad');
+  if (!sigDirty) return toast('Βάλτε την υπογραφή σας', 'bad');
+  if (enqueue({typ: 'ypografi', id: newId('Y'), ts: now(), minas: m, onoma: on, eikona: $('#sig').toDataURL('image/png')})) {
+    toast('✓ Ο μήνας υπογράφηκε'); go({name: 'home'}, true);
+  }
+}
+
+// ====================================================================== διάλογοι
+function ask(title, text, yes, no) {
+  return new Promise(res => {
+    const bg = document.createElement('div');
+    bg.className = 'modal-bg';
+    bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><h3>${esc(title)}</h3><p>${esc(text)}</p><div class="acts">
+      <button class="btn wide" data-v="1">${esc(yes)}</button>${no ? `<button class="btn wide sec" data-v="0">${esc(no)}</button>` : ''}</div></div>`;
+    bg.onclick = e => { const v = e.target.dataset && e.target.dataset.v; if (v !== undefined || e.target === bg) { bg.remove(); res(v === '1'); } };
+    document.body.appendChild(bg);
+  });
+}
+let toastT;
+function toast(msg, cls) {
+  let el = $('.toast'); if (el) el.remove();
+  el = document.createElement('div'); el.className = 'toast' + (cls ? ' ' + cls : ''); el.textContent = msg;
+  document.body.appendChild(el); clearTimeout(toastT); toastT = setTimeout(() => el.remove(), 3200);
+}
+
+// ====================================================================== ξεκίνημα
+rebuild();
+if (START_DEVICE && S && S.syskeves.some(x => x.kod === START_DEVICE)) { history.replaceState({name: 'home'}, '', location.search); go({name: 'device', s: START_DEVICE}); }
+else { history.replaceState(view, '', location.search); render(); }
+
+(async () => {
+  await flush();
+  await refresh();
+  if (START_DEVICE && view.name === 'home' && S && S.syskeves.some(x => x.kod === START_DEVICE)) {
+    history.replaceState({name: 'home'}, '', location.search); go({name: 'device', s: START_DEVICE});
+  }
+})();
+window.addEventListener('online', () => { online = true; flush().then(refresh); });
+window.addEventListener('offline', () => { online = false; drawSync(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) flush().then(refresh); });
+setInterval(() => { if (queue.length) flush(); }, 30000);
+setInterval(() => { if (view.name === 'home') render(); }, 60000);   // «ξαναμετρήστε τώρα» όταν περάσουν τα 30'
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
