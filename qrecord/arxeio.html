@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QRecord · Αρχεία τεκμηρίωσης</title>
+<meta name="description" content="QRecord · από την InCo — ζωντανά αρχεία τεκμηρίωσης του καταστήματος">
+<link rel="icon" href="icon-192.png">
+<style>
+/* Ζωντανή σελίδα αρχείου (My InCo) ΚΑΙ μηνιαίο PDF — ίδια σελίδα (με print=1 βγαίνει το PDF).
+   Χρώματα InCo: navy #2D3A4D · μπλε #287B9B · κυανό #2DAFCE · ανοιχτό κυανό #65C7D7 · φόντο #EEF6F9.
+   Τονισμός/κουτιά: ανοιχτό γκρι #e7ecf0 + navy (ΟΧΙ κεχριμπαρί σε έντυπα). */
+:root{--navy:#2D3A4D;--blue:#287B9B;--cyan:#2DAFCE;--lc:#65C7D7;--bg:#EEF6F9;--muted:#5B6B80;--line:#d5e0e8;--box:#e7ecf0;--bad:#C0392B;--ok:#17875A}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--navy);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.page{max-width:1040px;margin:0 auto;padding:16px}
+.doc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;border-bottom:3px solid var(--navy);padding-bottom:12px}
+.top img{height:40px;display:block}
+.cust{text-align:right}
+.cust b{font-size:16px}
+.cust .m{color:var(--muted)}
+h1{font-size:22px;margin:16px 0 2px}
+.sub{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted);margin-bottom:6px}
+.badge{border-radius:999px;padding:3px 10px;font-weight:700;font-size:12px;letter-spacing:.04em}
+.badge.live{background:#e0f4f8;color:var(--blue)}
+.badge.signed{background:#e2f4eb;color:var(--ok)}
+.badge.unsigned{background:var(--box);color:var(--navy)}
+.ctrl{font-size:11px;color:var(--muted);margin-top:4px}
+.nav{display:flex;gap:8px;align-items:center;margin:14px 0 0;flex-wrap:wrap}
+.nav button,.nav select{font:inherit;border:1px solid var(--blue);color:var(--blue);background:#fff;border-radius:10px;min-height:38px;padding:0 12px;font-weight:700;cursor:pointer}
+.nav button:disabled{opacity:.35;cursor:default}
+.nav .print{background:var(--blue);color:#fff;margin-left:auto}
+h2{font-size:15px;margin:26px 0 8px;padding:7px 12px;background:var(--navy);color:#fff;border-radius:8px;letter-spacing:.02em}
+h3{font-size:14px;margin:16px 0 6px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+h3 small{color:var(--muted);font-weight:500}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-align:top}
+th{background:var(--box);font-weight:700;color:var(--navy)}
+td.d{width:46px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+td.miss{color:#9aa8b6;background:#f7f9fb}
+.out{color:var(--bad);font-weight:700}
+.okc{color:var(--ok);font-weight:700}
+.halves{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.note{color:var(--muted);font-size:12px;margin:4px 0 0}
+.sum{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:2px 0 6px}
+.sum b{color:var(--navy)}
+.sig{display:flex;gap:24px;align-items:flex-end;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:14px;background:#fbfcfd}
+.sig img{height:90px;background:#fff;border-bottom:1px solid var(--navy)}
+.legal{margin-top:26px;padding-top:8px;border-top:1px solid var(--line);font-size:10px;color:var(--muted);text-align:center}
+.by{text-align:center;color:var(--muted);font-size:12px;margin-top:8px}
+.state{padding:60px 10px;text-align:center;color:var(--muted)}
+@media (max-width:760px){.halves{grid-template-columns:1fr}.doc{padding:16px 14px}.cust{text-align:left}}
+@media print{
+  html,body{background:#fff}
+  .page{max-width:none;padding:0}
+  .doc{border:0;padding:0;border-radius:0}
+  .nav,.by,.noprint{display:none!important}
+  h2{break-after:avoid}
+  h3{break-after:avoid}
+  tr{break-inside:avoid}
+  .sum{break-after:avoid}
+  .halves{grid-template-columns:1fr 1fr}
+  .cust{text-align:right}
+  table{font-size:11px}
+  th,td{padding:3px 5px}
+  body.pdf .legal{display:none}
+}
+</style>
+</head>
+<body>
+<div class="page"><div class="doc" id="doc"><div class="state">Φόρτωση των αρχείων… (η πρώτη φόρτωση μπορεί να πάρει λίγα δευτερόλεπτα)</div></div>
+<div class="by">QRecord · από την InCo</div></div>
+<script>
+'use strict';
+const API = 'https://script.google.com/macros/s/AKfycbwRoyNlK_CkIEShRA3_hVUpeTT117EprA1xdvi9ZWrvh5w0r-8B2mVLDPnp8_cSGyx9qA/exec';
+const LEGAL = 'ΑΡΧΙΜΗΔΗΣ Λ. ΤΡΥΦΩΝΙΔΗΣ / ΥΓΕΙΟΝΟΜΙΚΕΣ ΜΕΛΕΤΕΣ – ΑΠΟΛΥΜΑΝΣΕΙΣ / ΑΦΜ.104353567 / ΚΕΦΟΔΕ ΑΤΤΙΚΗΣ<br>' +
+              'ΑΡ. ΓΕΜΗ.008784101000 / ΔΕΛΦΩΝ 140 – 165,61 / ΓΛΥΦΑΔΑ / 210.96.44.310 / sales@in-co.gr / www.in-co.gr';
+const MINES = ['Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος','Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
+const SYXN = {'ΗΜΕΡΗΣΙΑ': 'Κάθε μέρα', 'ΕΒΔΟΜΑΔΙΑΙΑ': 'Εβδομαδιαία', 'ΜΗΝΙΑΙΑ': 'Μηνιαία'};
+const TYPOI = {'ΨΥΓΕΙΟ': 'Ψυγείο', 'ΚΑΤΑΨΥΚΤΗΣ': 'Καταψύκτης', 'ΕΝ ΘΕΡΜΩ ΔΙΑΤΗΡΗΣΗ': 'Εν θερμώ διατήρηση', 'ΕΝ ΨΥΧΡΩ ΔΙΑΤΗΡΗΣΗ': 'Εν ψυχρώ διατήρηση'};
+const Q = new URLSearchParams(location.search);
+const P = Q.get('p') || '', V = Q.get('v') || '', PRINT = Q.get('print') === '1';
+let M = Q.get('m') || '';
+if (PRINT) document.body.classList.add('pdf');
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => v === null || v === undefined || v === '' ? '' : String(v).replace('.', ',');
+const hhmm = ts => (ts || '').slice(11, 16);
+const ddmm = ts => ts ? ts.slice(8, 10) + '/' + ts.slice(5, 7) : '';
+const dmy = d => d ? d.slice(8, 10) + '/' + d.slice(5, 7) + '/' + d.slice(0, 4) : '';
+const titlos = m => MINES[+m.slice(5, 7) - 1] + ' ' + m.slice(0, 4);
+const pad = n => String(n).padStart(2, '0');
+
+async function load() {
+  if (!P || !V) return fail('Ο σύνδεσμος δεν είναι πλήρης.');
+  let r = null;
+  for (let i = 0; i < 4 && !r; i++) {     // το Google δίνει πού και πού προσωρινό σφάλμα
+    try {
+      const res = await fetch(API + '?' + new URLSearchParams({action: 'arxeio', p: P, v: V, m: M}), {cache: 'no-store'});
+      if (res.ok) r = await res.json();
+    } catch (e) {}
+    if (!r) await new Promise(ok => setTimeout(ok, 1500 * (i + 1)));
+  }
+  if (!r) return fail('Δεν ήταν δυνατή η σύνδεση. Δοκιμάστε ξανά σε λίγο.');
+  if (!r.ok) return fail(r.error === 'άκυρος σύνδεσμος' ? 'Ο σύνδεσμος δεν ισχύει. Επικοινωνήστε με την InCo.' : r.error);
+  M = r.minas;
+  render(r);
+  window.__ready = true;                  // για το PDF: τα δεδομένα φορτώθηκαν
+}
+function fail(msg) { document.getElementById('doc').innerHTML = `<div class="state">${esc(msg)}</div>`; window.__ready = 'error'; }
+function go(m) { M = m; const u = new URL(location.href); u.searchParams.set('m', m); history.replaceState(null, '', u); document.getElementById('doc').innerHTML = '<div class="state">Φόρτωση…</div>'; load(); }
+
+function render(r) {
+  const signed = !!r.ypografi;
+  const idx = r.mines.indexOf(r.minas);
+  const prev = r.mines[idx - 1], next = r.mines[idx + 1];
+  const opts = r.mines.slice().reverse().map(m => `<option value="${m}" ${m === r.minas ? 'selected' : ''}>${titlos(m)}${r.ypografes[m] ? ' ✓' : ''}</option>`).join('');
+  const days = []; { let d = new Date(r.apo + 'T12:00:00'); const e = new Date(r.mexri + 'T12:00:00'); while (d <= e) { days.push(d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())); d.setDate(d.getDate() + 1); } }
+
+  // ---- θερμοκρασίες: ανά συσκευή, μία γραμμή ανά ημέρα
+  const devs = r.syskeves.map(s => {
+    const byDay = {}; s.metriseis.forEach(m => (byDay[m.ts.slice(0, 10)] = byDay[m.ts.slice(0, 10)] || []).push(m));
+    const cols = Math.max(1, ...Object.values(byDay).map(a => a.length));
+    const head = `<tr><th>Ημ.</th>${Array.from({length: cols}, (_, i) => `<th>${cols === 1 ? 'Μέτρηση' : cols <= 3 ? (i + 1) + 'η μέτρηση' : (i + 1) + 'η'}</th>`).join('')}</tr>`;
+    const row = d => {
+      const ms = byDay[d] || [];
+      if (!ms.length) return `<tr><td class="d">${d.slice(8, 10)}</td><td class="miss" colspan="${cols}">—</td></tr>`;
+      return `<tr><td class="d">${d.slice(8, 10)}</td>${Array.from({length: cols}, (_, i) => { const m = ms[i];
+        return m ? `<td class="${m.apot === 'ΕΚΤΟΣ' ? 'out' : ''}">${hhmm(m.ts)} · ${num(m.timi)} °C${m.apot === 'ΕΚΤΟΣ' ? ' ⚠' : ''}</td>` : '<td></td>'; }).join('')}</tr>`;
+    };
+    const half = Math.ceil(days.length / 2);
+    const tbl = list => `<table>${head}${list.map(row).join('')}</table>`;
+    return `<div class="dev"><h3>${esc(s.onoma)} <small>${esc(TYPOI[s.typos] || s.typos)} · όριο ${esc(s.orio)}</small></h3>
+      <div class="sum"><span><b>${s.plithos}</b> μετρήσεις</span>${s.min !== null ? `<span>από <b>${num(s.min)}</b> έως <b>${num(s.max)}</b> °C</span>` : ''}
+      <span><b>${s.apokliseis.length}</b> εκτός ορίου</span><span><b>${s.imeres_xoris.length}</b> ημέρες χωρίς μέτρηση</span></div>
+      ${days.length > 10 ? `<div class="halves">${tbl(days.slice(0, half))}${tbl(days.slice(half))}</div>` : tbl(days)}</div>`;
+  }).join('') || '<p class="note">Δεν υπάρχουν μετρήσεις αυτόν τον μήνα.</p>';
+
+  // ---- αποκλίσεις
+  const apok = [];
+  r.syskeves.forEach(s => s.apokliseis.forEach(a => apok.push(Object.assign({onoma: s.onoma}, a))));
+  apok.sort((a, b) => a.ts < b.ts ? -1 : 1);
+  const apokT = apok.length ? `<table><tr><th>Ημερομηνία</th><th>Συσκευή</th><th>Τιμή</th><th>Όριο</th><th>Διορθωτική ενέργεια</th><th>Επαναμέτρηση</th></tr>
+    ${apok.map(a => `<tr><td>${ddmm(a.ts)} ${hhmm(a.ts)}</td><td>${esc(a.onoma)}</td><td class="out">${num(a.timi)} °C</td><td>${esc(a.orio)}</td>
+      <td>${a.energeies.length ? a.energeies.map(e => esc(e.energeia) + (e.sxolio ? ' — <i>' + esc(e.sxolio) + '</i>' : '')).join('<br>') : '<span class="out">δεν καταγράφηκε</span>'}</td>
+      <td>${a.epomeni ? `<span class="okc">${num(a.epomeni.timi)} °C ✓</span> ${ddmm(a.epomeni.ts)} ${hhmm(a.epomeni.ts)}` : '<span class="out">εκκρεμεί</span>'}</td></tr>`).join('')}</table>`
+    : '<p class="note">Καμία μέτρηση εκτός ορίου αυτόν τον μήνα.</p>';
+
+  // ---- καθαρισμός
+  const kath = r.katharismos.length ? `<table><tr><th>Χώρος / εξοπλισμός</th><th>Συχνότητα</th><th>Μέσο</th><th>Ημερομηνίες εκτέλεσης</th><th>Ολοκλήρωση</th></tr>
+    ${r.katharismos.map(k => `<tr><td><b>${esc(k.xoros)}</b></td><td>${SYXN[k.syxnotita] || k.syxnotita}</td><td>${esc(k.meso || '')}</td>
+      <td>${k.imerominies.length ? k.imerominies.map(ddmm).filter((x, i, a) => a.indexOf(x) === i).join(', ') : '—'}</td>
+      <td class="${k.egine >= k.anamenomeno ? 'okc' : 'out'}">${k.egine} από ${k.anamenomeno}</td></tr>`).join('')}</table>`
+    : '<p class="note">Δεν έχει οριστεί πρόγραμμα καθαρισμού.</p>';
+
+  // ---- προμηθευτές / προσωπικό (η τρέχουσα λίστα)
+  const doc = x => x['ΕΓΓΡΑΦΟ'] ? '<span class="okc">✓ υπάρχει</span>' : '<span class="out">λείπει</span>';
+  const promAll = r.promitheftes.slice().sort((a, b) => (a['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ') - (b['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ'));
+  const prom = promAll.length ? `<table><tr><th>Επωνυμία</th><th>ΑΦΜ</th><th>ΔΟΥ</th><th>Διεύθυνση</th><th>Τηλέφωνο</th><th>Είδη</th><th>Έγγραφο</th></tr>
+    ${promAll.map(x => `<tr style="${x['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ' ? 'opacity:.55' : ''}"><td><b>${esc(x['ΕΠΩΝΥΜΙΑ'])}</b>${x['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ' ? '<br><small>δεν συνεργάζεται πια</small>' : ''}</td>
+      <td>${esc(x['ΑΦΜ'])}</td><td>${esc(x['ΔΟΥ'])}</td><td>${esc(x['ΔΙΕΥΘΥΝΣΗ'])}</td><td>${esc(x['ΤΗΛΕΦΩΝΟ'])}</td><td>${esc(x['ΕΙΔΗ'])}</td><td>${doc(x)}</td></tr>`).join('')}</table>`
+    : '<p class="note">Η λίστα προμηθευτών είναι κενή.</p>';
+  const today = new Date(); const t0 = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate());
+  const in30 = new Date(Date.now() + 30 * 864e5); const t30 = in30.getFullYear() + '-' + pad(in30.getMonth() + 1) + '-' + pad(in30.getDate());
+  const cert = l => !l ? '<span class="out">χωρίς ημερομηνία</span>' : l < t0 ? `<span class="out">έληξε ${dmy(l)}</span>` : l <= t30 ? `<b>λήγει ${dmy(l)}</b>` : `<span class="okc">${dmy(l)}</span>`;
+  const prosAll = r.prosopiko.slice().sort((a, b) => (a['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ') - (b['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ'));
+  const pros = prosAll.length ? `<table><tr><th>Ονοματεπώνυμο</th><th>Θέση</th><th>Λήξη πιστοποιητικού υγείας</th><th>Έγγραφο</th></tr>
+    ${prosAll.map(x => `<tr style="${x['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ' ? 'opacity:.55' : ''}"><td><b>${esc(x['ΟΝΟΜΑΤΕΠΩΝΥΜΟ'])}</b>${x['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ' ? '<br><small>δεν εργάζεται πια</small>' : ''}</td>
+      <td>${esc(x['ΘΕΣΗ'])}</td><td>${x['ΚΑΤΑΣΤΑΣΗ'] === 'ΑΝΕΝΕΡΓΟΣ' ? dmy(x['ΛΗΞΗ ΠΙΣΤΟΠΟΙΗΤΙΚΟΥ ΥΓΕΙΑΣ']) : cert(x['ΛΗΞΗ ΠΙΣΤΟΠΟΙΗΤΙΚΟΥ ΥΓΕΙΑΣ'])}</td><td>${doc(x)}</td></tr>`).join('')}</table>`
+    : '<p class="note">Η λίστα προσωπικού είναι κενή.</p>';
+
+  // ---- υπογραφή
+  const y = r.ypografi;
+  const sig = y ? `<div class="sig">${y.eikona ? `<img src="data:image/png;base64,${y.eikona}" alt="Υπογραφή">` : ''}
+      <div><div class="note">Υπεύθυνος της επιχείρησης</div><b style="font-size:15px">${esc(y.onoma)}</b><div class="note">Υπογράφηκε ${dmy(y.ts.slice(0, 10))} ${hhmm(y.ts)}</div></div></div>
+      <p class="note">Με την υπογραφή ο υπεύθυνος βεβαιώνει ότι έλεγξε τα αρχεία του μήνα ${titlos(r.minas)}.</p>`
+    : `<div class="sig"><div class="note">Ο μήνας ${titlos(r.minas)} δεν έχει υπογραφεί ακόμα από τον υπεύθυνο της επιχείρησης.</div></div>`;
+
+  const ctrl = 'ΣΥΝΤΑΞΗ/ΕΓΚΡΙΣΗ: Αρχιμήδης Λ. Τρυφωνίδης · ΕΚΔ. digital 01 · ΙΣΧΥΕΙ ΑΠΟ 10/2026';
+  document.getElementById('doc').innerHTML = `
+    <div class="top"><img src="logo.png" alt="QRecord · από την InCo">
+      <div class="cust"><b>${esc(r.pelatis.kod)} · ${esc(r.pelatis.eponymia)}</b>${r.pelatis.ypefthynos ? `<div class="m">Υπεύθυνος: ${esc(r.pelatis.ypefthynos)}</div>` : ''}</div></div>
+    <h1>Αρχεία τεκμηρίωσης — ${titlos(r.minas)}</h1>
+    <div class="sub">${PRINT ? '' : '<span class="badge live">ΖΩΝΤΑΝΑ ΔΕΔΟΜΕΝΑ</span>'}
+      <span class="badge ${signed ? 'signed' : 'unsigned'}">${signed ? '✓ ΥΠΟΓΕΓΡΑΜΜΕΝΟΣ ΜΗΝΑΣ' : 'ΧΩΡΙΣ ΥΠΟΓΡΑΦΗ ΑΚΟΜΑ'}</span>
+      <span>Περίοδος ${dmy(r.apo)} – ${dmy(r.mexri)}</span>${PRINT ? '' : `<span>· ενημέρωση ${dmy(r.tora.slice(0, 10))} ${r.tora.slice(11, 16)}</span>`}</div>
+    <div class="ctrl">${ctrl}</div>
+    <div class="nav"><button ${prev ? '' : 'disabled'} onclick="go('${prev || ''}')">‹ Προηγούμενος</button>
+      <select onchange="go(this.value)" aria-label="Μήνας">${opts}</select>
+      <button ${next ? '' : 'disabled'} onclick="go('${next || ''}')">Επόμενος ›</button>
+      <button class="print" onclick="print()">Εκτύπωση / PDF</button></div>
+    <h2>1. Θερμοκρασίες συσκευών</h2>${devs}
+    <h2>2. Μετρήσεις εκτός ορίου και διορθωτικές ενέργειες</h2>${apokT}
+    <h2>3. Πρόγραμμα καθαρισμού και απολύμανσης</h2>${kath}
+    <h2>4. Λίστα προμηθευτών</h2>${prom}
+    <h2>5. Λίστα προσωπικού</h2>${pros}
+    <h2>6. Υπογραφή υπευθύνου</h2>${sig}
+    <div class="legal">${LEGAL}</div>`;
+  document.title = 'QRecord · ' + r.pelatis.kod + ' · ' + titlos(r.minas);
+}
+load();
+</script>
+</body>
+</html>
