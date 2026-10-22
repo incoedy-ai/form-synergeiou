@@ -13,7 +13,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="QRecord">
 <style>
-:root{--bg:#F3F8FA;--surface:#fff;--ink:#2D3A4D;--muted:#5B6B80;--line:#DCE8EE;--accent:#2DAFCE;--blue:#287B9B;
+:root{--bg:#EEF6F9;--surface:#fff;--ink:#2D3A4D;--muted:#5B6B80;--line:#DCE8EE;--accent:#2DAFCE;--blue:#287B9B;
   --ok:#17875A;--ok-bg:#E2F4EB;--warn:#9A6700;--warn-bg:#FFF3D1;--bad:#C93030;--bad-bg:#FCE6E6;--key:#EAF2F6}
 @media (prefers-color-scheme:dark){:root{--bg:#18212D;--surface:#212C3A;--ink:#EEF3F7;--muted:#A9B8C8;--line:#2F3D4E;
   --accent:#65C7D7;--blue:#65C7D7;--ok:#4CC38A;--ok-bg:#163428;--warn:#F0B429;--warn-bg:#3A2F12;--bad:#FF7070;--bad-bg:#3D1E22;--key:#2A3747}}
@@ -38,6 +38,21 @@ h2{font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--mute
 .row{display:flex;align-items:center;gap:12px;padding:14px;min-height:64px;width:100%;text-align:left;
   background:var(--surface);border:1px solid var(--line);border-radius:16px}
 .row:disabled{cursor:default;color:inherit}
+/* Αρχική: κάθε ενότητα σε ΔΙΚΟ της χρώμα της InCo (navy #2D3A4D · μπλε #287B9B · κυανό #2DAFCE · ανοιχτό κυανό #65C7D7 · λευκό) */
+.row.sec{background:var(--c);color:var(--fg);border:2px solid var(--c);min-height:76px}
+.row.sec .s{color:var(--fg);opacity:.85}
+.row.sec .pill{background:#fff}
+.row.sec .pill.neutral{color:#2D3A4D}.row.sec .pill.ok{color:#17875A}.row.sec .pill.warn{color:#9A6700}.row.sec .pill.bad{color:#C93030}
+.sec-ypo .pill.ok{background:#E2F4EB}
+.ico{width:50px;height:50px;border-radius:14px;flex:none;display:grid;place-items:center;color:var(--fg);background:rgba(255,255,255,.2)}
+.ico svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sec-thermo{--c:#2DAFCE;--fg:#2D3A4D}
+.sec-kath{--c:#287B9B;--fg:#fff}
+.sec-prom{--c:#2D3A4D;--fg:#fff}
+.sec-pros{--c:#65C7D7;--fg:#2D3A4D}
+.sec-ypo{--c:#fff;--fg:#287B9B}
+.row.sec-ypo{border-color:#287B9B}.sec-ypo .ico{background:#EEF6F9}
+@media (prefers-color-scheme:dark){.row.sec-prom{border-color:#65C7D7}}
 .row .t{flex:1;min-width:0}
 .row .n{font-weight:700;font-size:17px}
 .row .s{color:var(--muted);font-size:14px}
@@ -101,7 +116,7 @@ footer{margin-top:28px;text-align:center;color:var(--muted);font-size:13px}
 .scan .frame{position:absolute;left:50%;top:42%;width:68vmin;height:68vmin;transform:translate(-50%,-50%);
   border:4px solid #fff;border-radius:24px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}
 .scan .bar{position:relative;padding:16px 16px calc(18px + env(safe-area-inset-bottom));background:#000;color:#fff;text-align:center;display:flex;flex-direction:column;gap:12px}
-.btn.scanbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:14px;background:var(--blue);color:#fff}
+.btn.scanbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#287B9B;color:#fff}
 </style>
 </head>
 <body>
@@ -327,7 +342,7 @@ function deviceStatus(s) {
   const open = S.anoixtes.filter(a => a.s === s.kod);
   if (open.length) return ['bad', 'Εκτός ορίου'];
   const n = s.simera.length, need = s.ana_imera || 1;
-  if (n >= need) return ['ok', '✓ ' + n + '/' + need];
+  if (n >= need) return ['ok', '✓ ' + need + '/' + need];
   return [n ? 'warn' : 'neutral', n + '/' + need];
 }
 
@@ -353,22 +368,30 @@ function renderHome() {
   const pros = S.prosopiko.filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ');
   const pr30 = pros.filter(x => certState(x)[0] !== 'ok').length;
   const ypg = S.pros_ypografi.length;
-  const item = (view, title, sub, pill) => `<button class="row" onclick="go({name:'${view}'})"><div class="t"><div class="n">${title}</div>
-    <div class="s">${sub}</div></div><span class="pill ${pill[0]}">${pill[1]}</span></button>`;
+  // κάθε ενότητα: δικό της χρώμα + εικονίδιο (22/10 ο χρήστης: «να ξεχωρίζει το ένα από το άλλο»)
+  const ICO = {
+    thermokrasies: ['thermo', '<path d="M14 14.8V4.5a2.5 2.5 0 0 0-5 0v10.3a4.5 4.5 0 1 0 5 0z"/><path d="M11.5 9v8"/>'],
+    katharismos: ['kath', '<path d="M11 3l1.9 5.1L18 10l-5.1 1.9L11 17l-1.9-5.1L4 10l5.1-1.9z"/><path d="M19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8z"/>'],
+    promitheftes: ['prom', '<path d="M2 6h12v10H2z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>'],
+    prosopiko: ['pros', '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16.5 14.2a5 5 0 0 1 5.5 5"/>'],
+    ypografi: ['ypo', '<path d="M15.5 4.5l4 4L8 20H4v-4z"/><path d="M13 7l4 4"/>']
+  };
+  const item = (view, title, sub, pill) => `<button class="row sec sec-${ICO[view][0]}" onclick="go({name:'${view}'})">
+    <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true">${ICO[view][1]}</svg></span>
+    <div class="t"><div class="n">${title}</div><div class="s">${sub}</div></div><span class="pill ${pill[0]}">${pill[1]}</span></button>`;
 
   shell('', `
     <div class="store">${esc(S.pelatis.eponymia)}</div>
     <div class="date">${MERES[d.getDay()]} ${d.getDate()} ${MINON[d.getMonth()]}</div>
     ${alerts}
-    <button class="btn scanbtn" onclick="scan()">📷 Σκανάρισμα QR συσκευής</button>
     <div class="list" style="margin-top:14px">
       ${item('thermokrasies', 'Θερμοκρασίες', 'Μετρήσεις σήμερα', thermo)}
-      ${item('katharismos', 'Καθαρισμός', 'Πρόγραμμα καθαρισμού και απολύμανσης',
+      ${item('katharismos', 'Καθαρισμός', 'Καθαρισμός και απολύμανση',
              kth.length ? (kthPending ? ['warn', kthPending + ' εκκρεμ' + (kthPending === 1 ? 'εί' : 'ούν')] : ['ok', '✓ όλα']) : ['neutral', '—'])}
       ${item('promitheftes', 'Προμηθευτές', 'Λίστα προμηθευτών', ['neutral', prom.length])}
-      ${item('prosopiko', 'Προσωπικό', 'Λίστα προσωπικού και πιστοποιητικά υγείας',
+      ${item('prosopiko', 'Προσωπικό', 'Πιστοποιητικά υγείας',
              pr30 ? ['warn', pr30 + (pr30 === 1 ? ' πιστοποιητικό' : ' πιστοποιητικά')] : ['neutral', pros.length])}
-      ${item('ypografi', 'Υπογραφή μήνα', 'Από τον υπεύθυνο της επιχείρησης', ypg ? ['bad', 'Εκκρεμεί'] : ['ok', '✓'])}
+      ${item('ypografi', 'Υπογραφή μήνα', 'Από τον υπεύθυνο', ypg ? ['bad', 'Εκκρεμεί'] : ['ok', '✓'])}
     </div>`, {home: true});
 }
 
