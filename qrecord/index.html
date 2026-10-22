@@ -511,8 +511,9 @@ function renderHome() {
     </div>
     <button class="btn wide sec" style="margin-top:14px;display:flex;align-items:center;justify-content:center;gap:10px;color:#287B9B;border-color:#287B9B"
       onclick="openArxeio()">📁 Όλες οι καταγραφές${locked() ? ' 🔒' : ''}</button>
-    ${S.exei_myinco ? `<button class="btn wide sec" style="margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px;color:#2D3A4D;border-color:#2D3A4D"
-      onclick="openMyInco()">📂 My InCo — όλα τα έγγραφα της InCo${locked() ? ' 🔒' : ''}</button>` : ''}
+    ${S.exei_myinco ? `<button class="btn wide sec" style="margin-top:8px;display:flex;align-items:center;justify-content:center;gap:12px;color:var(--ink);border-color:var(--ink)"
+      onclick="openMyInco()"><img src="myinco.png" alt="My InCo" style="height:28px;background:#fff;border-radius:8px;padding:3px 8px">
+      <span style="white-space:nowrap">Όλα τα έγγραφα${locked() ? ' 🔒' : ''}</span></button>` : ''}
     ${S.tropos !== 'ΕΝΑ' && S.pin_orismeno ? `<button class="btn wide sec small" style="margin-top:8px;border:0;background:none;color:var(--muted);font-weight:600" onclick="setPin(null, true)">🔑 Αλλαγή PIN υπευθύνου</button>` : ''}
     ${installBox()}`, {home: true});
 }
@@ -549,7 +550,8 @@ function openArxeio() {
   if (!window.open(url, '_blank')) location.href = url;
 }
 
-// ---------- My InCo: το QRecord είναι τμήμα του (22/10 ο χρήστης) — ο φάκελος με όλα τα έγγραφα της InCo
+// ---------- My InCo: το QRecord είναι τμήμα του (22/10 ο χρήστης) — ο φάκελος με όλα τα έγγραφα της InCo.
+// Το «My InCo» ΠΑΝΤΑ με το λογότυπο, ποτέ σαν λέξη (κανόνας χρήστη, βλ. tools/myinco_logo.py).
 function openMyInco() {
   const u = S.tropos === 'ΕΝΑ' ? S.myinco : (UNL && UNL.until > Date.now() ? UNL.myinco : '');
   if (!u) { if (S.tropos === 'ΕΝΑ') toast('Χρειάζεται σύνδεση στο ίντερνετ.', 'bad'); else unlock({name: '__myinco'}); return; }

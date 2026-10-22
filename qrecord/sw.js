@@ -1,8 +1,8 @@
 // QRecord — η εφαρμογή ανοίγει και χωρίς ίντερνετ.
 // Η σελίδα: πρώτα από το δίκτυο (για να έρχονται οι ενημερώσεις), αλλιώς από την αποθήκη.
 // Εικόνες/εικονίδια: από την αποθήκη. Οι κλήσεις στο Google ΔΕΝ περνούν από εδώ.
-const CACHE = 'qrecord-v9';
-const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'logo.png', 'logo_dark.png', 'jsqr.js'];
+const CACHE = 'qrecord-v10';
+const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'logo.png', 'logo_dark.png', 'jsqr.js', 'myinco.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
