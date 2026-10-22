@@ -174,7 +174,7 @@ const kodN = v => String(v || '').trim().toUpperCase().split('').map(c => HOMO[c
 // 23/10: 2 μετρήσεις την ημέρα σε κάθε συσκευή — ΥΠΟΧΡΕΩΣΗ (ελάχιστο), όχι προεπιλογή
 const fores = s => Math.max(2, +s.ana_imera || 0);
 function zesto(s) { return /ΘΕΡΜ/.test(s.typos || ''); }
-function typosLabel(t) { return ({'ΨΥΓΕΙΟ': 'Ψυγείο', 'ΚΑΤΑΨΥΚΤΗΣ': 'Καταψύκτης', 'ΕΝ ΘΕΡΜΩ ΔΙΑΤΗΡΗΣΗ': 'Εν θερμώ διατήρηση', 'ΕΝ ΨΥΧΡΩ ΔΙΑΤΗΡΗΣΗ': 'Εν ψυχρώ διατήρηση'})[t] || t; }
+function typosLabel(t) { return ({'ΨΥΓΕΙΟ': 'Ψυγείο', 'ΚΑΤΑΨΥΚΤΗΣ': 'Καταψύκτης', 'ΕΝ ΘΕΡΜΩ ΔΙΑΤΗΡΗΣΗ': 'Εν θερμώ διατήρηση', 'ΕΝ ΨΥΧΡΩ ΔΙΑΤΗΡΗΣΗ': 'Εν ψυχρώ διατήρηση', 'ΒΙΤΡΙΝΑ ΚΑΤΑΨΥΞΗΣ': 'Βιτρίνα κατάψυξης'})[t] || t; }
 
 // ====================================================================== ποιος πελάτης (από τον σύνδεσμο του QR)
 const Q = new URLSearchParams(location.search);
@@ -580,7 +580,7 @@ function openMyInco() {
 }
 
 // Ομαδοποίηση ανά είδος, με τη σειρά και τους κωδικούς της μελέτης (Ψ, Κ, ΕΨΔ, ΕΘΔ) — 22/10 ο χρήστης
-const OMADES = [['ΨΥΓΕΙΟ', 'Ψυγεία'], ['ΚΑΤΑΨΥΚΤΗΣ', 'Καταψύκτες'], ['ΕΝ ΨΥΧΡΩ ΔΙΑΤΗΡΗΣΗ', 'Εν ψυχρώ διατήρηση'], ['ΕΝ ΘΕΡΜΩ ΔΙΑΤΗΡΗΣΗ', 'Εν θερμώ διατήρηση']];
+const OMADES = [['ΨΥΓΕΙΟ', 'Ψυγεία'], ['ΚΑΤΑΨΥΚΤΗΣ', 'Καταψύκτες'], ['ΕΝ ΨΥΧΡΩ ΔΙΑΤΗΡΗΣΗ', 'Εν ψυχρώ διατήρηση'], ['ΕΝ ΘΕΡΜΩ ΔΙΑΤΗΡΗΣΗ', 'Εν θερμώ διατήρηση'], ['ΒΙΤΡΙΝΑ ΚΑΤΑΨΥΞΗΣ', 'Βιτρίνες κατάψυξης']];
 const fysikh = (a, b) => a.kod.localeCompare(b.kod, 'el', {numeric: true});
 function renderThermokrasies() {
   const gnosta = OMADES.map(o => o[0]);
@@ -608,7 +608,7 @@ let buf = '';
 function renderDevice() {
   const s = S.syskeves.find(x => x.kod === view.s);
   if (!s) { shell('Συσκευή', '<p class="muted">Η συσκευή δεν βρέθηκε. Ίσως αφαιρέθηκε.</p>'); return; }
-  if (view.fresh !== false) { buf = s.typos === 'ΚΑΤΑΨΥΚΤΗΣ' ? '-' : ''; view.fresh = false; history.replaceState(view, '', location.search); }
+  if (view.fresh !== false) { buf = /ΚΑΤΑΨΥ/.test(s.typos || '') ? '-' : ''; /* καταψύκτης & βιτρίνα κατάψυξης: ξεκινά με «−» */ view.fresh = false; history.replaceState(view, '', location.search); }
   const open = S.anoixtes.filter(a => a.s === s.kod).slice(-1)[0];
   const todayList = s.simera.map(m => `<span class="${m.apot === 'ΕΝΤΟΣ' ? 'ok' : 'bad'}">${hhmm(m.ts)} · ${num(m.timi)} °C</span>`).join('');
   // ο κωδικός της μελέτης ΜΕΓΑΛΟΣ, όπως στο αυτοκόλλητο — να βλέπει ότι σκάναρε τη σωστή συσκευή (23/10)
