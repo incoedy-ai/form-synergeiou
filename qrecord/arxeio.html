@@ -39,6 +39,9 @@ th,td{border:1px solid var(--line);padding:5px 7px;text-align:left;vertical-alig
 th{background:var(--box);font-weight:700;color:var(--navy)}
 td.d{width:46px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
 td.miss{color:#9aa8b6;background:#f7f9fb}
+td.klei{color:#5B6B80;background:#EAF2F6;font-weight:700;letter-spacing:.04em}   /* 23/10: δηλωμένη κλειστή μέρα — ΟΧΙ παράλειψη */
+td .yp{display:block;font-size:.78em;color:#5B6B80;font-weight:600}
+th.klei,td.kc.klei{background:#EAF2F6;color:#8EA0B3}
 .out{color:var(--bad);font-weight:700}
 .okc{color:var(--ok);font-weight:700}
 .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -143,9 +146,12 @@ function render(r) {
     const head = `<tr><th>Ημ.</th>${Array.from({length: cols}, (_, i) => `<th>${cols === 1 ? 'Μέτρηση' : cols <= 3 ? (i + 1) + 'η μέτρηση' : (i + 1) + 'η'}</th>`).join('')}</tr>`;
     const row = d => {
       const ms = byDay[d] || [];
-      if (!ms.length) return `<tr><td class="d">${d.slice(8, 10)}</td><td class="miss" colspan="${cols}">—</td></tr>`;
+      const kl = (r.kleistes || {})[d];
+      if (!ms.length) return kl ? `<tr><td class="d">${d.slice(8, 10)}</td><td class="klei" colspan="${cols}">ΚΛΕΙΣΤΑ · ${esc(kl)}</td></tr>`
+                                : `<tr><td class="d">${d.slice(8, 10)}</td><td class="miss" colspan="${cols}">—</td></tr>`;
       return `<tr><td class="d">${d.slice(8, 10)}</td>${Array.from({length: cols}, (_, i) => { const m = ms[i];
-        return m ? `<td class="${m.apot === 'ΕΚΤΟΣ' ? 'out' : ''}">${hhmm(m.ts)} · ${num(m.timi)} °C${m.apot === 'ΕΚΤΟΣ' ? ' ⚠' : ''}</td>` : (i < need ? '<td class="miss">—</td>' : '<td></td>'); }).join('')}</tr>`;
+        return m ? `<td class="${m.apot === 'ΕΚΤΟΣ' ? 'out' : ''}">${hhmm(m.ts)} · ${num(m.timi)} °C${m.apot === 'ΕΚΤΟΣ' ? ' ⚠' : ''}${m.yp ? `<span class="yp">${esc(m.yp)}</span>` : ''}</td>`
+                 : (i < need ? (kl ? '<td class="klei">κλειστά</td>' : '<td class="miss">—</td>') : '<td></td>'); }).join('')}</tr>`;
     };
     const half = Math.ceil(days.length / 2);
     const tbl = list => `<table>${head}${list.map(row).join('')}</table>`;
@@ -169,12 +175,13 @@ function render(r) {
   const nDays = new Date(+r.minas.slice(0, 4), +r.minas.slice(5, 7), 0).getDate();
   const SX = {ΗΜΕΡΗΣΙΑ: 'Η', ΕΒΔΟΜΑΔΙΑΙΑ: 'Ε', ΜΗΝΙΑΙΑ: 'Μ'};
   const kpar = (r.paratiriseis || []).filter(x => x.enotita === 'ΚΑΘΑΡΙΣΜΟΣ');
-  const kath = r.katharismos.length ? `<div class="kgrid"><table class="kt"><tr><th class="kl">ΧΩΡΟΣ ΕΦΑΡΜΟΓΗΣ</th>${Array.from({length: nDays}, (_, i) => `<th>${i + 1}</th>`).join('')}<th>Σύνολο</th></tr>
+  const kleistiM = i => !!(r.kleistes || {})[r.minas + '-' + String(i + 1).padStart(2, '0')];
+  const kath = r.katharismos.length ? `<div class="kgrid"><table class="kt"><tr><th class="kl">ΧΩΡΟΣ ΕΦΑΡΜΟΓΗΣ</th>${Array.from({length: nDays}, (_, i) => `<th${kleistiM(i) ? ' class="klei" title="κλειστά"' : ''}>${i + 1}</th>`).join('')}<th>Σύνολο</th></tr>
     ${r.katharismos.map(k => { const meres = new Set(k.imerominies.map(t => +t.slice(8, 10)));
       return `<tr><td class="kl">(${SX[k.syxnotita] || 'Η'}) ${esc(kefalaia(k.xoros))}${k.kod_meletis ? ' (' + esc(k.kod_meletis) + ')' : ''}</td>
-        ${Array.from({length: nDays}, (_, i) => `<td class="kc">${meres.has(i + 1) ? '✓' : ''}</td>`).join('')}
+        ${Array.from({length: nDays}, (_, i) => `<td class="kc${kleistiM(i) ? ' klei' : ''}">${meres.has(i + 1) ? '✓' : kleistiM(i) ? 'Κ' : ''}</td>`).join('')}
         <td class="kc ${k.egine >= k.anamenomeno ? 'okc' : 'out'}">${k.egine}/${k.anamenomeno}</td></tr>`; }).join('')}</table></div>
-    <p class="note">(Η) Ημερήσιο – (Ε) Εβδομαδιαίο – (Μ) Μηνιαίο · Σύνολο = περίοδοι που έγιναν / περίοδοι που έπρεπε</p>
+    <p class="note">(Η) Ημερήσιο – (Ε) Εβδομαδιαίο – (Μ) Μηνιαίο · Κ = κλειστά · Σύνολο = περίοδοι που έγιναν / περίοδοι που έπρεπε (χωρίς τις κλειστές μέρες)</p>
     <h3>Παρατηρήσεις</h3>${kpar.length ? `<table>${kpar.map(x => `<tr><td style="width:110px">${ddmm(x.ts)} ${hhmm(x.ts)}</td><td>${esc(x.keimeno)}</td></tr>`).join('')}</table>` : '<p class="note">—</p>'}`
     : '<p class="note">Δεν έχει οριστεί πρόγραμμα καθαρισμού.</p>';
 

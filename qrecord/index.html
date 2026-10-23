@@ -124,6 +124,8 @@ footer{margin-top:28px;text-align:center;color:var(--muted);font-size:13px}
 .btn.hero svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .install{margin-top:14px;padding:14px;border-radius:16px;border:2px dashed #287B9B;background:var(--surface);display:flex;flex-direction:column;gap:10px}
 .install b{color:#287B9B}
+#kmeres .choice.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.lnkb{border:0;background:none;color:#287B9B;font-weight:700;padding:0;font-size:inherit;cursor:pointer}
 .btn.scanbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#287B9B;color:#fff}
 </style>
 </head>
@@ -198,7 +200,7 @@ const LOCK_MIN = 5;
 let UNL = null;              // {pin, until, promitheftes, prosopiko}
 const locked = () => !!S && S.tropos !== 'ΕΝΑ' && !(UNL && UNL.until > Date.now());
 const touchUnlock = () => { if (UNL) UNL.until = Date.now() + LOCK_MIN * 60000; };
-const LOCKED_VIEWS = ['promitheftes', 'prom_form', 'prosopiko', 'pros_form', 'ypografi'];
+const LOCKED_VIEWS = ['promitheftes', 'prom_form', 'prosopiko', 'pros_form', 'ypografi', 'rythmiseis'];
 
 // ====================================================================== δεδομένα: ό,τι είπε ο server + ό,τι περιμένει να σταλεί
 let base = LS.get(KEY_STATE, null);
@@ -212,6 +214,7 @@ function rebuild() {
   if (st.simera !== t) {            // η αποθηκευμένη εικόνα είναι από άλλη μέρα
     st.syskeves.forEach(s => s.simera = []);
     st.simera = t;
+    st.kleisto_simera = kleistiJS(st.kleista, t);
   }
   if (st.tropos !== 'ΕΝΑ') {
     st.promitheftes = UNL && UNL.until > Date.now() ? clone(UNL.promitheftes) : null;
@@ -261,6 +264,52 @@ function enqueue(it) {
   rebuild();
   flush();
   return true;
+}
+
+// ====================================================================== 23/10: «Ποιος είστε;» · κλειστές μέρες · αργίες
+// Κάθε μέτρηση/καθαρισμός/ενέργεια γράφει ΚΑΙ ποιος υπάλληλος την έκανε (λίστα από το Προσωπικό, χωρίς PIN).
+// Σε κοινό τάμπλετ η επιλογή κρατά 10' χωρίς χρήση και μετά ξαναρωτά.
+const YP_MIN = 10, KEY_YP = 'qr_yp_' + P;
+let YP = LS.get(KEY_YP, null);
+const ypOk = () => !!YP && YP.until > Date.now();
+function ypTouch() { if (YP) { YP.until = Date.now() + YP_MIN * 60000; LS.set(KEY_YP, YP); } }
+function poiosEisai(then) {
+  const onomata = (S && S.prosopiko_onomata) || [];
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><h3>👤 Ποιος είστε;</h3>
+    <p>Το όνομά σας γράφεται στην καταγραφή.</p>
+    <div class="acts" style="max-height:50vh;overflow:auto">${onomata.map((o, i) => `<button class="btn wide sec" data-i="${i}">${esc(o)}</button>`).join('')}</div>
+    <input class="f" id="ypAllo" placeholder="${onomata.length ? 'Άλλος: γράψτε το όνομα' : 'Γράψτε το όνομά σας'}" maxlength="60" style="margin-top:10px">
+    <div class="acts" style="margin-top:10px"><button class="btn wide" id="ypGo">Συνέχεια</button><button class="btn wide sec" id="ypNo">Ακύρωση</button></div></div>`;
+  document.body.appendChild(bg);
+  const done = onoma => { YP = {onoma, until: Date.now() + YP_MIN * 60000}; LS.set(KEY_YP, YP); bg.remove(); if (then) then(); else render(); };
+  bg.querySelectorAll('[data-i]').forEach(b => b.onclick = () => done(onomata[+b.dataset.i]));
+  $('#ypGo', bg).onclick = () => { const v = $('#ypAllo', bg).value.trim(); if (v) done(v); else $('#ypAllo', bg).focus(); };
+  $('#ypNo', bg).onclick = () => bg.remove();
+}
+function allagiYp() { YP = null; LS.set(KEY_YP, null); poiosEisai(); }
+
+/** Κλειστά μια μέρα; (ίδιος κανόνας με τον server: περίοδοι + σταθερές μέρες εβδομάδας) */
+function kleistiJS(kl, day) {
+  if (!kl) return null;
+  for (const x of kl.periodoi || []) if (day >= x.apo && day <= x.eos) return x.per || 'Κλειστά';
+  if ((kl.meres || []).includes(new Date(day + 'T12:00:00').getDay())) return 'Κλειστά (σταθερή μέρα)';
+  return null;
+}
+/** Επίσημες αργίες (σταθερές + κινητές από το ορθόδοξο Πάσχα). */
+function pasxa(y) {               // ορθόδοξο Πάσχα (Meeus, ιουλιανό + 13 μέρες, 1900–2099)
+  const a = y % 4, b = y % 7, c = y % 19, d = (19 * c + 15) % 30, e = (2 * a + 4 * b - d + 34) % 7;
+  const m = Math.floor((d + e + 114) / 31), dd = ((d + e + 114) % 31) + 1;
+  const x = new Date(y, m - 1, dd); x.setDate(x.getDate() + 13); return x;
+}
+function argies(y) {
+  const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const P0 = pasxa(y), mov = (n, t) => { const d = new Date(P0); d.setDate(d.getDate() + n); return [iso(d), t]; };
+  return [[y + '-01-01', 'Πρωτοχρονιά'], [y + '-01-06', 'Θεοφάνεια'], mov(-48, 'Καθαρά Δευτέρα'), [y + '-03-25', '25η Μαρτίου'],
+          mov(-2, 'Μεγάλη Παρασκευή'), mov(0, 'Κυριακή του Πάσχα'), mov(1, 'Δευτέρα του Πάσχα'), [y + '-05-01', 'Πρωτομαγιά'],
+          mov(50, 'Αγίου Πνεύματος'), [y + '-08-15', 'Δεκαπενταύγουστος'], [y + '-10-28', '28η Οκτωβρίου'],
+          [y + '-12-25', 'Χριστούγεννα'], [y + '-12-26', 'Σύναξη Θεοτόκου']].sort();
 }
 
 // ====================================================================== επικοινωνία με το Google
@@ -380,7 +429,7 @@ function render() {
   if (LOCKED_VIEWS.includes(view.name)) touchUnlock();
   ({home: renderHome, thermokrasies: renderThermokrasies, device: renderDevice, energeia: renderEnergeia, katharismos: renderKatharismos,
     promitheftes: renderPromitheftes, prom_form: renderPromForm, prosopiko: renderProsopiko, pros_form: renderProsForm,
-    ypografi: renderYpografi})[view.name]();
+    ypografi: renderYpografi, rythmiseis: renderRythmiseis})[view.name]();
 }
 
 function renderNoLink() {
@@ -496,7 +545,9 @@ function renderHome() {
   // Αρχική = ΠΕΝΤΕ ίσα κουμπιά, ένα ανά αρχείο (22/10 ο χρήστης: η λίστα ψυγείων μαζί με τα άλλα αρχεία μπερδεύει).
   const need = S.syskeves.reduce((a, s) => a + fores(s), 0);
   const done = S.syskeves.reduce((a, s) => a + Math.min(s.simera.length, fores(s)), 0);
-  const thermo = S.anoixtes.length ? ['bad', 'Εκτός ορίου'] : !need ? ['neutral', '—'] : done >= need ? ['ok', '✓ ' + done + '/' + need] : [done ? 'warn' : 'neutral', done + '/' + need];
+  const kleisto = S.kleisto_simera;
+  const thermo = S.anoixtes.length ? ['bad', 'Εκτός ορίου'] : !need ? ['neutral', '—'] : done >= need ? ['ok', '✓ ' + done + '/' + need]
+               : kleisto ? ['neutral', 'Κλειστά'] : [done ? 'warn' : 'neutral', done + '/' + need];
   const kth = S.katharismos, kthPending = kth.filter(k => !k.egine).length;
   const kl = locked();
   const prom = (S.promitheftes || []).filter(x => x['ΚΑΤΑΣΤΑΣΗ'] !== 'ΑΝΕΝΕΡΓΟΣ');
@@ -518,7 +569,8 @@ function renderHome() {
 
   shell('', `
     <div class="store">${esc(S.pelatis.eponymia)}</div>
-    <div class="date">${MERES[d.getDay()]} ${d.getDate()} ${MINON[d.getMonth()]}</div>
+    <div class="date">${MERES[d.getDay()]} ${d.getDate()} ${MINON[d.getMonth()]}${ypOk() ? ` · <button class="lnkb" onclick="allagiYp()">👤 ${esc(YP.onoma)} · αλλαγή</button>` : ''}</div>
+    ${kleisto ? `<div class="alert" style="background:var(--key)"><div><b>🔒 Σήμερα: ${esc(kleisto)}</b><br><span class="muted">Δεν χρειάζονται μετρήσεις σήμερα. Αν δουλέψετε, καταγράψτε κανονικά.</span></div></div>` : ''}
     ${alerts}
     <button class="btn hero" onclick="scan()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M7 12h10"/></svg>Σκανάρισμα QR συσκευής</button>
     <div class="list" style="margin-top:14px">
@@ -532,6 +584,7 @@ function renderHome() {
     </div>
     <button class="btn wide sec" style="margin-top:14px;display:flex;align-items:center;justify-content:center;gap:10px;color:#287B9B;border-color:#287B9B"
       onclick="openArxeio()">📁 Όλες οι καταγραφές${locked() ? ' 🔒' : ''}</button>
+    <button class="btn wide sec" style="margin-top:8px" onclick="go({name:'rythmiseis'})">⚙ Ρυθμίσεις καταστήματος${locked() ? ' 🔒' : ''}</button>
     ${S.exei_myinco ? `<button class="btn wide sec" style="margin-top:8px;display:flex;align-items:center;justify-content:center;gap:12px;color:var(--ink);border-color:var(--ink)"
       onclick="openMyInco()"><img src="myinco.png" alt="My InCo" style="height:28px;background:#fff;border-radius:8px;padding:3px 8px">
       <span style="white-space:nowrap">Όλα τα έγγραφα${locked() ? ' 🔒' : ''}</span></button>` : ''}
@@ -652,13 +705,15 @@ function drawDisp() {
 async function saveMetrisi() {
   const s = S.syskeves.find(x => x.kod === view.s), v = value();
   if (v === null) return;
+  if (!ypOk()) return poiosEisai(saveMetrisi);
+  ypTouch();
   const apot = apotelesma(s, v);
   if (apot === 'ΕΚΤΟΣ') {
     const ok = await ask('Εκτός ορίου', `Η τιμή ${num(v)} °C είναι εκτός ορίου (${s.orio}). Είναι σωστή;`, 'Ναι, είναι σωστή', 'Όχι, θα τη διορθώσω');
     if (!ok) return;
   }
   const open = S.anoixtes.filter(a => a.s === s.kod).slice(-1)[0];
-  const it = {typ: 'metrisi', id: newId('M'), ts: now(), s: s.kod, timi: v, apot};
+  const it = {typ: 'metrisi', id: newId('M'), ts: now(), s: s.kod, timi: v, apot, ypallilos: YP.onoma};
   if (open) it.epanametrisi_tou = open.id;
   if (!enqueue(it)) return;
   if (apot === 'ΕΝΤΟΣ') {
@@ -681,10 +736,12 @@ function renderEnergeia() {
   const a = S.anoixtes.find(x => x.id === view.id);
   if (!a) { go({name: 'home'}, true); return; }
   const s = S.syskeves.find(x => x.kod === a.s) || {onoma: a.s};
-  const opts = zesto(s) ? ENERGEIES_ZESTO : ENERGEIES_KRYO;
+  const vasikes = zesto(s) ? ENERGEIES_ZESTO : ENERGEIES_KRYO, dikes = (S.dikes_energeies || []).filter(x => !vasikes.includes(x));
+  const opts = vasikes.slice(0, -1).concat(dikes, [LATHOS]);       // οι δικές τους πριν από το «Λάθος πληκτρολόγηση»
   chosen = [];
   shell('Τι έγινε;', `
     <div class="alert bad"><div><b>${esc(s.onoma)}: ${num(a.timi)} °C</b> στις ${hhmm(a.ts)} · όριο ${esc(a.orio)}</div></div>
+    ${s.odigia ? `<div class="alert warn" style="background:var(--warn-bg)"><div><b>Οδηγία καταστήματος:</b><br>${esc(s.odigia)}</div></div>` : ''}
     <p class="muted">Επιλέξτε τι κάνατε. Μπορείτε να επιλέξετε περισσότερα από ένα.</p>
     <div class="list">${opts.map((o, i) => `<button class="choice" data-i="${i}" onclick="toggleChoice(this)"><span class="box"></span>${esc(o)}</button>`).join('')}</div>
     <label class="f" for="sx">Σχόλιο (προαιρετικό)</label><textarea class="f" id="sx" maxlength="300"></textarea>
@@ -701,8 +758,10 @@ function toggleChoice(b) {
   $('#saveE').disabled = !chosen.length && !$('#sx').value.trim();
 }
 async function saveEnergeia() {
+  if (!ypOk()) return poiosEisai(saveEnergeia);
+  ypTouch();
   const sx = $('#sx').value.trim();
-  if (!enqueue({typ: 'energeia', id: newId('E'), metrisi_id: view.id, ts: now(), energeia: chosen.join(', ') || 'Άλλο', sxolio: sx})) return;
+  if (!enqueue({typ: 'energeia', id: newId('E'), metrisi_id: view.id, ts: now(), energeia: chosen.join(', ') || 'Άλλο', sxolio: sx, ypallilos: YP.onoma})) return;
   if (chosen.includes(LATHOS)) {          // λάθος πληκτρολόγηση: η σωστή τιμή γράφεται ΤΩΡΑ, όχι σε 30'
     const a = S.anoixtes.find(x => x.id === view.id);
     toast('Γράψτε τώρα τη σωστή τιμή');
@@ -710,6 +769,81 @@ async function saveEnergeia() {
   }
   await ask('Καταχωρήθηκε', `Ξαναμετρήστε τη θερμοκρασία σε ${REMEASURE_MIN} λεπτά. Η υπενθύμιση φαίνεται στην αρχική οθόνη.`, 'Εντάξει');
   go({name: 'home'}, true);
+}
+
+// ---------------------------------------------------------------------- 23/10: ρυθμίσεις καταστήματος (υπεύθυνος)
+const MERES_SEIRA = [[1, 'Δευ'], [2, 'Τρι'], [3, 'Τετ'], [4, 'Πεμ'], [5, 'Παρ'], [6, 'Σαβ'], [0, 'Κυρ']];
+function renderRythmiseis() {
+  const kl = S.kleista || {meres: [], periodoi: []}, ep = S.epeigon || {kathe: false, vathmoi: 3, lepta: 30, syskeves: []}, t = today();
+  const energes = (kl.periodoi || []).filter(x => x.eos >= t);
+  const yparxei = (d, per) => (kl.periodoi || []).some(x => x.apo === d && x.eos === d);
+  const arg = argies(+t.slice(0, 4)).concat(argies(+t.slice(0, 4) + 1)).filter(([d]) => d >= t).slice(0, 14);
+  const sk = S.syskeves.slice().sort(fysikh);
+  const box = (on, txt, attrs) => `<button class="choice${on ? ' on' : ''}" ${attrs} onclick="this.classList.toggle('on');$('.box',this).textContent=this.classList.contains('on')?'✓':''"><span class="box">${on ? '✓' : ''}</span>${txt}</button>`;
+  shell('Ρυθμίσεις καταστήματος', `
+    <h2>Κλειστές μέρες</h2>
+    <p class="muted" style="margin-top:0">Όταν το κατάστημα είναι κλειστό δεν μετράει ως παράλειψη και δεν φεύγουν υπενθυμίσεις. Στο μηνιαίο αρχείο γράφει «ΚΛΕΙΣΤΑ».</p>
+    ${S.kleisto_simera ? `<div class="alert" style="background:var(--key)"><b>Σήμερα: ${esc(S.kleisto_simera)}</b></div>`
+      : `<button class="btn wide sec" onclick="rythmisi({nees_periodoi:[{apo:today(),eos:today(),per:'Κλειστά σήμερα'}]})">🔒 Σήμερα κλειστά</button>`}
+    <label class="f">Κλειστά κάθε εβδομάδα</label>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px" id="kmeres">${MERES_SEIRA.map(([n, l]) =>
+      `<button class="choice${(kl.meres || []).includes(n) ? ' on' : ''}" data-n="${n}" style="justify-content:center;padding:10px 0;min-height:48px" onclick="this.classList.toggle('on')">${l}</button>`).join('')}</div>
+    <button class="btn wide sec small" style="margin-top:8px" onclick="rythmisi({kleistes_meres:[...document.querySelectorAll('#kmeres .on')].map(b=>+b.dataset.n)})">Αποθήκευση μερών</button>
+    ${energes.length ? `<label class="f">Κλειστά (τρέχοντα και επόμενα)</label><div class="list">${energes.map(x => `<div class="row" style="min-height:52px">
+      <div class="t"><div class="n" style="font-size:15px">${esc(x.per)}</div><div class="s">${ddmm(x.apo)}${x.eos !== x.apo ? ' – ' + ddmm(x.eos) : ''}</div></div>
+      <button class="btn small sec" onclick="rythmisi({akyroseis:['${esc(x.id)}']})">Ακύρωση</button></div>`).join('')}</div>` : ''}
+    <label class="f">Νέα περίοδος (π.χ. διακοπές)</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input class="f" type="date" id="kApo" min="${t}"><input class="f" type="date" id="kEos" min="${t}"></div>
+    <input class="f" id="kPer" placeholder="Περιγραφή (π.χ. Διακοπές)" maxlength="80" style="margin-top:8px">
+    <button class="btn wide sec small" style="margin-top:8px" onclick="neaPeriodos()">+ Προσθήκη περιόδου</button>
+    <label class="f">Επίσημες αργίες — τσεκάρετε όσες είστε κλειστά</label>
+    <div class="list" id="kargies">${arg.map(([d, n]) => yparxei(d) ? `<div class="choice on" style="opacity:.6"><span class="box">✓</span>${esc(n)} · ${ddmm(d)}</div>`
+      : box(false, esc(n) + ' · ' + ddmm(d), `data-d="${d}" data-n="${esc(n)}"`)).join('')}</div>
+    <button class="btn wide sec small" style="margin-top:8px" onclick="rythmisi({nees_periodoi:[...document.querySelectorAll('#kargies .on[data-d]')].map(b=>({apo:b.dataset.d,eos:b.dataset.d,per:b.dataset.n}))})">Αποθήκευση αργιών</button>
+
+    <h2>Τι είναι επείγον</h2>
+    <p class="muted" style="margin-top:0">Το επείγον φεύγει αμέσως με email στον υπεύθυνο. Τα υπόλοιπα μπαίνουν στη σύνοψη. Στο αρχείο καταγράφονται πάντα όλα.</p>
+    <div class="list">${box(ep.kathe, 'Κάθε μέτρηση εκτός ορίου — αμέσως', 'id="eKathe"')}</div>
+    <label class="f" for="eVath">Αμέσως αν είναι πάνω από … °C εκτός ορίου (0 = όχι)</label>
+    <input class="f" id="eVath" type="number" min="0" max="30" step="0.5" value="${ep.vathmoi}">
+    <label class="f" for="eLepta">Αν δεν διορθωθεί (σωστή επαναμέτρηση) μέσα σε</label>
+    <select class="f" id="eLepta">${[[15, '15 λεπτά'], [30, '30 λεπτά'], [60, '1 ώρα'], [120, '2 ώρες'], [0, 'Ποτέ — όχι ειδοποίηση']].map(([v, l]) =>
+      `<option value="${v}" ${+ep.lepta === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+    <label class="f">Για ποιες συσκευές ισχύει</label>
+    <div class="list" id="eSk">${sk.map(x => box(!ep.syskeves.length || ep.syskeves.includes(x.kod), esc(x.kod + ' · ' + x.onoma), `data-k="${esc(x.kod)}"`)).join('')}</div>
+    <button class="btn wide" style="margin-top:10px" onclick="apothEpeigon()">Αποθήκευση</button>
+
+    <h2>Οδηγία όταν βγει εκτός ορίου</h2>
+    <p class="muted" style="margin-top:0">Εμφανίζεται στο τάμπλετ σε όποιον μέτρησε και μπαίνει στο email του επείγοντος.</p>
+    ${sk.map(x => `<label class="f" for="od_${esc(x.kod)}">${esc(x.kod + ' · ' + x.onoma)}</label>
+      <textarea class="f" id="od_${esc(x.kod)}" data-k="${esc(x.kod)}" maxlength="300" placeholder="π.χ. Μεταφέρετε τα προϊόντα στον καταψύκτη 2 και καλέστε τον υπεύθυνο">${esc(x.odigia || '')}</textarea>`).join('')}
+    <button class="btn wide" style="margin-top:10px" onclick="rythmisi({odigies:Object.fromEntries([...document.querySelectorAll('textarea[data-k]')].map(t=>[t.dataset.k,t.value.trim()]))})">Αποθήκευση οδηγιών</button>
+
+    <h2>Δικές μας διορθωτικές ενέργειες</h2>
+    <p class="muted" style="margin-top:0">Προστίθενται στη λίστα «Τι έγινε;». Μία ανά γραμμή.</p>
+    <textarea class="f" id="dEn" style="min-height:120px" maxlength="2400" placeholder="π.χ. Μεταφέρθηκαν στον καταψύκτη 2">${esc((S.dikes_energeies || []).join('\n'))}</textarea>
+    <button class="btn wide" style="margin-top:10px" onclick="rythmisi({dikes_energeies:$('#dEn').value.split('\n').map(x=>x.trim()).filter(Boolean)})">Αποθήκευση ενεργειών</button>`);
+}
+function neaPeriodos() {
+  const apo = $('#kApo').value, eos = $('#kEos').value || apo, per = $('#kPer').value.trim() || 'Κλειστά';
+  if (!apo) { toast('Διαλέξτε ημερομηνία «από».', 'bad'); return; }
+  if (eos < apo) { toast('Το «έως» είναι πριν από το «από».', 'bad'); return; }
+  rythmisi({nees_periodoi: [{apo, eos, per}]});
+}
+function apothEpeigon() {
+  const all = [...document.querySelectorAll('#eSk [data-k]')], on = all.filter(b => b.classList.contains('on')).map(b => b.dataset.k);
+  if (!on.length) { toast('Διαλέξτε τουλάχιστον μία συσκευή.', 'bad'); return; }
+  rythmisi({epeigon: {kathe: $('#eKathe').classList.contains('on'), vathmoi: +$('#eVath').value || 0, lepta: +$('#eLepta').value,
+                       syskeves: on.length === all.length ? [] : on}});
+}
+async function rythmisi(extra) {
+  touchUnlock();
+  let r = null;
+  try { r = await api(null, Object.assign({action: 'rythmiseis', p: P, k: K, d: D, pin: UNL ? UNL.pin : ''}, extra)); } catch (e) {}
+  if (!r) { toast('Χρειάζεται σύνδεση στο ίντερνετ.', 'bad'); return; }
+  if (!r.ok) { toast(r.error || 'σφάλμα', 'bad'); return; }
+  if (r.tropos !== 'ΕΝΑ') { r.promitheftes = null; r.prosopiko = null; r.v = ''; r.myinco = ''; }
+  base = r; LS.set(KEY_STATE, base); rebuild(); render(); toast('✓ Αποθηκεύτηκε');
 }
 
 // ---------------------------------------------------------------------- καθαρισμός
@@ -741,9 +875,11 @@ function kathCount() {
   if ($('#kpar') && !$('#kpar').oninput) $('#kpar').oninput = kathCount;
 }
 function kathSave() {
+  if (!ypOk()) return poiosEisai(kathSave);
+  ypTouch();
   const sel = [...document.querySelectorAll('.choice.on[data-k]:not([disabled])')].map(b => b.dataset.k);
   const par = $('#kpar').value.trim(), ts = now();
-  sel.forEach(kod => enqueue({typ: 'katharismos', id: newId('K'), ts, simeio: kod}));
+  sel.forEach(kod => enqueue({typ: 'katharismos', id: newId('K'), ts, simeio: kod, ypallilos: YP.onoma}));
   if (par) enqueue({typ: 'paratirisi', id: newId('R'), ts, enotita: 'ΚΑΘΑΡΙΣΜΟΣ', keimeno: par});
   toast(sel.length ? '✓ Καταχωρήθηκαν ' + sel.length : '✓ Η παρατήρηση καταχωρήθηκε');
   render();

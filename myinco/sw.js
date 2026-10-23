@@ -1,6 +1,6 @@
 // My InCo — η σελίδα πρώτα από το δίκτυο (για να έρχονται οι ενημερώσεις), αλλιώς από την αποθήκη.
 // Εικόνες/εικονίδια από την αποθήκη. Οι κλήσεις στο Google ΔΕΝ περνούν από εδώ (τα έγγραφα δεν μένουν στη συσκευή).
-const CACHE = 'myinco-v4';
+const CACHE = 'myinco-v5';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png',
                'katheto.png', 'pc.png', 'ws.png', 'eye.png', 'yachting.png', 'qrecord.png', 'word.png', 'pdfjs/pdf.min.js', 'pdfjs/pdf.worker.min.js'];
 

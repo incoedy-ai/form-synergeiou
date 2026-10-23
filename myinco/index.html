@@ -300,7 +300,7 @@ function ypotitlos(t) {
     if (g) { const yp = g.eidi.reduce((s, x) => s + x.yp, 0), ap = g.eidi.every(x => x.ap);
       return (ap ? (yp ? yp + (yp === 1 ? ' υπέρβαση' : ' υπερβάσεις') : 'Αποτελέσματα εντός ορίων') : 'Αναμένονται αποτελέσματα') + (w.epomeni ? ' · επόμενη ' + ddmm(w.epomeni) : ''); }
     return 'Δειγματοληψίες, αποτελέσματα, κατόψεις'; }
-  if (D.qrecord) { const x = QR_SIMERA; return x ? `QRecord: σήμερα ${x.egin} από ${x.ola}` + (x.anoixtes ? ` · ${x.anoixtes} ανοιχτ` + (x.anoixtes === 1 ? 'ή απόκλιση' : 'ές αποκλίσεις') : '') : 'QRecord, έγγραφα συμβουλευτικής'; }
+  if (D.qrecord) { const x = QR_SIMERA; return x && x.kleisto && !x.egin ? 'QRecord: σήμερα κλειστά' : x ? `QRecord: σήμερα ${x.egin} από ${x.ola}` + (x.anoixtes ? ` · ${x.anoixtes} ανοιχτ` + (x.anoixtes === 1 ? 'ή απόκλιση' : 'ές αποκλίσεις') : '') : 'QRecord, έγγραφα συμβουλευτικής'; }
   return 'Έγγραφα συμβουλευτικής';
 }
 V.home = () => {
@@ -375,7 +375,7 @@ let QR_SIMERA = null;
 (() => { const c = SS.get('mi_qr_' + P); const d = new Date(); if (c && c.sim === d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')) QR_SIMERA = Object.assign(c, {t: 0}); })();          // {t, sim, apo, ektos, anoixtes, ws} — κρατιέται 2' για να μη ρωτάει σε κάθε οθόνη
 function qrKarta() {
   const q = D.qrecord, x = QR_SIMERA;
-  const st = x ? `Σήμερα ${x.egin} από ${x.ola} μετρήσεις · ${x.ektos ? `<span style="color:#FFD2D2;font-weight:800">${x.ektos} εκτός ορίου${x.anoixtes ? ' — ' + x.anoixtes + ' ανοιχτ' + (x.anoixtes === 1 ? 'ή' : 'ές') : ''}</span>` : '0 εκτός ορίου'}` : 'φόρτωση…';
+  const st = x && x.kleisto && !x.egin ? `🔒 Σήμερα κλειστά · ${esc(x.kleisto)}` : x ? `Σήμερα ${x.egin} από ${x.ola} μετρήσεις · ${x.ektos ? `<span style="color:#FFD2D2;font-weight:800">${x.ektos} εκτός ορίου${x.anoixtes ? ' — ' + x.anoixtes + ' ανοιχτ' + (x.anoixtes === 1 ? 'ή' : 'ές') : ''}</span>` : '0 εκτός ορίου'}` : 'φόρτωση…';
   return `<div class="qrb"><span class="qi"><img src="qrecord.png" alt=""></span><div style="flex:1;min-width:0"><b>QRecord</b><small id="qrst">${st}</small></div></div>
     <div class="cd"><div class="lb">ΑΡΧΕΙΑ ΤΕΚΜΗΡΙΩΣΗΣ</div>
     <button class="f" onclick="anoixe('../qrecord/arxeio.html?' + new URLSearchParams({p: D.qrecord.p, v: D.qrecord.v}))"><span class="ic">LIVE</span>
@@ -387,7 +387,7 @@ async function qrSimera() {
   if (QR_SIMERA && Date.now() - QR_SIMERA.t < 120000) return QR_SIMERA;
   const q = D.qrecord, d = new Date(), pad = n => String(n).padStart(2, '0');
   const m = d.getFullYear() + '-' + pad(d.getMonth() + 1), sim = m + '-' + pad(d.getDate());
-  let egin = 0, ola = 0, ektos = 0, anoixtes = 0;
+  let egin = 0, ola = 0, ektos = 0, anoixtes = 0, kleisto = '';
   if (q.tropos !== 'ΕΝΑ' && q.k) {
     // γρήγορη «σημερινή» κλήση (~2× πιο γρήγορη από τον μήνα)· οι επαναμετρήσεις (epan) δεν μετράνε ως 2η μέτρηση
     const r = await (await fetch(QR_API + '?' + new URLSearchParams({action: 'init', p: q.p, k: q.k}))).json();
@@ -397,6 +397,7 @@ async function qrSimera() {
       ola += n; egin += Math.min(n, sm.filter(x => !x.epan).length); ektos += sm.filter(x => x.apot === 'ΕΚΤΟΣ').length;
     });
     anoixtes = (r.anoixtes || []).length;
+    if (r.kleisto_simera) kleisto = r.kleisto_simera;      // 23/10: δηλωμένη κλειστή μέρα
   } else {          // «ένα κινητό»: το κινητό του υπευθύνου δεν είναι καταχωρημένο → ο μήνας με το κλειδί ανάγνωσης
     const r = await (await fetch(QR_API + '?' + new URLSearchParams({action: 'arxeio', p: q.p, v: q.v, m}))).json();
     if (!r.ok) throw new Error(r.error || 'QRecord');
@@ -406,7 +407,7 @@ async function qrSimera() {
       (s.apokliseis || []).forEach(a => { if ((a.ts || '').slice(0, 10) === sim) ektos++; if (!a.kleisti) anoixtes++; });
     });
   }
-  QR_SIMERA = {t: Date.now(), egin, ola, ektos, anoixtes, sim};
+  QR_SIMERA = {t: Date.now(), egin, ola, ektos, anoixtes, sim, kleisto};
   SS.set('mi_qr_' + P, QR_SIMERA);
   return QR_SIMERA;
 }
