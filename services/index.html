@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>InCo Services</title>
+<meta name="description" content="InCo Services · η εφαρμογή του συνεργείου">
+<meta name="theme-color" content="#2D3A4D">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="InCo Services">
+<!-- InCo Services — εφαρμογή ΣΥΝΕΡΓΕΙΟΥ (23/10/2026, βήμα 1: είσοδος, ραντεβού, καρτέλα, πλοηγοί).
+     Server: services/apps_script/Code.gs (όλα POST). Τα ραντεβού έρχονται ΚΑΤΕΥΘΕΙΑΝ από το Google Calendar.
+     Αποφάσεις χρήστη: όνομα + ΔΙΚΟ PIN ο καθένας · ραντεβού ΑΝΑ ΑΤΟΜΟ, όχημα σε κάθε γραμμή, τα κοινά και στους δύο ·
+     «Και οι δύο» ΜΟΝΟ ο ιδιοκτήτης · Waze για κάθε ραντεβού + «Διαδρομή ημέρας» σε Google Maps ·
+     «Άνοιγμα Εντολής» = η υπάρχουσα φόρμα συνεργείου, γεμάτη (ο σύνδεσμος του ημερολογίου). -->
+<style>
+:root{--bg:#EEF6F9;--surface:#fff;--ink:#2D3A4D;--muted:#5B6B80;--line:#DCE8EE;--accent:#2DAFCE;--blue:#287B9B;--navy:#2D3A4D;
+  --ok:#17875A;--bad:#C93030;--bad-bg:#FCE6E6;--warn:#8A5A00;--warn-bg:#FFF4DC;--key:#EAF2F6;--tag:#E3F3F8}
+@media (prefers-color-scheme:dark){:root{--bg:#18212D;--surface:#212C3A;--ink:#EEF3F7;--muted:#A9B8C8;--line:#2F3D4E;
+  --accent:#65C7D7;--blue:#65C7D7;--ok:#4CC38A;--bad:#FF7070;--bad-bg:#3D1E22;--warn:#F2C46D;--warn-bg:#3A2F17;--key:#2A3747;--tag:#20384A}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+button,input{font:inherit;color:inherit} button{cursor:pointer}
+.wrap{max-width:560px;margin:0 auto;padding:0 14px calc(28px + env(safe-area-inset-bottom))}
+.plate{background:#fff;border-radius:12px;display:inline-grid;place-items:center}
+.hd{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 2px 10px;border-bottom:1px solid var(--line)}
+.hd .lg{flex:none;padding:5px 8px} .hd .lg img{height:38px;display:block}
+.hd .who{flex:1;min-width:0;text-align:right}
+.hd .who b{display:block;font-size:15px;font-weight:800} .hd .who small{display:block;font-size:12.5px;font-weight:700;color:var(--muted)}
+.hd .ib{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:12px;height:44px;min-width:44px;font-size:19px}
+/* ημέρα */
+.dn{display:flex;align-items:center;gap:8px;margin-top:12px}
+.dn button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:12px;height:44px;min-width:44px;font-size:20px;font-weight:800}
+.dn .d{flex:1;text-align:center;font-weight:800;font-size:16px} .dn .d small{display:block;font-size:12px;color:var(--muted);font-weight:700}
+.dn .td{font-size:13px;padding:0 10px;min-width:auto}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.chips button{border:0;border-radius:20px;padding:8px 13px;background:var(--key);color:var(--muted);font-weight:800;font-size:14px}
+.chips button.on{background:var(--navy);color:#fff}
+.rte{text-decoration:none;display:flex;gap:8px;justify-content:center;align-items:center;width:100%;margin-top:10px;border:1.5px solid #B9DCE8;background:var(--surface);color:var(--blue);border-radius:13px;min-height:46px;font-weight:800;font-size:15px}
+/* λίστα */
+.ri{display:flex;gap:11px;align-items:center;width:100%;text-align:left;margin-top:9px;background:var(--surface);border:2px solid transparent;border-radius:15px;padding:11px 12px;box-shadow:0 3px 10px rgba(30,45,65,.06)}
+.ri.sel{border-color:var(--accent)}
+.ri .tm{flex:none;width:54px;font-size:17px;font-weight:800;color:var(--blue)}
+.ri .bd{flex:1;min-width:0}
+.ri b{display:block;font-size:14.5px;font-weight:800;line-height:1.25}
+.ri small{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-top:2px}
+.ri .tg{margin-top:5px;display:flex;gap:4px;flex-wrap:wrap}
+.ri em,.st{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.4px;color:var(--blue);background:var(--tag);border-radius:5px;padding:2px 7px}
+.ri .ch{flex:none;font-size:24px;color:#9DB0C0}
+.ri.off{opacity:.55} .ri.off b{text-decoration:line-through}
+.st.ak{color:var(--bad);background:var(--bad-bg)} .st.an{color:var(--warn);background:var(--warn-bg)}
+.empty{padding:26px 6px;color:var(--muted);font-size:15px;font-weight:700;text-align:center}
+.upd{margin-top:14px;text-align:center;font-size:12px;color:var(--muted);font-weight:700}
+/* καρτέλα */
+.kh{background:var(--navy);color:#fff;border-radius:0 0 22px 22px;margin:0 -14px;padding:calc(12px + env(safe-area-inset-top)) 16px 16px}
+.kh .tp{display:flex;align-items:center;gap:10px}
+.kh .back{flex:none;border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:12px;height:44px;min-width:44px;font-size:22px}
+.kh small{font-size:12.5px;font-weight:800;letter-spacing:1px;color:#9FD9EA}
+.kh h2{margin:8px 0 0;font-size:19px;line-height:1.25}
+.kh .ad{margin-top:6px;font-size:14px;font-weight:700;color:#DCEAF0}
+.b3{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-top:12px}
+.b3 a,.b3 button{display:flex;flex-direction:column;align-items:center;gap:3px;justify-content:center;text-decoration:none;background:var(--surface);border:1.5px solid var(--line);border-radius:13px;min-height:64px;color:var(--blue);font-weight:800;font-size:13px}
+.b3 .i{font-size:22px;line-height:1}
+.go{display:flex;gap:8px;justify-content:center;align-items:center;text-decoration:none;margin-top:10px;background:var(--accent);color:#2D3A4D;border-radius:14px;min-height:54px;font-weight:800;font-size:17px}
+.go.off{background:var(--key);color:var(--muted);pointer-events:none}
+.cd{background:var(--surface);border-radius:16px;padding:13px 15px;margin-top:12px;box-shadow:0 3px 10px rgba(30,45,65,.06)}
+.lb{font-size:11.5px;font-weight:800;letter-spacing:1.3px;color:var(--blue);margin-top:10px} .lb:first-child{margin-top:0}
+.vl{font-size:15px;font-weight:700;margin-top:3px;white-space:pre-line}
+.warnb{margin-top:12px;border-radius:13px;padding:11px 13px;font-weight:800;font-size:14.5px}
+.warnb.ak{background:var(--bad-bg);color:var(--bad)} .warnb.an{background:var(--warn-bg);color:var(--warn)}
+/* PIN */
+.pinv{text-align:center;padding-top:10px}
+.pinv .big img{height:120px} .pinv h2{margin:16px 0 4px;font-size:21px} .pinv p{margin:0;color:var(--muted);font-weight:600;font-size:14.5px}
+.who2{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.who2 button{border:1.5px solid var(--line);background:var(--surface);border-radius:22px;padding:10px 18px;font-weight:800;font-size:16px}
+.who2 button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.dots{display:flex;justify-content:center;gap:16px;margin:20px 0 6px;min-height:22px}
+.dots i{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--ink);display:block} .dots i.f{background:var(--ink)}
+.err{color:var(--bad);font-weight:700;min-height:22px;font-size:14px;margin-top:6px}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:10px;max-width:420px;margin-left:auto;margin-right:auto}
+.keys button{height:60px;border:0;border-radius:14px;background:var(--surface);font-size:24px;font-weight:700;box-shadow:0 2px 6px rgba(30,45,65,.08)}
+.keys button:active{transform:scale(.97)} .keys .ok{background:var(--accent);color:#2D3A4D}
+.btn{border:0;border-radius:14px;min-height:50px;padding:0 18px;font-weight:800;font-size:16px;background:var(--ink);color:var(--bg);width:100%}
+.btn.sec{background:var(--surface);color:var(--ink);border:1px solid var(--line)} .btn.cy{background:var(--accent);color:#2D3A4D}
+label.fl{display:block;font-size:13.5px;color:var(--muted);margin:14px 0 6px;font-weight:700}
+input.fi{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:10px 12px;font-size:17px}
+.mbg{position:fixed;inset:0;z-index:30;background:rgba(10,16,24,.5);display:flex;align-items:flex-end;justify-content:center}
+.mod{background:var(--surface);width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.lnk{display:block;margin:14px auto 0;background:none;border:0;color:var(--blue);font-weight:800;font-size:15px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:700;max-width:calc(100% - 32px)}
+.toast.bad{background:var(--bad);color:#fff}
+.install{margin-top:18px;padding:14px;border-radius:16px;border:2px dashed var(--blue);background:var(--surface);display:flex;flex-direction:column;gap:10px;font-size:14.5px}
+.install b{color:var(--blue)}
+.foot{display:flex;gap:8px;margin-top:22px} .foot .btn{flex:1;min-height:44px;font-size:14.5px}
+.spin{margin:60px auto;width:38px;height:38px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* τάμπλετ: λίστα αριστερά, καρτέλα δεξιά */
+@media (min-width:900px){
+  .wrap.two{max-width:1200px;display:grid;grid-template-columns:minmax(360px,42%) 1fr;gap:0 22px;align-items:start}
+  .wrap.two .hd{grid-column:1/-1}
+  .wrap.two .pane{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto;padding-bottom:20px}
+  .wrap.two .kh{margin:12px 0 0;border-radius:20px;padding-top:14px}
+  .wrap.two .kh .back{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="spin"></div></div>
+<script>
+'use strict';
+const API = 'https://script.google.com/macros/s/AKfycbzLQ1kDECWA2B0I2yPG_SeR7I4YqIz4Gbc1Phdd090V5YmZIamAe7sV1acxwW5dwKH9AQ/exec';
+const MERES = ['Κυριακή','Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο'];
+const AITIATIKI = {'ΒΑΓΓΕΛΗΣ': 'Βαγγέλη', 'ΑΡΧΙΜΗΔΗΣ': 'Αρχιμήδη'};
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) { } }
+};
+const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const simera = () => iso(new Date());
+const imera = s => { const x = new Date(s + 'T12:00:00'); return MERES[x.getDay()] + ' ' + s.slice(8, 10) + '/' + s.slice(5, 7); };
+const synList = r => String(r.syn || '').toUpperCase().split(/\s+/).filter(Boolean);
+const wide = () => matchMedia('(min-width:900px)').matches;
+
+// συνεδρία: μένει στη συσκευή μέχρι να λήξει (12 ώρες) ή να πατηθεί «Έξοδος»
+let SESS = LS.get('srv_sess', null);       // {s, egw:{onoma,syn,idioktitis}}
+let XR = [], D = null, DAY = simera(), FILTRO = null, SEL = null, view = {name: 'load'}, fortosi = null;
+
+async function api(action, extra) {
+  const body = JSON.stringify(Object.assign({action}, SESS && {s: SESS.s}, extra || {}));
+  let last;
+  for (let i = 0; i < 3; i++) {
+    try {
+      const r = await fetch(API, {method: 'POST', body, headers: {'Content-Type': 'text/plain;charset=utf-8'}});
+      const j = await r.json();
+      if (j && j.exo) { exodos(true); throw new Error(j.error); }
+      return j;
+    } catch (e) {
+      last = e;
+      if (String(e.message || '').includes('έληξε')) throw e;
+      await new Promise(r => setTimeout(r, 900 * (i + 1)));
+    }
+  }
+  throw new Error(navigator.onLine === false ? 'Χρειάζεται σύνδεση στο ίντερνετ.' : 'Δεν απαντά ο server — δοκιμάστε ξανά.');
+}
+function toast(msg, bad) {
+  const t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 3200);
+}
+function exodos(silent) {
+  SESS = null; D = null; SEL = null; LS.del('srv_sess'); closeModal();
+  view = {name: 'pin'}; if (!silent) render(); else render();
+}
+
+// ------------------------------------------------------------- εκκίνηση
+async function start() {
+  if (SESS) { view = {name: 'home'}; render(); return fortose(); }
+  await fortoseXristes();
+}
+async function fortoseXristes() {
+  view = {name: 'load'}; render();
+  try {
+    const r = await api('xristes');
+    if (!r.ok) throw new Error(r.error || 'σφάλμα');
+    XR = r.xristes;
+    view = {name: 'pin', syn: LS.get('srv_last', (XR[0] || {}).syn)};
+  } catch (e) { view = {name: 'msg', t: 'Δεν υπάρχει σύνδεση', m: e.message}; }
+  render();
+}
+
+// ------------------------------------------------------------- είσοδος
+let PIN = '', PIN1 = '';
+const V = {};
+V.load = () => '<div class="spin"></div>';
+V.msg = () => `<div class="pinv"><span class="big"><img src="logo.png" alt="InCo Services" style="height:70px"></span>
+  <h2>${esc(view.t)}</h2><p>${esc(view.m || '')}</p><div style="margin-top:20px"><button class="btn" onclick="location.reload()">Ξανά</button></div></div>`;
+function dots() { return Array.from({length: Math.max(4, PIN.length)}, (_, i) => `<i class="${i < PIN.length ? 'f' : ''}"></i>`).join(''); }
+function keypad() {
+  return `<div class="keys">${[1,2,3,4,5,6,7,8,9].map(n => `<button onclick="kp('${n}')">${n}</button>`).join('')}
+    <button onclick="kp('del')" aria-label="Σβήσιμο">⌫</button><button onclick="kp('0')">0</button>
+    <button class="ok" onclick="kp('ok')">✓</button></div>`;
+}
+V.pin = () => {
+  PIN = '';
+  const x = XR.find(r => r.syn === view.syn) || XR[0] || {};
+  const neo = x.syn && !x.pin;
+  const titlos = !neo ? 'Γράψτε το PIN σας' : (PIN1 ? 'Ξανά το ίδιο PIN' : 'Πρώτη φορά: ορίστε το PIN σας');
+  const ypo = !neo ? 'το ξέρετε μόνο εσείς' : (PIN1 ? 'για επιβεβαίωση' : '4 έως 8 ψηφία · θα το γράφετε κάθε φορά');
+  return `<div class="pinv"><span class="big"><img src="logo.png" alt="InCo Services" style="height:64px"></span>
+    <div class="who2">${XR.map(r => `<button class="${r.syn === x.syn ? 'on' : ''}" onclick="dialexe('${esc(r.syn)}')">${esc(r.onoma)}</button>`).join('')}</div>
+    <h2>${titlos}</h2><p>${ypo}</p>
+    <div class="dots" id="dots">${dots()}</div><div class="err" id="err"></div>${keypad()}</div>`;
+};
+function dialexe(syn) { PIN1 = ''; view = {name: 'pin', syn}; LS.set('srv_last', syn); render(); }
+function kp(c) {
+  const err = $('#err'); if (err) err.textContent = '';
+  if (c === 'del') PIN = PIN.slice(0, -1);
+  else if (c === 'ok') return pinOk();
+  else if (PIN.length < 8) PIN += c;
+  $('#dots').innerHTML = dots();
+}
+async function pinOk() {
+  const err = $('#err');
+  if (PIN.length < 4) { err.textContent = 'Το PIN έχει 4 έως 8 ψηφία.'; return; }
+  const x = XR.find(r => r.syn === view.syn) || XR[0];
+  if (!x.pin && !PIN1) { PIN1 = PIN; render(); return; }                       // ορισμός: 1η πληκτρολόγηση
+  if (!x.pin && PIN1 !== PIN) { PIN1 = ''; render(); $('#err').textContent = 'Τα δύο PIN δεν ήταν ίδια — ξανά από την αρχή.'; return; }
+  err.textContent = 'Έλεγχος…';
+  try {
+    const r = await api(x.pin ? 'syndesi' : 'orismos_pin', {syn: x.syn, pin: PIN});
+    PIN = ''; PIN1 = '';
+    if (!r.ok) { $('#dots').innerHTML = dots(); err.textContent = r.error; if (r.xoris_pin) { x.pin = false; render(); } return; }
+    SESS = {s: r.s, egw: r.egw}; LS.set('srv_sess', SESS); LS.set('srv_last', x.syn);
+    FILTRO = null; DAY = simera(); view = {name: 'home'}; render(); fortose();
+  } catch (e) { err.textContent = e.message; }
+}
+
+// ------------------------------------------------------------- ραντεβού
+async function fortose(siopila) {
+  if (fortosi) return fortosi;
+  if (!siopila) { D = null; render(); }
+  fortosi = (async () => {
+    try {
+      const r = await api('rantevou', {d: DAY});
+      if (!r.ok) throw new Error(r.error);
+      D = Object.assign(r, {day: DAY, pote: new Date()});
+      SESS.egw = r.egw; LS.set('srv_sess', SESS);
+      if (!FILTRO) FILTRO = r.egw.syn;
+      if (SEL && !D.rantevou.find(x => x.id === SEL)) SEL = null;
+    } catch (e) { if (!siopila) { D = {error: e.message}; } else toast(e.message, true); }
+    fortosi = null; render();
+  })();
+  return fortosi;
+}
+function orata() {
+  if (!D || !D.rantevou) return [];
+  if (FILTRO === 'OLOI' && SESS.egw.idioktitis) return D.rantevou;
+  return D.rantevou.filter(r => synList(r).includes(FILTRO));
+}
+function ypotitlos(r) {
+  const meta = [r.periohi, r.och];
+  const syn = synList(r);
+  if (FILTRO === 'OLOI') meta.push(syn.map(s => (XR.find(x => x.syn === s) || {onoma: s}).onoma || s).join(' & '));
+  else { const alloi = syn.filter(s => s !== FILTRO); if (alloi.length) meta.push('μαζί με ' + alloi.map(s => AITIATIKI[s] || s).join(', ')); }
+  return meta.filter(Boolean).join(' · ');
+}
+function grammi(r) {
+  const off = r.katastasi === 'akyrosi' || r.katastasi === 'anavoli';
+  const st = r.katastasi === 'akyrosi' ? '<span class="st ak">ΑΚΥΡΩΘΗΚΕ</span>' : r.katastasi === 'anavoli' ? '<span class="st an">ΑΝΑΒΟΛΗ</span>' : '';
+  const tags = String(r.typ || '').split(',').map(t => t.trim()).filter(Boolean).map(t => `<em>${esc(t)}</em>`).join('');
+  return `<button class="ri${off ? ' off' : ''}${SEL === r.id ? ' sel' : ''}" onclick="anoixeKartela('${esc(r.id)}')">
+    <span class="tm">${esc(r.ora)}</span><span class="bd"><b>${esc(r.pelatis || r.kod)}</b><small>${esc(ypotitlos(r))}</small>
+    <span class="tg">${st}${tags}</span></span><span class="ch">›</span></button>`;
+}
+function diadromiUrl(list) {
+  const st = list.filter(r => !r.katastasi).map(dieuthinsi).filter(Boolean);
+  if (!st.length) return '';
+  const u = new URL('https://www.google.com/maps/dir/');
+  u.searchParams.set('api', '1');
+  u.searchParams.set('destination', st[st.length - 1]);
+  if (st.length > 1) u.searchParams.set('waypoints', st.slice(0, -1).join('|'));
+  u.searchParams.set('travelmode', 'driving');
+  return u.toString();
+}
+function header() {
+  const e = SESS.egw;
+  return `<div class="hd"><span class="plate lg"><img src="logo.png" alt="InCo Services"></span>
+    <div class="who"><b>${esc(e.onoma)}</b><small>${D && D.pote ? 'ενημέρωση ' + D.pote.toTimeString().slice(0, 5) : ''}</small></div>
+    <button class="ib" onclick="fortose(true)" aria-label="Ανανέωση">⟳</button></div>`;
+}
+function lista() {
+  const e = SESS.egw;
+  const tabs = XR.map(x => x.syn).filter((s, i, a) => a.indexOf(s) === i);
+  if (!tabs.includes(e.syn)) tabs.unshift(e.syn);
+  const metra = s => D && D.rantevou ? D.rantevou.filter(r => synList(r).includes(s)).length : '';
+  let h = `<div class="dn"><button onclick="allaxeMera(-1)" aria-label="Προηγούμενη">‹</button>
+    <div class="d">${DAY === simera() ? 'Σήμερα' : imera(DAY)}<small>${DAY === simera() ? imera(DAY) : (DAY > simera() ? 'μελλοντική' : 'περασμένη')}</small></div>
+    ${DAY !== simera() ? '<button class="td" onclick="allaxeMera(0)">Σήμερα</button>' : ''}
+    <button onclick="allaxeMera(1)" aria-label="Επόμενη">›</button></div>`;
+  h += `<div class="chips">${tabs.map(s => `<button class="${FILTRO === s ? 'on' : ''}" onclick="filtro('${esc(s)}')">${esc((XR.find(x => x.syn === s) || {onoma: s}).onoma)}${D && D.rantevou ? ' · ' + metra(s) : ''}</button>`).join('')}
+    ${e.idioktitis ? `<button class="${FILTRO === 'OLOI' ? 'on' : ''}" onclick="filtro('OLOI')">Και οι δύο${D && D.rantevou ? ' · ' + D.rantevou.length : ''}</button>` : ''}</div>`;
+  if (!D) return h + '<div class="spin"></div>';
+  if (D.error) return h + `<div class="empty">${esc(D.error)}<br><br><button class="btn sec" onclick="fortose()">Ξανά</button></div>`;
+  const list = orata();
+  const url = diadromiUrl(list);
+  if (url) h += `<a class="rte" href="${esc(url)}" target="_blank" rel="noopener">🗺 Διαδρομή ημέρας · Google Maps</a>`;
+  h += list.length ? list.map(grammi).join('') : '<div class="empty">Δεν υπάρχουν ραντεβού.</div>';
+  return h;
+}
+V.home = () => {
+  if (wide() && D && D.rantevou) {
+    const r = SEL && D.rantevou.find(x => x.id === SEL);
+    return header() + `<div class="pane">${lista()}${foot()}</div><div class="pane">${r ? kartela(r) : '<div class="empty" style="margin-top:60px">Πατήστε ένα ραντεβού για να δείτε την καρτέλα.</div>'}</div>`;
+  }
+  return header() + lista() + foot();
+};
+function foot() {
+  return installBox() + `<div class="foot"><button class="btn sec" onclick="allagiPin()">🔑 Αλλαγή PIN</button>
+    <button class="btn sec" onclick="exodos()">Έξοδος</button></div>`;
+}
+function allaxeMera(n) {
+  if (n === 0) DAY = simera();
+  else { const x = new Date(DAY + 'T12:00:00'); x.setDate(x.getDate() + n); DAY = iso(x); }
+  SEL = null; fortose();
+}
+function filtro(s) { FILTRO = s; render(); }
+
+// ------------------------------------------------------------- καρτέλα
+function dieuthinsi(r) { return (r.topothesia || r.diey_ef || r.diey || '').trim(); }
+function tilefona(r) {
+  return [r.til, r.tilep].join(' / ').split(/[\/,;]+/).map(t => t.replace(/[^\d+]/g, '')).filter(t => t.length >= 10)
+    .filter((t, i, a) => a.indexOf(t) === i);
+}
+function kartela(r) {
+  const nav = dieuthinsi(r);
+  const tel = tilefona(r);
+  const waze = nav ? 'https://waze.com/ul?q=' + encodeURIComponent(nav) + '&navigate=yes' : '';
+  let h = `<div class="kh"><div class="tp"><button class="back" onclick="piso()" aria-label="Πίσω">‹</button>
+    <small>${esc(r.kod)} · ${esc(r.ora)}${r.eos ? '–' + esc(r.eos) : ''}</small></div>
+    <h2>${esc(r.pelatis || r.kod)}</h2><div class="ad">📍 ${esc(r.diey_ef || r.diey || r.topothesia || '—')}</div></div>`;
+  if (r.katastasi) h += `<div class="warnb ${r.katastasi === 'akyrosi' ? 'ak' : 'an'}">${r.katastasi === 'akyrosi' ? 'Το ραντεβού ΑΚΥΡΩΘΗΚΕ' : 'Το ραντεβού ΑΝΑΒΛΗΘΗΚΕ'}</div>`;
+  h += `<div class="b3">${waze ? `<a href="${esc(waze)}" target="_blank" rel="noopener"><span class="i">🧭</span>Waze</a>` : ''}
+    ${tel.map((t, i) => `<a href="tel:${esc(t)}"><span class="i">📞</span>Κλήση${tel.length > 1 ? ' ' + (i + 1) : ''}</a>`).join('')}
+    ${r.katopsi ? `<a href="${esc(r.katopsi)}" target="_blank" rel="noopener"><span class="i">📐</span>Κάτοψη</a>` : ''}</div>`;
+  h += `<a class="go${r.katastasi ? ' off' : ''}" href="${esc(r.entoli)}" target="_blank" rel="noopener">✎ Άνοιγμα Εντολής</a>`;
+  const pedio = (l, v) => v ? `<div class="lb">${l}</div><div class="vl">${esc(v)}</div>` : '';
+  h += `<div class="cd">${pedio('ΕΡΓΑΣΙΑ', [r.typ, r.meth].filter(Boolean).join(' · '))}${pedio('ΣΥΝΕΡΓΕΙΟ · ΟΧΗΜΑ', [r.syn, r.och].filter(Boolean).join(' · '))}
+    ${pedio('ΤΗΛΕΦΩΝΟ', [r.til, r.tilep].filter((v, i, a) => v && a.indexOf(v) === i).join(' / '))}${pedio('ΠΡΟΒΛΗΜΑ', r.prob)}${pedio('ΣΗΜΕΙΩΣΕΙΣ', r.sim)}</div>`;
+  if (r.aparait) h += `<div class="cd"><div class="lb">ΥΛΙΚΑ ΠΟΥ ΧΡΕΙΑΖΟΝΤΑΙ</div><div class="vl">${esc(r.aparait)}</div></div>`;
+  if (r.egkat) h += `<div class="cd"><div class="lb">ΕΞΟΠΛΙΣΜΟΣ ΠΕΛΑΤΗ</div><div class="vl">${esc(r.egkat)}</div></div>`;
+  return h;
+}
+V.kartela = () => {
+  const r = D && D.rantevou && D.rantevou.find(x => x.id === SEL);
+  if (!r) { view = {name: 'home'}; return V.home(); }
+  return kartela(r);
+};
+function anoixeKartela(id) {
+  SEL = id;
+  if (wide()) { render(); return; }
+  history.pushState({k: 1}, ''); view = {name: 'kartela'}; render(); scrollTo(0, 0);
+}
+function piso() { if (history.state && history.state.k) history.back(); else { view = {name: 'home'}; render(); } }
+addEventListener('popstate', () => { if (view.name === 'kartela') { view = {name: 'home'}; render(); } });
+addEventListener('resize', () => { if (view.name === 'home' || view.name === 'kartela') { if (wide() && view.name === 'kartela') view = {name: 'home'}; render(); } });
+
+// ------------------------------------------------------------- αλλαγή PIN
+function allagiPin() {
+  openModal(`<h3 style="margin:0 0 6px">🔑 Αλλαγή PIN</h3>
+    <label class="fl">Τωρινό PIN</label><input class="fi" id="po" type="password" inputmode="numeric" maxlength="8">
+    <label class="fl">Νέο PIN (4 έως 8 ψηφία)</label><input class="fi" id="p1" type="password" inputmode="numeric" maxlength="8">
+    <label class="fl">Ξανά το νέο</label><input class="fi" id="p2" type="password" inputmode="numeric" maxlength="8">
+    <div class="err" id="err"></div><button class="btn cy" onclick="allagiPinOk()">Αλλαγή</button><button class="lnk" onclick="closeModal()">Άκυρο</button>`);
+}
+async function allagiPinOk() {
+  const po = $('#po').value, p1 = $('#p1').value, p2 = $('#p2').value, err = $('#err');
+  if (!/^\d{4,8}$/.test(p1)) return err.textContent = 'Το PIN θέλει 4 έως 8 ψηφία.';
+  if (p1 !== p2) return err.textContent = 'Τα δύο PIN δεν είναι ίδια.';
+  try { const r = await api('allagi_pin', {pin: po, neo: p1}); if (!r.ok) return err.textContent = r.error; closeModal(); toast('✓ Το PIN άλλαξε'); }
+  catch (e) { err.textContent = e.message; }
+}
+
+// ------------------------------------------------------------- εγκατάσταση στη συσκευή
+let installEvt = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if (view.name === 'home') render(); });
+addEventListener('appinstalled', () => { installEvt = null; LS.set('srv_installed', true); if (view.name === 'home') render(); });
+const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function installBox() {
+  if (standalone() || LS.get('srv_installed', false)) return '';
+  if (installEvt) return `<div class="install"><div><b>Βάλτε το InCo Services στη συσκευή</b><br>Ένα εικονίδιο στην οθόνη — τα ραντεβού με ένα άγγιγμα.</div>
+    <button class="btn" style="background:var(--blue);color:#fff" onclick="doInstall()">📲 Εγκατάσταση</button></div>`;
+  if (isIOS()) return `<div class="install"><div><b>Βάλτε το InCo Services στο iPhone/iPad</b></div>
+    <div>1. Πατήστε <b>Κοινοποίηση</b> (⬆) στο Safari.<br>2. Επιλέξτε <b>«Προσθήκη στην οθόνη Αφετηρίας»</b>.</div></div>`;
+  return '';
+}
+async function doInstall() {
+  if (!installEvt) return;
+  installEvt.prompt();
+  const r = await installEvt.userChoice.catch(() => null);
+  installEvt = null;
+  if (r && r.outcome === 'accepted') { LS.set('srv_installed', true); toast('✓ Μπήκε στην οθόνη σας'); }
+  render();
+}
+
+// ------------------------------------------------------------- σχεδίαση
+function render() {
+  if ((view.name === 'home' || view.name === 'kartela') && !SESS) view = {name: 'pin'};
+  const two = view.name === 'home' && wide() && D && D.rantevou;
+  $('#app').className = 'wrap' + (two ? ' two' : '');
+  $('#app').innerHTML = (V[view.name] || V.load)();
+}
+function openModal(html) { closeModal(); const bg = document.createElement('div'); bg.className = 'mbg'; bg.id = 'mbg';
+  bg.innerHTML = `<div class="mod" role="dialog" aria-modal="true">${html}</div>`; bg.addEventListener('click', e => { if (e.target === bg) closeModal(); });
+  document.body.appendChild(bg); }
+function closeModal() { const m = $('#mbg'); if (m) m.remove(); }
+// ανανέωση: κάθε 5 λεπτά όσο είναι ανοιχτή + όταν ξαναγυρίζει μπροστά
+setInterval(() => { if (SESS && !document.hidden && view.name !== 'pin') fortose(true); }, 5 * 60000);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && SESS && D && D.pote && Date.now() - D.pote.getTime() > 60000) {
+    if (DAY !== simera() && D.day === DAY && Date.now() - D.pote.getTime() > 6 * 3600000) DAY = simera();
+    fortose(true);
+  }
+});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+start();
+</script>
+</body>
+</html>
