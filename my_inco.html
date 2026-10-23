@@ -154,9 +154,10 @@
   // να ξέρει ο πελάτης ποιο κατάστημα βλέπει (ΛΟΥΜΙΔΗΣ ΑΘΗΝΑ / ΠΕΙΡΑΙΑΣ).
   var per = dec('periohi');
   if (epon && per && dec('ypok') === '1' && !dec('skafos')) epon += ' · ' + per.toUpperCase();
-  var el = document.getElementById('who');
-  el.innerHTML = (epon ? '<b>' + epon.replace(/[<>&]/g, '') + '</b>' : '') +
-                 (kod ? 'κωδικός ' + kod.replace(/[<>&]/g, '') : '');
-  if (epon) document.title = 'My InCo — ' + epon;
+  // 23/10/2026: ο κωδικός μπαίνει ΜΠΡΟΣΤΑ στην επωνυμία, όπως στα ζωντανά
+  // έντυπα («Α438 · ΚΑΦΕΚΟΠΤΕΙΑ ΛΟΥΜΙΔΗ ΑΒΕΕ · ΑΘΗΝΑ»), και στον τίτλο καρτέλας.
+  var line = [kod, epon].filter(Boolean).join(' · ').replace(/[<>&]/g, '');
+  document.getElementById('who').innerHTML = '<b>' + line + '</b>';
+  document.title = 'My InCo — ' + line;
 })();
 </script>
