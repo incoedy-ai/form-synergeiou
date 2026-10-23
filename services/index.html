@@ -214,6 +214,8 @@ async function pinOk() {
   err.textContent = 'Έλεγχος…';
   try {
     const r = await api(x.pin ? 'syndesi' : 'orismos_pin', {syn: x.syn, pin: PIN});
+    // το Google μπορεί να χάσει την απάντηση → η επανάληψη βρίσκει το PIN ήδη γραμμένο: μπαίνουμε με το ίδιο
+    if (!x.pin && !r.ok && /Υπάρχει ήδη PIN/.test(r.error || '')) { x.pin = true; const r2 = await api('syndesi', {syn: x.syn, pin: PIN}); Object.assign(r, r2); }
     PIN = ''; PIN1 = '';
     if (!r.ok) { $('#dots').innerHTML = dots(); err.textContent = r.error; if (r.xoris_pin) { x.pin = false; render(); } return; }
     SESS = {s: r.s, egw: r.egw}; LS.set('srv_sess', SESS); LS.set('srv_last', x.syn);
@@ -259,7 +261,9 @@ function grammi(r) {
     <span class="tg">${st}${tags}</span></span><span class="ch">›</span></button>`;
 }
 function diadromiUrl(list) {
-  const st = list.filter(r => !r.katastasi).map(dieuthinsi).filter(Boolean);
+  // σήμερα: μόνο όσα δεν έχουν τελειώσει ακόμα (από εκεί που είσαι, στα επόμενα)
+  const tora = new Date().toTimeString().slice(0, 5);
+  const st = list.filter(r => !r.katastasi && (DAY !== simera() || (r.eos || r.ora) > tora)).map(dieuthinsi).filter(Boolean);
   if (!st.length) return '';
   const u = new URL('https://www.google.com/maps/dir/');
   u.searchParams.set('api', '1');
