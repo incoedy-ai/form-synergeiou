@@ -41,20 +41,38 @@ button,input{font:inherit;color:inherit} button{cursor:pointer}
 .chips button{border:0;border-radius:20px;padding:8px 13px;background:var(--key);color:var(--muted);font-weight:800;font-size:14px}
 .chips button.on{background:var(--navy);color:#fff}
 .rte{text-decoration:none;display:flex;gap:8px;justify-content:center;align-items:center;width:100%;margin-top:10px;border:1.5px solid #B9DCE8;background:var(--surface);color:var(--blue);border-radius:13px;min-height:46px;font-weight:800;font-size:15px}
+/* χρώματα όπως στο ημερολόγιο: ΑΡΧΙΜΗΔΗΣ μωβ · ΒΑΓΓΕΛΗΣ ΤΥΡΚΟΥΑΖ (Google colorId 7 «Peacock» #46D6DB — ο χρήστης 23/10:
+   «ο Βαγγέλης έχει τυρκουάζ όχι μπλε») · μαζί μπλε · άλλος · αναβολή κίτρινο · ακύρωση απαλό κόκκινο */
+:root{--t1:#7B4FB8;--t2:#46D6DB;--t9:#3F5FB0;--t10:#65C7D7;--anav:#F6BF26;--canc-bg:#FDECEA;--canc-fg:#C0392B}
+.ri.t1,.kh.t1{background:var(--t1)} .ri.t2,.kh.t2{background:var(--t2)} .ri.t9,.kh.t9{background:var(--t9)} .ri.t10,.kh.t10{background:var(--t10)}
+.ri.t1,.ri.t9{color:#fff} .ri.t1 .tm,.ri.t9 .tm,.ri.t1 small,.ri.t9 small,.ri.t1 .ch,.ri.t9 .ch{color:#fff}
+.ri.t1 small,.ri.t9 small{opacity:.88}
+.ri.t1 em,.ri.t9 em,.ri.t1 .st.mz,.ri.t9 .st.mz{color:#fff;background:rgba(255,255,255,.2)}
+.ri.t2 em,.ri.t2 .st.mz{color:#2D3A4D;background:rgba(255,255,255,.45)}
+.ri.t2,.ri.t2 .tm,.ri.t2 small,.ri.t2 .ch,.ri.t10,.ri.t10 .tm,.ri.t10 small,.ri.t10 .ch{color:#2D3A4D}
+.kh.t2,.kh.t2 .ad,.kh.t10,.kh.t10 .ad,.kh.an,.kh.an .ad{color:#2D3A4D} .kh.t2 small,.kh.t10 small,.kh.an small{color:#2D3A4D;opacity:.75}
+.kh.t2 .back,.kh.t10 .back,.kh.an .back{background:rgba(45,58,77,.15);color:#2D3A4D}
+.ri.an,.kh.an{background:var(--anav)} .ri.an,.ri.an .tm,.ri.an small,.ri.an .ch{color:#2D3A4D}
+.ri.ak{background:var(--canc-bg)} .ri.ak,.ri.ak .tm,.ri.ak small,.ri.ak .ch{color:var(--canc-fg)} .kh.ak{background:var(--canc-fg)}
+.ri.ak b{text-decoration:line-through}
+.ri.an em,.ri.ak em{background:rgba(255,255,255,.55)}
+.ri.sel{border-color:var(--ink);box-shadow:0 0 0 3px var(--accent)}
+.chips button.on.c1{background:var(--t1)} .chips button.on.c2{background:var(--t2);color:#2D3A4D} .chips button.on.c9{background:var(--t9)}
 /* Ημέρα | Εβδομάδα | Μήνας */
 .seg{display:flex;background:var(--key);border-radius:13px;padding:4px;margin-top:12px}
 .seg button{flex:1;border:0;background:none;border-radius:10px;min-height:38px;font-weight:800;font-size:14.5px;color:var(--muted)}
 .seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px rgba(30,45,65,.12)}
 .dh{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;margin-top:16px;padding:6px 4px;border:0;border-bottom:2px solid var(--line);background:none;font-weight:800;font-size:15px;color:var(--ink);text-align:left}
 .dh i{font-style:normal;font-size:12.5px;color:var(--muted);white-space:nowrap} .dh.to{border-bottom-color:var(--accent)} .dh.to>span{color:var(--blue)}
-.st.mz{color:#5B3FA0;background:#ECE6F8}
+.st.mz{color:#fff;background:var(--t9)}
 .mg{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:12px}
 .mg>b{text-align:center;font-size:12px;color:var(--muted);padding:2px 0} .mg>b.we{opacity:.6}
 .mg button{position:relative;aspect-ratio:1/1;border:1.5px solid var(--line);background:var(--surface);border-radius:11px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:800}
 .mg button span{font-size:14px} .mg button i{font-style:normal;font-size:11.5px;background:var(--navy);color:#fff;border-radius:9px;min-width:20px;padding:1px 6px}
+.mg button i.c1{background:var(--t1)} .mg button i.c2{background:var(--t2);color:#2D3A4D} .mg button i.c9{background:var(--t9)}
 .mg button u{position:absolute;top:2px;right:3px;text-decoration:none;font-size:11px}
 .mg button.we{background:transparent} .mg button.ek{opacity:.25} .mg button.to{border-color:var(--accent);border-width:2.5px}
-.mg button.ex span{color:var(--blue)} .mg button.mz{background:#F4F0FC}
+.mg button.ex span{color:var(--blue)}
 /* λίστα */
 .ri{display:flex;gap:11px;align-items:center;width:100%;text-align:left;margin-top:9px;background:var(--surface);border:2px solid transparent;border-radius:15px;padding:11px 12px;box-shadow:0 3px 10px rgba(30,45,65,.06)}
 .ri.sel{border-color:var(--accent)}
@@ -65,7 +83,6 @@ button,input{font:inherit;color:inherit} button{cursor:pointer}
 .ri .tg{margin-top:5px;display:flex;gap:4px;flex-wrap:wrap}
 .ri em,.st{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.4px;color:var(--blue);background:var(--tag);border-radius:5px;padding:2px 7px}
 .ri .ch{flex:none;font-size:24px;color:#9DB0C0}
-.ri.off{opacity:.55} .ri.off b{text-decoration:line-through}
 .st.ak{color:var(--bad);background:var(--bad-bg)} .st.an{color:var(--warn);background:var(--warn-bg)}
 .empty{padding:26px 6px;color:var(--muted);font-size:15px;font-weight:700;text-align:center}
 .upd{margin-top:14px;text-align:center;font-size:12px;color:var(--muted);font-weight:700}
@@ -283,6 +300,13 @@ function orata() {
 }
 // κοινό ραντεβού = με πάνω από έναν (π.χ. «ΑΡΧΙΜΗΔΗΣ ΒΑΓΓΕΛΗΣ»)
 const koino = r => synList(r).length > 1;
+// ομάδα χρώματος όπως το InCo Calendar (KeOmada): 1 ΑΡΧΙΜΗΔΗΣ · 2 ΒΑΓΓΕΛΗΣ · 9 και οι δύο · 10 άλλος
+function omada(r) {
+  const s = synList(r), a = s.includes('ΑΡΧΙΜΗΔΗΣ'), v = s.includes('ΒΑΓΓΕΛΗΣ');
+  return a && v ? 9 : a ? 1 : v ? 2 : 10;
+}
+function xroma(r) { return r.katastasi === 'akyrosi' ? 'ak' : r.katastasi === 'anavoli' ? 'an' : 't' + omada(r); }
+const chipXroma = s => s === 'ΑΡΧΙΜΗΔΗΣ' ? 'c1' : s === 'ΒΑΓΓΕΛΗΣ' ? 'c2' : s === 'OLOI' ? 'c9' : '';
 function alloi(r) { return synList(r).filter(s => s !== FILTRO).map(s => AITIATIKI[s] || s).join(', '); }
 function ypotitlos(r) {
   const meta = [r.periohi, r.och];
@@ -292,11 +316,10 @@ function ypotitlos(r) {
   return meta.filter(Boolean).join(' · ');
 }
 function grammi(r) {
-  const off = r.katastasi === 'akyrosi' || r.katastasi === 'anavoli';
   const st = r.katastasi === 'akyrosi' ? '<span class="st ak">ΑΚΥΡΩΘΗΚΕ</span>' : r.katastasi === 'anavoli' ? '<span class="st an">ΑΝΑΒΟΛΗ</span>' : '';
-  const mz = koino(r) && FILTRO !== 'OLOI' ? '<span class="st mz">👥 ΜΑΖΙ</span>' : '';
+  const mz = koino(r) && FILTRO !== 'OLOI' && !r.katastasi ? '<span class="st mz">👥 ΜΑΖΙ</span>' : '';
   const tags = String(r.typ || '').split(',').map(t => t.trim()).filter(Boolean).map(t => `<em>${esc(t)}</em>`).join('');
-  return `<button class="ri${off ? ' off' : ''}${SEL === r.id ? ' sel' : ''}" onclick="anoixeKartela('${esc(r.id)}')">
+  return `<button class="ri ${xroma(r)}${SEL === r.id ? ' sel' : ''}" onclick="anoixeKartela('${esc(r.id)}')">
     <span class="tm">${esc(r.ora)}</span><span class="bd"><b>${esc(r.pelatis || r.kod)}</b><small>${esc(ypotitlos(r))}</small>
     <span class="tg">${st}${mz}${tags}</span></span><span class="ch">›</span></button>`;
 }
@@ -343,8 +366,8 @@ function lista() {
     <div class="d">${esc(t1)}<small>${esc(t2)}</small></div>
     ${!twra ? '<button class="td" onclick="allaxeMera(0)">Σήμερα</button>' : ''}
     <button onclick="allaxeMera(1)" aria-label="Επόμενο">›</button></div>`;
-  h += `<div class="chips">${tabs.map(s => `<button class="${FILTRO === s ? 'on' : ''}" onclick="filtro('${esc(s)}')">${esc((XR.find(x => x.syn === s) || {onoma: s}).onoma)}${D && D.rantevou ? ' · ' + metra(s) : ''}</button>`).join('')}
-    ${e.idioktitis ? `<button class="${FILTRO === 'OLOI' ? 'on' : ''}" onclick="filtro('OLOI')">Και οι δύο${D && D.rantevou ? ' · ' + D.rantevou.filter(r => !r.katastasi).length : ''}</button>` : ''}</div>`;
+  h += `<div class="chips">${tabs.map(s => `<button class="${FILTRO === s ? 'on ' + chipXroma(s) : ''}" onclick="filtro('${esc(s)}')">${esc((XR.find(x => x.syn === s) || {onoma: s}).onoma)}${D && D.rantevou ? ' · ' + metra(s) : ''}</button>`).join('')}
+    ${e.idioktitis ? `<button class="${FILTRO === 'OLOI' ? 'on c9' : ''}" onclick="filtro('OLOI')">Και οι δύο${D && D.rantevou ? ' · ' + D.rantevou.filter(r => !r.katastasi).length : ''}</button>` : ''}</div>`;
   if (!D) return h + '<div class="spin"></div>';
   if (D.error) return h + `<div class="empty">${esc(D.error)}<br><br><button class="btn sec" onclick="fortose()">Ξανά</button></div>`;
   const list = orata();
@@ -382,7 +405,7 @@ function minas(list) {
     const ektos = d < apo || d > eos, n = ana[d] || 0, we = [0, 6].includes(new Date(d + 'T12:00:00').getDay());
     const mz = !ektos && mazi[d] && FILTRO !== 'OLOI';
     h += `<button class="${ektos ? 'ek' : ''}${we ? ' we' : ''}${d === simera() ? ' to' : ''}${n ? ' ex' : ''}${mz ? ' mz' : ''}" ${ektos ? 'disabled' : `onclick="pigaineMera('${d}')"`}>
-      <span>${Number(d.slice(8, 10))}</span>${n && !ektos ? `<i>${n}</i>` : ''}${mz ? '<u>👥</u>' : ''}</button>`;
+      <span>${Number(d.slice(8, 10))}</span>${n && !ektos ? `<i class="${mz || (FILTRO === 'OLOI' && mazi[d]) ? 'c9' : chipXroma(FILTRO)}">${n}</i>` : ''}${mz ? '<u>👥</u>' : ''}</button>`;
   }
   const yparxoun = Object.keys(ana).length;
   return h + `</div><div class="upd">${yparxoun ? 'Ο αριθμός = πόσα ραντεβού έχει η μέρα' + (FILTRO !== 'OLOI' ? ' · 👥 = μαζί' : '') + '. Πατήστε μια μέρα για τα ραντεβού της.' : 'Δεν υπάρχουν ραντεβού αυτόν τον μήνα.'}</div>`;
@@ -390,7 +413,7 @@ function minas(list) {
 V.home = () => {
   if (wide() && D && D.rantevou) {
     const r = SEL && D.rantevou.find(x => x.id === SEL);
-    return header() + `<div class="pane">${lista()}${foot()}</div><div class="pane">${r ? kartela(r) : '<div class="empty" style="margin-top:60px">${MODE === 'minas' ? 'Πατήστε μια μέρα για τα ραντεβού της.' : 'Πατήστε ένα ραντεβού για να δείτε την καρτέλα.'}</div>'}</div>`;
+    return header() + `<div class="pane">${lista()}${foot()}</div><div class="pane">${r ? kartela(r) : '<div class="empty" style="margin-top:60px">' + (MODE === 'minas' ? 'Πατήστε μια μέρα για τα ραντεβού της.' : 'Πατήστε ένα ραντεβού για να δείτε την καρτέλα.') + '</div>'}</div>`;
   }
   return header() + lista() + foot();
 };
@@ -409,7 +432,7 @@ function kartela(r) {
   const nav = dieuthinsi(r);
   const tel = tilefona(r);
   const waze = nav ? 'https://waze.com/ul?q=' + encodeURIComponent(nav) + '&navigate=yes' : '';
-  let h = `<div class="kh"><div class="tp"><button class="back" onclick="piso()" aria-label="Πίσω">‹</button>
+  let h = `<div class="kh ${xroma(r)}"><div class="tp"><button class="back" onclick="piso()" aria-label="Πίσω">‹</button>
     <small>${esc(r.kod)} · ${esc(r.ora)}${r.eos ? '–' + esc(r.eos) : ''}</small></div>
     <h2>${esc(r.pelatis || r.kod)}</h2><div class="ad">📍 ${esc(r.diey_ef || r.diey || r.topothesia || '—')}</div></div>`;
   if (r.katastasi) h += `<div class="warnb ${r.katastasi === 'akyrosi' ? 'ak' : 'an'}">${r.katastasi === 'akyrosi' ? 'Το ραντεβού ΑΚΥΡΩΘΗΚΕ' : 'Το ραντεβού ΑΝΑΒΛΗΘΗΚΕ'}</div>`;
