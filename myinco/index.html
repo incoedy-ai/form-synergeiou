@@ -105,6 +105,9 @@ input.fi{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--li
 .spin{margin:60px auto;width:38px;height:38px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .center{text-align:center}
+.qrb{margin-top:12px;border-radius:18px;background:linear-gradient(135deg,#2D3A4D,#287B9B 55%,#2DAFCE);color:#fff;padding:14px 16px;display:flex;gap:14px;align-items:center}
+.qrb .qi{flex:none;width:56px;height:56px;border-radius:14px;background:#fff;padding:3px} .qrb .qi img{width:100%;height:100%;border-radius:11px}
+.qrb b{display:block;font-size:19px;font-weight:800} .qrb small{display:block;font-size:13.5px;font-weight:600;opacity:.95;margin-top:3px}
 .wsr{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1.5px solid var(--line)} .cd .lb + .wsr{border-top:0}
 .wsr span{flex:1;min-width:0} .wsr b{display:block;font-size:14.5px} .wsr small{display:block;font-size:12px;color:var(--muted);font-weight:700}
 .wsr em{flex:none;font-style:normal;font-size:11.5px;font-weight:800;border-radius:6px;padding:3px 8px}
@@ -297,9 +300,11 @@ function ypotitlos(t) {
     if (g) { const yp = g.eidi.reduce((s, x) => s + x.yp, 0), ap = g.eidi.every(x => x.ap);
       return (ap ? (yp ? yp + (yp === 1 ? ' υπέρβαση' : ' υπερβάσεις') : 'Αποτελέσματα εντός ορίων') : 'Αναμένονται αποτελέσματα') + (w.epomeni ? ' · επόμενη ' + ddmm(w.epomeni) : ''); }
     return 'Δειγματοληψίες, αποτελέσματα, κατόψεις'; }
-  return 'QRecord, έγγραφα συμβουλευτικής';
+  if (D.qrecord) { const x = QR_SIMERA; return x ? `QRecord: σήμερα ${x.egin} από ${x.ola}` + (x.anoixtes ? ` · ${x.anoixtes} ανοιχτ` + (x.anoixtes === 1 ? 'ή απόκλιση' : 'ές αποκλίσεις') : '') : 'QRecord, έγγραφα συμβουλευτικής'; }
+  return 'Έγγραφα συμβουλευτικής';
 }
 V.home = () => {
+  if (D.qrecord && (!QR_SIMERA || Date.now() - QR_SIMERA.t > 120000)) qrSimera().then(() => { if (view.name === 'home') render(); }).catch(() => {});
   const d = new Date();
   let h = header() + `<div class="hi">${MERES[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} · ${esc(D.ego.onoma)}</div>`;
   h += D.tmimata.map(t => `<button class="t" onclick="go('tmima','${t}')"><span class="plate lg"><img src="${TM[t].logo}" alt=""></span>
@@ -338,6 +343,7 @@ V.tmima = () => {
       <div class="tlx">${Array.from({length: pr.synolo}, (_, i) => `<i class="${i < pr.eginan ? 'd' : i === pr.eginan ? 'n' : ''}"></i>`).join('')}</div></div>`;
   }
   if (t === 'WS' && D.ws && D.ws.gyroi) h += wsKartes(D.ws);
+  if (t === 'EYE' && D.qrecord) { h += qrKarta(); setTimeout(qrFortose, 0); }
   const z = D.zontana.filter(x => x.t === t);
   if (z.length) h += `<div class="cd"><div class="lb">ΖΩΝΤΑΝΟΙ ΠΙΝΑΚΕΣ</div>` + z.map(x => `<button class="f" onclick="anoixe('${esc(x.u)}')">
       <span class="ic">LIVE</span><span class="tx"><b>${esc(x.n)}</b><small>${esc(x.k || 'ενημερώνεται μόνο του')}</small></span><span class="ch">›</span></button>`).join('') + '</div>';
@@ -361,6 +367,52 @@ function wsKartes(w) {
     <small>${esc(g.eidi.map(x => x.e).join(' · '))}</small></span>${(() => { const yp = g.eidi.reduce((s, x) => s + x.yp, 0);
       return yp ? `<em class="yp">${yp} ${yp === 1 ? 'υπέρβαση' : 'υπερβάσεις'}</em>` : '<em class="ok">εντός ορίων</em>'; })()}</div>`).join('') + '</div>';
   return h;
+}
+
+// ------------------------------------------------------------- QRecord μέσα στις ΕΥΕ (βήμα 4): ΜΟΝΟ ανάγνωση με το κλειδί v
+const QR_API = 'https://script.google.com/macros/s/AKfycbwRoyNlK_CkIEShRA3_hVUpeTT117EprA1xdvi9ZWrvh5w0r-8B2mVLDPnp8_cSGyx9qA/exec';
+let QR_SIMERA = null;
+(() => { const c = SS.get('mi_qr_' + P); const d = new Date(); if (c && c.sim === d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')) QR_SIMERA = Object.assign(c, {t: 0}); })();          // {t, sim, apo, ektos, anoixtes, ws} — κρατιέται 2' για να μη ρωτάει σε κάθε οθόνη
+function qrKarta() {
+  const q = D.qrecord, x = QR_SIMERA;
+  const st = x ? `Σήμερα ${x.egin} από ${x.ola} μετρήσεις · ${x.ektos ? `<span style="color:#FFD2D2;font-weight:800">${x.ektos} εκτός ορίου${x.anoixtes ? ' — ' + x.anoixtes + ' ανοιχτ' + (x.anoixtes === 1 ? 'ή' : 'ές') : ''}</span>` : '0 εκτός ορίου'}` : 'φόρτωση…';
+  return `<div class="qrb"><span class="qi"><img src="qrecord.png" alt=""></span><div style="flex:1;min-width:0"><b>QRecord</b><small id="qrst">${st}</small></div></div>
+    <div class="cd"><div class="lb">ΑΡΧΕΙΑ ΤΕΚΜΗΡΙΩΣΗΣ</div>
+    <button class="f" onclick="anoixe('../qrecord/arxeio.html?' + new URLSearchParams({p: D.qrecord.p, v: D.qrecord.v}))"><span class="ic">LIVE</span>
+      <span class="tx"><b>Όλες οι καταγραφές</b><small>θερμοκρασίες, καθαρισμοί, ενέργειες — ανά μήνα</small></span><span class="ch">›</span></button>
+    ${q.tropos !== 'ΕΝΑ' && q.k ? `<button class="f" onclick="anoixe('../qrecord/?' + new URLSearchParams({p: D.qrecord.p, k: D.qrecord.k}))"><span class="ic" style="color:var(--navy)">QR</span>
+      <span class="tx"><b>Άνοιγμα QRecord</b><small>για καταγραφή από αυτό το κινητό</small></span><span class="ch">›</span></button>` : ''}</div>`;
+}
+async function qrSimera() {
+  if (QR_SIMERA && Date.now() - QR_SIMERA.t < 120000) return QR_SIMERA;
+  const q = D.qrecord, d = new Date(), pad = n => String(n).padStart(2, '0');
+  const m = d.getFullYear() + '-' + pad(d.getMonth() + 1), sim = m + '-' + pad(d.getDate());
+  let egin = 0, ola = 0, ektos = 0, anoixtes = 0;
+  if (q.tropos !== 'ΕΝΑ' && q.k) {
+    // γρήγορη «σημερινή» κλήση (~2× πιο γρήγορη από τον μήνα)· οι επαναμετρήσεις (epan) δεν μετράνε ως 2η μέτρηση
+    const r = await (await fetch(QR_API + '?' + new URLSearchParams({action: 'init', p: q.p, k: q.k}))).json();
+    if (!r.ok) throw new Error(r.error || 'QRecord');
+    (r.syskeves || []).forEach(s => {
+      const n = s.ana_imera || 2, sm = (s.simera || []);
+      ola += n; egin += Math.min(n, sm.filter(x => !x.epan).length); ektos += sm.filter(x => x.apot === 'ΕΚΤΟΣ').length;
+    });
+    anoixtes = (r.anoixtes || []).length;
+  } else {          // «ένα κινητό»: το κινητό του υπευθύνου δεν είναι καταχωρημένο → ο μήνας με το κλειδί ανάγνωσης
+    const r = await (await fetch(QR_API + '?' + new URLSearchParams({action: 'arxeio', p: q.p, v: q.v, m}))).json();
+    if (!r.ok) throw new Error(r.error || 'QRecord');
+    (r.syskeves || []).forEach(s => {
+      ola += s.ana_imera || 2;
+      egin += Math.min(s.ana_imera || 2, (s.metriseis || []).filter(x => (x.ts || '').slice(0, 10) === sim).length);
+      (s.apokliseis || []).forEach(a => { if ((a.ts || '').slice(0, 10) === sim) ektos++; if (!a.kleisti) anoixtes++; });
+    });
+  }
+  QR_SIMERA = {t: Date.now(), egin, ola, ektos, anoixtes, sim};
+  SS.set('mi_qr_' + P, QR_SIMERA);
+  return QR_SIMERA;
+}
+async function qrFortose() {
+  try { await qrSimera(); const el = $('#qrst'); if (el && view.name === 'tmima') { const tmp = document.createElement('div'); tmp.innerHTML = qrKarta(); el.innerHTML = $('#qrst', tmp).innerHTML; } }
+  catch (e) { const el = $('#qrst'); if (el) el.textContent = 'δεν φορτώθηκε η σημερινή εικόνα'; }
 }
 
 // ------------------------------------------------------------- έγγραφα (βήμα 2): ένα-ένα, ανά ομάδα, με «ΝΕΟ»
