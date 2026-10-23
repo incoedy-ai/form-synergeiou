@@ -197,7 +197,7 @@
     var u = q.get("script") || SYNERGEIO_SCRIPT;
     if (!u || !kod) return efedriko;
     try {
-      var r = await fetch(u + "?type=myinco&kod=" + encodeURIComponent(kod));
+      var r = await fetch(u + "?type=myinco&kod=" + encodeURIComponent(kod) + "&w=" + encodeURIComponent(q.get("w") || ""));
       var d = await r.json();
       return !!d.myinco;
     } catch (e) {
@@ -253,7 +253,7 @@
                                // 25/09/2026: «να έχει το όνομα του σκάφους»). Στέλνεται
                                // όμως, γιατί το Apps Script τον βάζει στα υπόλοιπα έγγραφα.
                                boat: bt,
-                               kod: q.get("kod") || "", html: standaloneHtml() })
+                               kod: q.get("kod") || "", w: q.get("w") || "", html: standaloneHtml() })
       });
       alert(myincoTora
         ? "Η βεβαίωση ανεβαίνει στον φάκελο My InCo του πελάτη.\n\nΔΕΝ του στάλθηκε email — τη βλέπει μόνος του."

@@ -165,7 +165,7 @@ function stationKind(t) {
   return '';
 }
 
-fetch(URL + "?kod=" + encodeURIComponent(kod))
+fetch(URL + "?kod=" + encodeURIComponent(kod) + "&w=" + encodeURIComponent(qs.get('w') || ''))
   .then(r => r.json())
   .then(stations => {
     DS_STATIONS = stations.filter(s => s.kodikos && stationKind(s.typos) === 'ΔΣ').map(s => s.kodikos);
@@ -249,7 +249,7 @@ function submitForm() {
   fetch(URL, {
     method: 'POST',
     mode: 'no-cors',
-    body: JSON.stringify({ kod: kod, pelatis: pelatis, entries: entries,
+    body: JSON.stringify({ kod: kod, w: qs.get('w') || '', pelatis: pelatis, entries: entries,
                           technikos: technikos, signature: sigData(),
                           paratiriseis: document.getElementById('paratiriseis').value,
                           diorthotikes: document.getElementById('diorthotikes').value })

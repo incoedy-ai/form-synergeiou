@@ -346,6 +346,7 @@ function submitForm() {
   const payload = {
     form: 'cimex',
     kod: p.get('kod') || '',
+    w: p.get('w') || '',
     pelatis: decodeURIComponent(p.get('pelatis') || ''),
     date: document.getElementById('custDate').value,
     rooms: rooms,
@@ -431,7 +432,7 @@ async function exeiMyIncoTora(kod, efedriko) {
   const u = (typeof p !== 'undefined' && p.get('script')) || SYNERGEIO_SCRIPT;
   if (!u || !kod) return efedriko;
   try {
-    const r = await fetch(u + '?type=myinco&kod=' + encodeURIComponent(kod));
+    const r = await fetch(u + '?type=myinco&kod=' + encodeURIComponent(kod) + '&w=' + encodeURIComponent((typeof p !== 'undefined' && p.get('w')) || ''));
     const d = await r.json();
     return !!d.myinco;
   } catch (e) {
@@ -460,7 +461,7 @@ async function sendPdfEmail() {
     await fetch(PDF_SCRIPT, { method: 'POST', mode: 'no-cors',
       body: JSON.stringify({ form: 'sendPdf', doc: 'cimex', email: emailVal, pelatis: pelatisName,
                              boat: (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ' ? decodeURIComponent(p.get('onomaskaf') || '').trim() : ''),
-                             kod: (p.get('kod') || '').toUpperCase().trim(), html: html }) });
+                             kod: (p.get('kod') || '').toUpperCase().trim(), w: p.get('w') || '', html: html }) });
     alert(myincoTora
       ? 'Η έκθεση κοριών ανεβαίνει στον φάκελο My InCo του πελάτη.\n\nΔΕΝ του στάλθηκε email — το βλέπει μόνος του.'
       : 'Στάλθηκε αίτημα αποστολής στο ' + emailVal + ' — έλεγξε το inbox σε λίγο.');

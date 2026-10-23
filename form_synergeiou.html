@@ -711,7 +711,7 @@ const ORDERS_SCRIPT = p.get('orders') || 'https://script.google.com/macros/s/AKf
        έντυπα του tablet. Το link φέρνει «skafos» όταν ο πελάτης είναι σκάφος. */
     const pelatisName = p.get('skafos') || p.get('pelatis') || '';
     const kodPelati = p.get('kod') || '';
-    const qp = new URLSearchParams({ script: scriptUrl, pelatis: pelatisName, kod: kodPelati });
+    const qp = new URLSearchParams({ script: scriptUrl, pelatis: pelatisName, kod: kodPelati, w: p.get('w') || '' });   // w: κλειδί τάμπλετ 23/10/2026
 
     [['lnkMyoktonia', 'form_myoktonia.html'],
      ['lnkEntomo', 'form_entomo.html'],
@@ -882,7 +882,8 @@ function openCimex() {
     limani: g('inf-limani') || '',
     onomaskaf: g('inf-onomaskaf') || '',
     email: clean(g('inf-email')),
-    script: p.get('script') || ''
+    script: p.get('script') || '',
+    w: p.get('w') || ''          // κλειδί τάμπλετ (23/10/2026)
   });
   openDoc('form_cimex.html?' + qp.toString());
 }

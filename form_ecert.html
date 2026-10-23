@@ -549,7 +549,7 @@ async function exeiMyIncoTora(kod, efedriko) {
   const u = (typeof p !== 'undefined' && p.get('script')) || SYNERGEIO_SCRIPT;
   if (!u || !kod) return efedriko;
   try {
-    const r = await fetch(u + '?type=myinco&kod=' + encodeURIComponent(kod));
+    const r = await fetch(u + '?type=myinco&kod=' + encodeURIComponent(kod) + '&w=' + encodeURIComponent((typeof p !== 'undefined' && p.get('w')) || ''));
     const d = await r.json();
     return !!d.myinco;
   } catch (e) {
@@ -577,7 +577,7 @@ async function sendPdfEmail() {
       mode: 'no-cors',
       body: JSON.stringify({ form: 'sendPdf', doc: 'ecert', email: emailVal, pelatis: pelatisName,
                              boat: (decodeURIComponent(p.get('katpel') || '') === 'ΣΚΑΦΟΣ' ? decodeURIComponent(p.get('onomaskaf') || '').trim() : ''),
-                             kod: kodPel, html: html })   // kod: 22/09/2026 — μοναδικό ανά πελάτη
+                             kod: kodPel, w: p.get('w') || '', html: html })   // kod: 22/09/2026 — μοναδικό ανά πελάτη
     });
     alert(myincoTora
       ? 'Το πιστοποιητικό ανεβαίνει στον φάκελο My InCo του πελάτη.\n\nΔΕΝ του στάλθηκε email — το βλέπει μόνος του.'
