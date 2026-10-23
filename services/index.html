@@ -58,6 +58,11 @@ button,input{font:inherit;color:inherit} button{cursor:pointer}
 .ri.an em,.ri.ak em{background:rgba(255,255,255,.55)}
 .ri.sel{border-color:var(--ink);box-shadow:0 0 0 3px var(--accent)}
 .chips button.on.c1{background:var(--t1)} .chips button.on.c2{background:var(--t2);color:#2D3A4D} .chips button.on.c9{background:var(--t9)}
+/* ιστορικό */
+.ist{padding:9px 0;border-top:1.5px solid var(--line)} .ist:first-of-type{border-top:0}
+.ist b{display:block;font-size:13.5px} .ist .vl2{font-size:12.5px;font-weight:700;color:var(--muted);white-space:pre-line;margin-top:2px}
+.ist i{display:block;font-size:12.5px;margin-top:3px;color:var(--ink)} .ist em{display:inline-block;margin-top:4px;font-style:normal;font-size:12px;font-weight:800;color:var(--ok);background:var(--tag);border-radius:6px;padding:2px 7px}
+.sm2x{font-size:13px;font-weight:700;color:var(--muted);margin-top:4px}
 /* καθυστέρηση */
 .kath{margin-top:12px;border-radius:14px;padding:11px 13px;font-size:13.5px;font-weight:700;display:flex;flex-direction:column;gap:4px}
 .kath.ok{background:var(--tag);color:var(--blue)} .kath.bad{background:var(--bad-bg);color:var(--bad)} .kath b{font-size:15.5px}
@@ -483,6 +488,19 @@ function tilefona(r) {
   return [r.til, r.tilep].join(' / ').split(/[\/,;]+/).map(t => t.replace(/[^\d+]/g, '')).filter(t => t.length >= 10)
     .filter((t, i, a) => a.indexOf(t) === i);
 }
+// ιστορικό επισκέψεων (τελευταίες 8) — ποσά ΜΟΝΟ για τον ιδιοκτήτη (τα κόβει ο server)
+const IST = {};
+function istorikoHtml(kod) {
+  if (!kod) return '';
+  if (IST[kod] === undefined) { IST[kod] = null; api('istoriko', {kod}).then(r => { IST[kod] = r.ok ? r.istoriko : []; render(); }).catch(() => { IST[kod] = undefined; }); }
+  const L = IST[kod];
+  let h = '<div class="cd"><div class="lb">ΙΣΤΟΡΙΚΟ ΕΠΙΣΚΕΨΕΩΝ</div>';
+  if (L === null || L === undefined) return h + '<div class="sm2x">Φόρτωση…</div></div>';
+  if (!L.length) return h + '<div class="sm2x">Δεν υπάρχουν προηγούμενες επισκέψεις.</div></div>';
+  return h + L.map(e => `<div class="ist"><b>${esc(imera(e.mera))}/${esc(e.mera.slice(2, 4))} · ${esc(e.syn)}</b>
+    ${e.ergasies ? `<div class="vl2">${esc(e.ergasies)}</div>` : ''}${e.sim ? `<i>${esc(e.sim)}</i>` : ''}
+    ${e.xreosi !== undefined && (e.xreosi || e.pliromi) ? `<em>${e.xreosi ? 'Χρέωση ' + esc(String(e.xreosi).replace('.', ',')) + ' €' : ''}${e.xreosi && e.pliromi ? ' · ' : ''}${esc(e.pliromi || '')}</em>` : ''}</div>`).join('') + '</div>';
+}
 function kartela(r) {
   const nav = dieuthinsi(r);
   const tel = tilefona(r);
@@ -500,6 +518,7 @@ function kartela(r) {
     ${pedio('ΤΗΛΕΦΩΝΟ', [r.til, r.tilep].filter((v, i, a) => v && a.indexOf(v) === i).join(' / '))}${pedio('ΠΡΟΒΛΗΜΑ', r.prob)}${pedio('ΣΗΜΕΙΩΣΕΙΣ', r.sim)}</div>`;
   if (r.aparait) h += `<div class="cd"><div class="lb">ΥΛΙΚΑ ΠΟΥ ΧΡΕΙΑΖΟΝΤΑΙ</div><div class="vl">${esc(r.aparait)}</div></div>`;
   if (r.egkat) h += `<div class="cd"><div class="lb">ΕΞΟΠΛΙΣΜΟΣ ΠΕΛΑΤΗ</div><div class="vl">${esc(r.egkat)}</div></div>`;
+  h += istorikoHtml(r.kod);
   return h;
 }
 V.kartela = () => {
