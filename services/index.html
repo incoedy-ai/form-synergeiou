@@ -293,10 +293,14 @@ function allaxeMera(n) {
 }
 function filtro(s) { FILTRO = s; render(); }
 function pigaineMera(d) { DAY = d; MODE = 'imera'; LS.set('srv_mode', MODE); SEL = null; fortose(); }
+// Ο ιδιοκτήτης στο κουμπί ΑΛΛΟΥ (π.χ. «Βαγγέλης») βλέπει ΜΟΝΟ όσα κάνει εκείνος μόνος του — τα κοινά είναι
+// στο δικό του κουμπί και στο «Και οι δύο» (ο χρήστης 23/10). Ο τεχνικός βλέπει όπως πριν (και τα κοινά).
+function monosTou(s) { return SESS.egw.idioktitis && s !== SESS.egw.syn && s !== 'OLOI'; }
+function tou(r, s) { const l = synList(r); return monosTou(s) ? l.length === 1 && l[0] === s : l.includes(s); }
 function orata() {
   if (!D || !D.rantevou) return [];
   if (FILTRO === 'OLOI' && SESS.egw.idioktitis) return D.rantevou;
-  return D.rantevou.filter(r => synList(r).includes(FILTRO));
+  return D.rantevou.filter(r => tou(r, FILTRO));
 }
 // κοινό ραντεβού = με πάνω από έναν (π.χ. «ΑΡΧΙΜΗΔΗΣ ΒΑΓΓΕΛΗΣ»)
 const koino = r => synList(r).length > 1;
@@ -358,7 +362,7 @@ function lista() {
   const e = SESS.egw;
   const tabs = XR.map(x => x.syn).filter((s, i, a) => a.indexOf(s) === i);
   if (!tabs.includes(e.syn)) tabs.unshift(e.syn);
-  const metra = s => D && D.rantevou ? D.rantevou.filter(r => synList(r).includes(s) && !r.katastasi).length : '';
+  const metra = s => D && D.rantevou ? D.rantevou.filter(r => tou(r, s) && !r.katastasi).length : '';
   const [t1, t2, twra] = navTitlos();
   let h = `<div class="seg">${[['imera', 'Ημέρα'], ['evdomada', 'Εβδομάδα'], ['minas', 'Μήνας']].map(([k, l]) =>
       `<button class="${MODE === k ? 'on' : ''}" onclick="mode('${k}')">${l}</button>`).join('')}</div>
@@ -366,7 +370,7 @@ function lista() {
     <div class="d">${esc(t1)}<small>${esc(t2)}</small></div>
     ${!twra ? '<button class="td" onclick="allaxeMera(0)">Σήμερα</button>' : ''}
     <button onclick="allaxeMera(1)" aria-label="Επόμενο">›</button></div>`;
-  h += `<div class="chips">${tabs.map(s => `<button class="${FILTRO === s ? 'on ' + chipXroma(s) : ''}" onclick="filtro('${esc(s)}')">${esc((XR.find(x => x.syn === s) || {onoma: s}).onoma)}${D && D.rantevou ? ' · ' + metra(s) : ''}</button>`).join('')}
+  h += `<div class="chips">${tabs.map(s => `<button class="${FILTRO === s ? 'on ' + chipXroma(s) : ''}" onclick="filtro('${esc(s)}')">${esc((XR.find(x => x.syn === s) || {onoma: s}).onoma)}${monosTou(s) ? ' μόνος' : ''}${D && D.rantevou ? ' · ' + metra(s) : ''}</button>`).join('')}
     ${e.idioktitis ? `<button class="${FILTRO === 'OLOI' ? 'on c9' : ''}" onclick="filtro('OLOI')">Και οι δύο${D && D.rantevou ? ' · ' + D.rantevou.filter(r => !r.katastasi).length : ''}</button>` : ''}</div>`;
   if (!D) return h + '<div class="spin"></div>';
   if (D.error) return h + `<div class="empty">${esc(D.error)}<br><br><button class="btn sec" onclick="fortose()">Ξανά</button></div>`;
@@ -408,7 +412,7 @@ function minas(list) {
       <span>${Number(d.slice(8, 10))}</span>${n && !ektos ? `<i class="${mz || (FILTRO === 'OLOI' && mazi[d]) ? 'c9' : chipXroma(FILTRO)}">${n}</i>` : ''}${mz ? '<u>👥</u>' : ''}</button>`;
   }
   const yparxoun = Object.keys(ana).length;
-  return h + `</div><div class="upd">${yparxoun ? 'Ο αριθμός = πόσα ραντεβού έχει η μέρα' + (FILTRO !== 'OLOI' ? ' · 👥 = μαζί' : '') + '. Πατήστε μια μέρα για τα ραντεβού της.' : 'Δεν υπάρχουν ραντεβού αυτόν τον μήνα.'}</div>`;
+  return h + `</div><div class="upd">${yparxoun ? 'Ο αριθμός = πόσα ραντεβού έχει η μέρα' + (FILTRO !== 'OLOI' && !monosTou(FILTRO) ? ' · 👥 = μαζί' : '') + '. Πατήστε μια μέρα για τα ραντεβού της.' : 'Δεν υπάρχουν ραντεβού αυτόν τον μήνα.'}</div>`;
 }
 V.home = () => {
   if (wide() && D && D.rantevou) {
