@@ -150,6 +150,10 @@
   // της εταιρείας. Ο φάκελος αφορά το σκάφος.
   var epon = dec('skafos') || dec('pelatis'), kod = dec('kod');
   if (!epon && !kod) return;
+  // 23/10/2026: ίδιο ΑΦΜ σε πολλές καρτέλες (υποκαταστήματα) -> και η περιοχή,
+  // να ξέρει ο πελάτης ποιο κατάστημα βλέπει (ΛΟΥΜΙΔΗΣ ΑΘΗΝΑ / ΠΕΙΡΑΙΑΣ).
+  var per = dec('periohi');
+  if (epon && per && dec('ypok') === '1' && !dec('skafos')) epon += ' · ' + per.toUpperCase();
   var el = document.getElementById('who');
   el.innerHTML = (epon ? '<b>' + epon.replace(/[<>&]/g, '') + '</b>' : '') +
                  (kod ? 'κωδικός ' + kod.replace(/[<>&]/g, '') : '');

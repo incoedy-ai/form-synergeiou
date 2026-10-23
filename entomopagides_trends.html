@@ -471,6 +471,9 @@ function setCustHeader(P, kod, pelatis) {
                _pel.toUpperCase().indexOf(diakr.toUpperCase()) >= 0;
   const parts = [String(kod || '').trim(), _pel,
                  (skafos || _dup) ? '' : diakr].filter(Boolean);
+  // 23/10/2026: ίδιο ΑΦΜ σε πολλές καρτέλες (υποκαταστήματα, π.χ. ΛΟΥΜΙΔΗΣ
+  // ΑΘΗΝΑ / ΠΕΙΡΑΙΑΣ) -> η περιοχή μπαίνει δίπλα στην επωνυμία, να ξεχωρίζουν.
+  if (P.get('ypok') === '1' && per && !skafos) parts.push(per.toUpperCase());
   let addr = diey;
   if (diey && per && diey.toUpperCase().indexOf(per.toUpperCase()) < 0) addr = diey + ', ' + per;
   else if (!diey) addr = per;
