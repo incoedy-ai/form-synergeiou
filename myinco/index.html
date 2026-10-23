@@ -105,6 +105,9 @@ input.fi{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--li
 .spin{margin:60px auto;width:38px;height:38px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .center{text-align:center}
+.neo{flex:none;font-size:10px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:2px 6px}
+.act{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);max-width:560px;margin:0 auto}
+.act .btn{min-height:50px;font-size:15px}
 /* «My InCo» μέσα σε κείμενο = η ΛΕΞΗ-ΛΟΓΟΤΥΠΟ, ποτέ γράμματα (κανόνας χρήστη· λευκή πλακέτα για το σκοτεινό θέμα) */
 .miw{height:1.05em;width:auto;vertical-align:-.24em;background:#fff;padding:1px 5px;border-radius:5px}
 </style>
@@ -294,7 +297,10 @@ V.home = () => {
   let h = header() + `<div class="hi">${MERES[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} · ${esc(D.ego.onoma)}</div>`;
   h += D.tmimata.map(t => `<button class="t" onclick="go('tmima','${t}')"><span class="plate lg"><img src="${TM[t].logo}" alt=""></span>
       <div><h5>${esc(TM[t].titlos)}</h5><p>${esc(ypotitlos(t))}</p></div><span class="ch">›</span></button>`).join('');
-  if (D.fakelos) h += `<button class="t" onclick="anoixe('${esc(D.fakelos)}')"><span class="plate lg fo">📁</span>
+  const nea = (D.arxeia || []).filter(a => a.neo).length;
+  if ((D.arxeia || []).length) h += `<button class="t" onclick="go('ola')"><span class="plate lg fo">📁</span>
+      <div><h5>Όλα τα έγγραφα</h5><p>${(D.arxeia || []).length} έγγραφα${nea ? ' · <b style="color:var(--blue)">' + nea + ' νέα</b>' : ''}</p></div><span class="ch">›</span></button>`;
+  else if (D.fakelos) h += `<button class="t" onclick="anoixe('${esc(D.fakelos)}')"><span class="plate lg fo">📁</span>
       <div><h5>Όλα τα έγγραφα</h5><p>${D.tmimata.length > 1 ? 'όλων των τμημάτων' : 'πιστοποιητικά, εκθέσεις, άδειες'}</p></div><span class="ch">›</span></button>`;
   if (!D.tmimata.length && !D.fakelos) h += '<div class="empty">Δεν υπάρχουν ακόμα έγγραφα.</div>';
   if (D.axna.length) {
@@ -327,11 +333,96 @@ V.tmima = () => {
   const z = D.zontana.filter(x => x.t === t);
   if (z.length) h += `<div class="cd"><div class="lb">ΖΩΝΤΑΝΟΙ ΠΙΝΑΚΕΣ</div>` + z.map(x => `<button class="f" onclick="anoixe('${esc(x.u)}')">
       <span class="ic">LIVE</span><span class="tx"><b>${esc(x.n)}</b><small>${esc(x.k || 'ενημερώνεται μόνο του')}</small></span><span class="ch">›</span></button>`).join('') + '</div>';
-  if (D.fakelos) h += `<div class="cd"><div class="lb">ΕΓΓΡΑΦΑ</div><button class="f" onclick="anoixe('${esc(D.fakelos)}')">
-      <span class="ic" style="color:var(--bad);background:var(--bad-bg)">PDF</span><span class="tx"><b>Φάκελος εγγράφων</b>
-      <small>πιστοποιητικά, εκθέσεις, δελτία, άδειες</small></span><span class="ch">›</span></button></div>`;
+  h += eggrafaTmimatos(t);
   return h;
 };
+
+// ------------------------------------------------------------- έγγραφα (βήμα 2): ένα-ένα, ανά ομάδα, με «ΝΕΟ»
+const SEIRA_OMADON = {
+  PC: ['ΠΙΣΤΟΠΟΙΗΤΙΚΑ & ΕΚΘΕΣΕΙΣ', 'ΔΕΛΤΙΑ ΕΠΙΣΚΕΨΕΩΝ', 'ΚΑΤΟΨΕΙΣ', 'ΑΔΕΙΕΣ & MSDS'],
+  WS: ['ΑΠΟΤΕΛΕΣΜΑΤΑ', 'ΔΕΙΓΜΑΤΟΛΗΨΙΕΣ', 'ΚΑΤΟΨΕΙΣ — ΣΗΜΕΙΑ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ', 'ΕΓΓΡΑΦΑ'],
+  EYE: ['ΜΗΝΙΑΙΑ', 'ΠΡΟΜΗΘΕΥΤΕΣ', 'ΠΡΟΣΩΠΙΚΟ']
+};
+const dmy = d => d ? d.slice(8, 10) + '/' + d.slice(5, 7) + '/' + d.slice(0, 4) : '';
+const eikona = a => /^image\//.test(a.m || '');
+function grammiEggrafou(a) {
+  const ic = eikona(a) ? '<span class="ic" style="color:var(--ok);background:var(--ok-bg)">ΚΑΤΟΨΗ</span>'
+                       : '<span class="ic" style="color:var(--bad);background:var(--bad-bg)">PDF</span>';
+  const sub = [a.y, a.g === 'ΑΔΕΙΕΣ & MSDS' || a.g.indexOf('ΚΑΤΟΨ') === 0 ? '' : dmy(a.d)].filter(Boolean).join(' · ');
+  return `<button class="f" onclick="go('egg','${esc(a.id)}')">${ic}<span class="tx"><b>${esc(a.n)}</b><small>${esc(sub)}</small></span>
+    ${a.neo ? '<span class="neo">ΝΕΟ</span>' : '<span class="ch">›</span>'}</button>`;
+}
+function eggrafaTmimatos(t) {
+  const ola = (D.arxeia || []).filter(a => a.t === t);
+  if (!ola.length) return D.fakelos ? `<div class="cd"><div class="lb">ΕΓΓΡΑΦΑ</div><div class="empty">Τα έγγραφα ετοιμάζονται — σύντομα εδώ ένα-ένα.</div></div>` : '';
+  const seira = SEIRA_OMADON[t] || [];
+  const omades = [...new Set(ola.map(a => a.g))].sort((x, y) => ((seira.indexOf(x) + 1) || 99) - ((seira.indexOf(y) + 1) || 99) || x.localeCompare(y));
+  return omades.map(g => {
+    const l = ola.filter(a => a.g === g).sort((x, y) => (y.d || '').localeCompare(x.d || '') || x.n.localeCompare(y.n));
+    return `<div class="cd"><div class="lb">${esc(g)}</div>${l.map(grammiEggrafou).join('')}</div>`;
+  }).join('');
+}
+V.ola = () => {
+  let h = header(true) + `<div class="hi">Όλα τα έγγραφα</div>`;
+  h += D.tmimata.map(t => (D.arxeia || []).some(a => a.t === t)
+    ? `<div class="sep" style="display:flex;align-items:center;gap:8px"><span class="plate" style="width:34px;height:38px;padding:2px"><img src="${TM[t].logo}" alt="" style="max-width:100%;max-height:34px"></span>${esc(TM[t].titlos.toUpperCase())}</div>` + eggrafaTmimatos(t) : '').join('');
+  if (!(D.arxeia || []).length) h += '<div class="empty">Τα έγγραφα ετοιμάζονται.</div>';
+  return h;
+};
+
+// ------------------------------------------------------------- προβολή εγγράφου: PDF με pdf.js (Android + iPhone), εικόνα ως εικόνα
+let PDFJS = null;
+const CACHE_EGG = {};
+function fortoseScript(src) { return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+async function pdfjs() {
+  if (!PDFJS) { await fortoseScript('pdfjs/pdf.min.js'); PDFJS = window.pdfjsLib; PDFJS.GlobalWorkerOptions.workerSrc = 'pdfjs/pdf.worker.min.js'; }
+  return PDFJS;
+}
+V.egg = () => {
+  const a = (D.arxeia || []).find(x => x.id === view.arg) || {n: 'Έγγραφο'};
+  setTimeout(() => provoli(view.arg), 0);
+  return `<div class="hd"><button class="back" onclick="view.apo ? go(view.apo.name, view.apo.arg) : go('home')" aria-label="Πίσω">‹</button>
+    <div class="who"><b>${esc(a.n)}</b><small>${esc([a.y, dmy(a.d)].filter(Boolean).join(' · '))}</small></div></div>
+    <div id="pv"><div class="spin"></div></div><div style="height:84px"></div>
+    <div class="act"><button class="btn sec" id="b1" disabled>Κοινοποίηση / Εκτύπωση</button><button class="btn cy" id="b2" disabled>Αποθήκευση</button></div>`;
+};
+async function provoli(id) {
+  const pv = $('#pv');
+  try {
+    let e = CACHE_EGG[id];
+    if (!e) {
+      const r = await api('arxeio', {id});
+      if (!r.ok) throw new Error(r.error);
+      const bin = atob(r.b64), u8 = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      e = CACHE_EGG[id] = {u8, mime: r.mime, arxeio: r.arxeio};
+    }
+    if (view.name !== 'egg' || view.arg !== id) return;
+    const file = new File([e.u8], e.arxeio, {type: e.mime});
+    const url = URL.createObjectURL(file);
+    if (/^image\//.test(e.mime)) pv.innerHTML = `<img src="${url}" alt="" style="width:100%;border-radius:10px;background:#fff">`;
+    else {
+      const lib = await pdfjs(), doc = await lib.getDocument({data: e.u8.slice()}).promise;
+      pv.innerHTML = '';
+      const w = pv.clientWidth, dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      for (let n = 1; n <= doc.numPages; n++) {
+        const page = await doc.getPage(n), v1 = page.getViewport({scale: 1}), vp = page.getViewport({scale: w / v1.width * dpr});
+        const c = document.createElement('canvas'); c.width = vp.width; c.height = vp.height;
+        c.style.cssText = 'width:100%;display:block;margin:0 0 10px;border-radius:6px;background:#fff;box-shadow:0 3px 12px rgba(20,30,45,.12)';
+        pv.appendChild(c);
+        await page.render({canvasContext: c.getContext('2d'), viewport: vp}).promise;
+        if (view.name !== 'egg') return;
+      }
+    }
+    const b1 = $('#b1'), b2 = $('#b2');
+    if (navigator.canShare && navigator.canShare({files: [file]})) {
+      b1.disabled = false; b1.onclick = () => navigator.share({files: [file], title: e.arxeio}).catch(() => {});
+    } else { b1.textContent = 'Άνοιγμα / Εκτύπωση'; b1.disabled = false; b1.onclick = () => anoixe(url); }
+    b2.disabled = false; b2.onclick = () => { const l = document.createElement('a'); l.href = url; l.download = e.arxeio; document.body.appendChild(l); l.click(); l.remove(); };
+  } catch (err) {
+    pv.innerHTML = `<div class="empty">Δεν άνοιξε: ${esc(err.message)}</div>`;
+  }
+}
 
 // ------------------------------------------------------------- αχνό → παρουσίαση + «Ζητήστε πληροφορίες / πρόταση»
 function axno(t) {
@@ -446,9 +537,9 @@ async function doInstall() {
 }
 
 // ------------------------------------------------------------- πλοήγηση
-function go(name, arg) { view = {name, arg}; render(); scrollTo(0, 0); }
+function go(name, arg) { const apo = view.name !== 'egg' ? {name: view.name, arg: view.arg} : view.apo; view = {name, arg, apo}; render(); scrollTo(0, 0); }
 function render() {
-  if (['home', 'tmima', 'rythmiseis'].includes(view.name) && !D) view = {name: 'pin'};
+  if (['home', 'tmima', 'rythmiseis', 'ola', 'egg'].includes(view.name) && !D) view = {name: 'pin'};
   $('#app').innerHTML = (V[view.name] || V.load)();
 }
 function openModal(html) { closeModal(); const bg = document.createElement('div'); bg.className = 'mbg'; bg.id = 'mbg';
