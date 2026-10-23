@@ -58,6 +58,10 @@ button,input{font:inherit;color:inherit} button{cursor:pointer}
 .ri.an em,.ri.ak em{background:rgba(255,255,255,.55)}
 .ri.sel{border-color:var(--ink);box-shadow:0 0 0 3px var(--accent)}
 .chips button.on.c1{background:var(--t1)} .chips button.on.c2{background:var(--t2);color:#2D3A4D} .chips button.on.c9{background:var(--t9)}
+/* καθυστέρηση */
+.kath{margin-top:12px;border-radius:14px;padding:11px 13px;font-size:13.5px;font-weight:700;display:flex;flex-direction:column;gap:4px}
+.kath.ok{background:var(--tag);color:var(--blue)} .kath.bad{background:var(--bad-bg);color:var(--bad)} .kath b{font-size:15.5px}
+.kath a{align-self:flex-start;margin-top:4px;background:var(--bad);color:#fff;text-decoration:none;border-radius:11px;padding:9px 14px;font-weight:800}
 /* ταμείο */
 .tools{display:flex;gap:8px;margin-top:12px} .tools button{flex:1;border:1.5px solid #B9DCE8;background:var(--surface);color:var(--blue);border-radius:13px;min-height:44px;font-weight:800;font-size:14.5px}
 .tiles{display:flex;gap:8px;margin-top:12px} .tiles div{flex:1;background:var(--surface);border-radius:14px;padding:10px 11px;box-shadow:0 3px 10px rgba(30,45,65,.06)}
@@ -310,6 +314,7 @@ async function fortose(siopila) {
       SESS.egw = r.egw; LS.set('srv_sess', SESS);
       if (!FILTRO) FILTRO = r.egw.syn;
       if (SEL && !D.rantevou.find(x => x.id === SEL)) SEL = null;
+      setTimeout(() => elegxosKathysterisis(false), 800);
     } catch (e) { if (!siopila) { D = {error: e.message}; } else toast(e.message, true); }
     fortosi = null; render();
   })();
@@ -407,7 +412,7 @@ function lista() {
   const metra = s => D && D.rantevou ? D.rantevou.filter(r => tou(r, s) && !r.katastasi).length : '';
   const [t1, t2, twra] = navTitlos();
   const tameia = e.idioktitis ? XR.filter(x => x.tameio && x.syn !== e.syn) : (XR.find(x => x.syn === e.syn) || e).tameio ? [e] : [];
-  let h = `<div class="tools">${tameia.map(x => `<button onclick="anoixeTameio(${e.idioktitis ? `'${esc(x.syn)}'` : ''})">💶 Ταμείο${e.idioktitis ? ' ' + esc(AITIATIKI[x.syn] || x.onoma) : ''}</button>`).join('')}
+  let h = lorida() + `<div class="tools">${tameia.map(x => `<button onclick="anoixeTameio(${e.idioktitis ? `'${esc(x.syn)}'` : ''})">💶 Ταμείο${e.idioktitis ? ' ' + esc(AITIATIKI[x.syn] || x.onoma) : ''}</button>`).join('')}
     <button onclick="neoExodo(true)">📷 Παραστατικό</button></div>`;
   h += `<div class="seg">${[['imera', 'Ημέρα'], ['evdomada', 'Εβδομάδα'], ['minas', 'Μήνας']].map(([k, l]) =>
       `<button class="${MODE === k ? 'on' : ''}" onclick="mode('${k}')">${l}</button>`).join('')}</div>
@@ -774,6 +779,48 @@ async function apothikefsiExodou() {
     if (history.state && history.state.k) history.back(); else { view = {name: EXODO_APO}; render(); }
   } catch (e) { b.disabled = false; b.textContent = x.mono ? '✓ Αποστολή στους Προμηθευτές' : '✓ Αποθήκευση'; err.textContent = e.message; }
 }
+
+// ------------------------------------------------------------- ειδοποίηση καθυστέρησης (βήμα 4)
+// Για το ΔΙΚΟ μου επόμενο ραντεβού σήμερα (έως 2 ώρες πριν): θέση συσκευής → server (Google, κίνηση τώρα) → αν δεν
+// προλαβαίνω, email στο γραφείο (εντός ωραρίου) ή κόκκινο μήνυμα με «Κλήση πελάτη» (εκτός). Κάθε ~10 λεπτά όσο είναι
+// ανοιχτή η εφαρμογή + μόλις ξαναέρθει μπροστά (π.χ. από το Waze).
+let KATH = null, KATH_POTE = 0, KATH_TRE = false;
+function epomenoMou() {
+  if (!D || !D.rantevou || !SESS) return null;
+  const sim = simera(), tora = new Date().toTimeString().slice(0, 5);
+  return D.rantevou.filter(r => r.mera === sim && !r.katastasi && synList(r).includes(SESS.egw.syn) && r.ora >= tora)
+    .sort((a, b) => a.ora < b.ora ? -1 : 1)[0] || null;
+}
+function elegxosKathysterisis(amesa) {
+  const r = epomenoMou();
+  if (!r) { if (KATH) { KATH = null; render(); } return; }
+  const [h, m] = r.ora.split(':').map(Number), arxi = new Date(); arxi.setHours(h, m, 0, 0);
+  if (arxi - Date.now() > 120 * 60000) return;                          // πολύ νωρίς
+  if (!amesa && Date.now() - KATH_POTE < 9.5 * 60000) return;
+  if (KATH_TRE || !navigator.geolocation) return;
+  KATH_TRE = true; KATH_POTE = Date.now();
+  navigator.geolocation.getCurrentPosition(async pos => {
+    try {
+      const x = await api('kathysterisi', {id: r.id, lat: pos.coords.latitude, lng: pos.coords.longitude});
+      if (x && x.ok && x.afixi) { KATH = Object.assign(x, {r}); render(); }
+    } catch (e) { /* σιωπηλά — δεν ενοχλούμε τον τεχνικό */ }
+    KATH_TRE = false;
+  }, () => { KATH_TRE = false; }, {enableHighAccuracy: false, timeout: 20000, maximumAge: 120000});
+}
+function lorida() {
+  const k = KATH;
+  if (!k || !k.r || view.name !== 'home') return '';
+  const r = (D && D.rantevou || []).find(x => x.id === k.r.id);
+  if (!r || r.katastasi) return '';
+  const tel = tilefona(r)[0];
+  if (k.kathysterei) return `<div class="kath bad"><b>⏰ Θα φτάσετε ~${esc(k.afixi)} · ραντεβού ${esc(k.ora)} (+${k.arga}′)</b>
+    <span>${esc(r.kod)} · ${esc(r.pelatis || '')}</span>
+    ${k.grafeio ? '<span>✓ Ενημερώθηκε το γραφείο — θα καλέσει τον πελάτη.</span>'
+                : `<span>Το γραφείο είναι κλειστό — καλέστε τον πελάτη όταν σταματήσετε.</span>${tel ? `<a href="tel:${esc(tel)}">📞 Κλήση πελάτη</a>` : ''}`}</div>`;
+  return `<div class="kath ok">🧭 Επόμενο ${esc(k.ora)} · ${esc(r.pelatis || r.kod)} · άφιξη ~${esc(k.afixi)} (${k.lepta}′ δρόμος)</div>`;
+}
+setInterval(() => { if (SESS && !document.hidden && view.name === 'home') elegxosKathysterisis(false); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && SESS) setTimeout(() => elegxosKathysterisis(false), 1500); });
 
 // ------------------------------------------------------------- αλλαγή PIN
 function allagiPin() {
