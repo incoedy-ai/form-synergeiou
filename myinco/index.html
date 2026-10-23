@@ -105,6 +105,8 @@ input.fi{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--li
 .spin{margin:60px auto;width:38px;height:38px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .center{text-align:center}
+/* «My InCo» μέσα σε κείμενο = η ΛΕΞΗ-ΛΟΓΟΤΥΠΟ, ποτέ γράμματα (κανόνας χρήστη· λευκή πλακέτα για το σκοτεινό θέμα) */
+.miw{height:1.05em;width:auto;vertical-align:-.24em;background:#fff;padding:1px 5px;border-radius:5px}
 </style>
 </head>
 <body>
@@ -113,6 +115,7 @@ input.fi{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--li
 'use strict';
 const API = 'https://script.google.com/macros/s/AKfycby4Rzp8F7Xic29ynWjMkIZRHIYciQ49YqWHQR0A6dO4DvH-9FhAP6ROsl6BObeQEZfz/exec';
 const LOCK_MIN = 5;
+const MI = '<img class="miw" src="word.png" alt="My InCo">';
 const TM = {
   PC:  {titlos: 'Pest Control', logo: 'pc.png', xroma: '#2D3A4D', axno: 'απεντόμωση · μυοκτονία',
         lista: ['Απεντόμωση και μυοκτονία με πρόγραμμα επισκέψεων', 'Ζωντανοί πίνακες καταγραφών', 'Πιστοποιητικό σε κάθε εφαρμογή']},
@@ -162,8 +165,8 @@ async function api(action, extra) {
   }
   throw new Error(navigator.onLine === false ? 'Χρειάζεται σύνδεση στο ίντερνετ.' : 'Δεν απαντά ο server — δοκιμάστε ξανά.');
 }
-function toast(msg, bad) {
-  const t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); t.textContent = msg;
+function toast(msg, bad, html) {
+  const t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); if (html) t.innerHTML = msg; else t.textContent = msg;
   document.body.appendChild(t); setTimeout(() => t.remove(), 3200);
 }
 
@@ -177,7 +180,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && SE
 
 // ------------------------------------------------------------- εκκίνηση
 async function start() {
-  if (!P || !K) { view = {name: 'msg', t: 'Σκανάρετε το QR του My InCo', m: 'Το QR είναι στο έντυπο που σας στείλαμε με email και μέσα στον φάκελό σας.'}; return render(); }
+  if (!P || !K) { view = {name: 'msg', t: 'Σκανάρετε το QR του ' + MI, m: 'Το QR είναι στο έντυπο που σας στείλαμε με email και μέσα στον φάκελό σας.'}; return render(); }
   try { INFO = await api('info'); }
   catch (e) { view = {name: 'msg', t: 'Δεν υπάρχει σύνδεση', m: e.message, retry: true}; return render(); }
   if (!INFO.ok) { view = {name: 'msg', t: INFO.mplok ? 'Η πρόσβαση έχει κλείσει' : 'Άκυρο QR', m: INFO.error}; return render(); }
@@ -213,7 +216,7 @@ function header(withBack) {
 const V = {};
 V.load = () => '<div class="spin"></div>';
 V.msg = () => `<div class="hd"><span class="plate mi"><img src="katheto.png" alt="My InCo"></span></div>
-  <div class="pinv"><h2>${esc(view.t)}</h2><p>${esc(view.m || '')}</p>
+  <div class="pinv"><h2>${view.t}</h2><p>${esc(view.m || '')}</p>
   ${view.retry ? '<div style="margin-top:20px"><button class="btn" onclick="location.reload()">Ξανά</button></div>' : ''}</div>`;
 
 let PIN = '';
@@ -243,7 +246,7 @@ V.pin = () => { PIN = ''; return header() + `<div class="pinv"><h2>Γράψτε 
   <div class="dots" id="dots">${dots()}</div><div class="err" id="err">${INFO && INFO.kleidomeno ? 'Πολλές λάθος προσπάθειες — δοκιμάστε σε 15 λεπτά.' : ''}</div>
   ${keypad()}<button class="lnk" onclick="go('prosklisi')">Έχω κωδικό πρόσκλησης</button></div>`; };
 
-V.protos = () => header() + `<div class="pinv"><h2>Καλώς ήρθατε στο My InCo</h2>
+V.protos = () => header() + `<div class="pinv"><h2>Καλώς ήρθατε στο ${MI}</h2>
   <p>Είστε ο πρώτος υπεύθυνος. Γράψτε το όνομά σας και επιλέξτε το δικό σας PIN.</p></div>
   <label class="fl">Όνομα</label><input class="fi" id="on" autocomplete="name" maxlength="60">
   <label class="fl">Email (για τις ενημερώσεις — προαιρετικό)</label><input class="fi" id="em" type="email" autocomplete="email" maxlength="120">
@@ -297,7 +300,7 @@ V.home = () => {
       <span class="plate lg"><img src="${TM[t].logo}" alt=""></span><div><h5>${esc(TM[t].titlos)}</h5><p>${esc(TM[t].axno)}</p></div>
       <span class="zp">Ζητήστε<br>πληροφορίες /<br>πρόταση</span></button>`).join('');
   }
-  h += `<button class="lnk" onclick="tiEinai()">Τι είναι το My InCo;</button>` + installBox() +
+  h += `<button class="lnk" onclick="tiEinai()">Τι είναι το ${MI};</button>` + installBox() +
     `<div class="foot"><button class="btn sec small" onclick="go('rythmiseis')">⚙ Ρυθμίσεις</button>
      <button class="btn sec small" onclick="kleidoma()">🔒 Κλείδωμα</button></div>`;
   return h;
@@ -407,7 +410,7 @@ async function prosthikiOk() {
   } catch (e) { err.textContent = e.message; }
 }
 async function afairesi(id, onoma) {
-  openModal(`<h3 style="margin:0 0 8px">Αφαίρεση ${esc(onoma)};</h3><div class="sm">Δεν θα μπορεί πια να μπει στο My InCo. Οι άλλοι υπεύθυνοι δεν επηρεάζονται.</div>
+  openModal(`<h3 style="margin:0 0 8px">Αφαίρεση ${esc(onoma)};</h3><div class="sm">Δεν θα μπορεί πια να μπει στο ${MI}. Οι άλλοι υπεύθυνοι δεν επηρεάζονται.</div>
     <div style="margin-top:16px"><button class="btn" style="background:var(--bad);color:#fff" onclick="afairesiOk('${id}')">Αφαίρεση</button></div>
     <button class="lnk" onclick="closeModal()">Άκυρο</button>`);
 }
@@ -424,9 +427,9 @@ const standalone = () => matchMedia('(display-mode: standalone)').matches || nav
 const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 function installBox() {
   if (standalone() || LS.get('mi_installed', false)) return '';
-  if (installEvt) return `<div class="install"><div><b>Βάλτε το My InCo στο κινητό</b><br>Ένα εικονίδιο στην οθόνη σας — όλα τα έγγραφα με ένα άγγιγμα.</div>
+  if (installEvt) return `<div class="install"><div><b>Βάλτε το ${MI} στο κινητό</b><br>Ένα εικονίδιο στην οθόνη σας — όλα τα έγγραφα με ένα άγγιγμα.</div>
     <button class="btn" style="background:var(--blue);color:#fff" onclick="doInstall()">📲 Εγκατάσταση στο κινητό</button></div>`;
-  if (isIOS()) return `<div class="install"><div><b>Βάλτε το My InCo στο iPhone</b><br>Ένα εικονίδιο στην οθόνη σας — όλα τα έγγραφα με ένα άγγιγμα.</div>
+  if (isIOS()) return `<div class="install"><div><b>Βάλτε το ${MI} στο iPhone</b><br>Ένα εικονίδιο στην οθόνη σας — όλα τα έγγραφα με ένα άγγιγμα.</div>
     <div>1. Πατήστε <b>Κοινοποίηση</b> (το τετράγωνο με το βέλος ⬆) κάτω στο Safari.<br>2. Επιλέξτε <b>«Προσθήκη στην οθόνη Αφετηρίας»</b>.</div></div>`;
   return '';
 }
@@ -435,7 +438,7 @@ async function doInstall() {
   installEvt.prompt();
   const r = await installEvt.userChoice.catch(() => null);
   installEvt = null;
-  if (r && r.outcome === 'accepted') { LS.set('mi_installed', true); toast('✓ Το My InCo μπήκε στην οθόνη σας'); }
+  if (r && r.outcome === 'accepted') { LS.set('mi_installed', true); toast('✓ Το ' + MI + ' μπήκε στην οθόνη σας', false, true); }
   render();
 }
 
