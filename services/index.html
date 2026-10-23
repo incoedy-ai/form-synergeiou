@@ -222,8 +222,8 @@ V.pin = () => {
   PIN = '';
   const x = XR.find(r => r.syn === view.syn) || XR[0] || {};
   const neo = x.syn && !x.pin;
-  const titlos = !neo ? 'Γράψτε το PIN σας' : (PIN1 ? 'Ξανά το ίδιο PIN' : 'Πρώτη φορά: ορίστε το PIN σας');
-  const ypo = !neo ? 'το ξέρετε μόνο εσείς' : (PIN1 ? 'για επιβεβαίωση' : '4 έως 8 ψηφία · θα το γράφετε κάθε φορά');
+  const titlos = !neo ? 'Πληκτρολογήστε το PIN σας' : (PIN1 ? 'Ξανά το ίδιο PIN' : 'Πρώτη φορά: ορίστε το PIN σας');
+  const ypo = !neo ? 'το ξέρετε μόνο εσείς' : (PIN1 ? 'για επιβεβαίωση' : '4 έως 8 ψηφία · θα το πληκτρολογείτε κάθε φορά');
   return `<div class="pinv"><span class="big"><img src="logo.png" alt="InCo Services" style="height:64px"></span>
     <div class="who2">${XR.map(r => `<button class="${r.syn === x.syn ? 'on' : ''}" onclick="dialexe('${esc(r.syn)}')">${esc(r.onoma)}</button>`).join('')}</div>
     <h2>${titlos}</h2><p>${ypo}</p>
