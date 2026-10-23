@@ -418,12 +418,12 @@ if(SCRIPT && KOD){
   const badge=document.querySelector(".demo"); if(badge) badge.textContent="LIVE DATA";
   setCustHeader(P, KOD, PELATIS ? decodeURIComponent(PELATIS) : "");
   const sub=document.querySelector(".head .sub"); if(sub) sub.innerHTML='Έντυπο Ε-Ε05 · <b style="color:#8fd4e6">Πίνακας διαρκούς ενημέρωσης καταγραφών</b>';
-  fetch(SCRIPT+"?type=feromo-data&kod="+encodeURIComponent(KOD)).then(r=>r.json()).then(rows=>{
+  fetch(SCRIPT+"?type=feromo-data&kod="+encodeURIComponent(KOD)+"&v="+encodeURIComponent(P.get("v")||"")).then(r=>r.json()).then(rows=>{
     if(!rows||rows.length<2){ if(badge)badge.textContent="ΧΩΡΙΣ ΚΑΤΑΓΡΑΦΕΣ";
       showEmptyState("Δεν υπάρχουν ακόμα καταγραφές για αυτόν τον πελάτη."); return; }
     buildReal(rows);
     // οι επισκέψεις είναι συμπληρωματικές: αν αποτύχουν, ο πίνακας παίζει κανονικά
-    return fetch(SCRIPT+"?type=visits-data&kod="+encodeURIComponent(KOD))
+    return fetch(SCRIPT+"?type=visits-data&kod="+encodeURIComponent(KOD)+"&v="+encodeURIComponent(P.get("v")||""))
       .then(r=>r.json()).then(applyVisits).catch(()=>{})
       .then(()=>{ renderAll(); hideDemoOnlyCards(); });
   }).catch(e=>{ if(badge)badge.textContent="ΣΦΑΛΜΑ — DEMO"; buildDemo(); renderAll(); });

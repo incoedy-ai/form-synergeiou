@@ -235,7 +235,7 @@ const badge=document.getElementById("badge");
 
 if(SCRIPT && KOD){
   if(badge) badge.textContent="ΦΟΡΤΩΝΕΙ…";
-  fetch(SCRIPT+"?type=programma-data&kod="+encodeURIComponent(KOD))
+  fetch(SCRIPT+"?type=programma-data&kod="+encodeURIComponent(KOD)+"&v="+encodeURIComponent(P.get("v")||""))
     .then(r=>r.json())
     .then(values=>{
       if(!values || values.length<2){
