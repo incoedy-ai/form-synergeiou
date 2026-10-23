@@ -58,6 +58,30 @@ button,input{font:inherit;color:inherit} button{cursor:pointer}
 .ri.an em,.ri.ak em{background:rgba(255,255,255,.55)}
 .ri.sel{border-color:var(--ink);box-shadow:0 0 0 3px var(--accent)}
 .chips button.on.c1{background:var(--t1)} .chips button.on.c2{background:var(--t2);color:#2D3A4D} .chips button.on.c9{background:var(--t9)}
+/* ταμείο */
+.tools{display:flex;gap:8px;margin-top:12px} .tools button{flex:1;border:1.5px solid #B9DCE8;background:var(--surface);color:var(--blue);border-radius:13px;min-height:44px;font-weight:800;font-size:14.5px}
+.tiles{display:flex;gap:8px;margin-top:12px} .tiles div{flex:1;background:var(--surface);border-radius:14px;padding:10px 11px;box-shadow:0 3px 10px rgba(30,45,65,.06)}
+.tiles small{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;color:var(--muted)} .tiles b{display:block;font-size:19px;font-weight:800;margin-top:2px}
+.tiles .ys{background:var(--navy)} .tiles .ys small{color:#9FD9EA} .tiles .ys b{color:#fff}
+.opn{margin-top:10px;border-radius:12px;background:var(--warn-bg);color:var(--warn);padding:9px 12px;font-size:13px;font-weight:800}
+.dh2,.dy2{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr 1.05fr;gap:4px;align-items:center;padding:8px 4px;font-size:13px;font-weight:800;width:100%;border:0;background:none;text-align:right}
+.dh2{font-size:9.5px;letter-spacing:.6px;color:var(--muted)} .dh2 i,.dy2 i{text-align:left;font-style:normal}
+.dy2{border-top:1.5px solid var(--line);color:var(--ink)} .dy2 .g,.yl2 .g{color:var(--ok)} .dy2 .n,.yl2 .n{color:#B45309}
+.dy2 .rn{background:var(--tag);border-radius:7px;padding:3px 5px;color:var(--blue)} .dy2.sel{background:var(--tag);border-radius:10px;box-shadow:inset 0 0 0 2px var(--accent)}
+.yl2 small{display:block;font-size:11px;color:var(--muted);font-weight:700}
+.yl2 .xx{flex:none;border:0;background:var(--bad-bg);color:var(--bad);border-radius:8px;width:30px;height:30px;font-weight:800}
+.sm2{display:flex;justify-content:space-between;margin-top:6px;padding-top:8px;border-top:2px solid var(--ink);font-size:14px;font-weight:800}
+.okb{display:block;width:100%;margin-top:12px;border:0;border-radius:14px;min-height:54px;background:var(--ok);color:#fff;font-weight:800;font-size:16px}
+.amt{background:var(--navy);color:#fff;border-radius:16px;padding:14px;text-align:center;margin-top:8px}
+.amt small{font-size:11px;font-weight:800;letter-spacing:1px;color:#9FD9EA} .amt b{display:block;font-size:30px;margin:4px 0} .amt p{margin:0;font-size:13px;color:#DCEAF0;font-weight:700}
+.nt{margin-top:8px;text-align:center;font-size:12.5px;color:var(--muted);font-weight:700}
+.camf2{display:grid;place-items:center;margin-top:12px;min-height:200px;border-radius:16px;border:2px dashed #B9CCD7;background:var(--surface);overflow:hidden;cursor:pointer}
+.pgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:12px}
+.pg{position:relative;aspect-ratio:3/4;border-radius:12px;overflow:hidden;background:var(--surface);border:1.5px solid var(--line)}
+.pg img{width:100%;height:100%;object-fit:cover;display:block} .pg b{position:absolute;left:6px;bottom:6px;background:rgba(21,32,46,.8);color:#fff;font-size:11px;border-radius:6px;padding:2px 6px}
+.pg button{position:absolute;right:5px;top:5px;border:0;width:28px;height:28px;border-radius:8px;background:rgba(201,48,48,.9);color:#fff;font-weight:800}
+.pg.add{display:grid;place-items:center;border:2px dashed #B9CCD7;cursor:pointer} .pg.add span{text-align:center;font-weight:800;color:var(--blue);line-height:1.5}
+.camf2 span{text-align:center;font-weight:800;color:var(--blue);font-size:17px;line-height:1.6} .camf2 img{width:100%;max-height:340px;object-fit:contain;display:block}
 /* φόρτωση */
 .fr{display:flex;gap:10px;align-items:center;background:var(--surface);border:2px solid transparent;border-radius:14px;padding:10px 11px;margin-top:8px;box-shadow:0 3px 10px rgba(30,45,65,.06)}
 .fr.on{border-color:var(--accent)}
@@ -382,7 +406,10 @@ function lista() {
   if (!tabs.includes(e.syn)) tabs.unshift(e.syn);
   const metra = s => D && D.rantevou ? D.rantevou.filter(r => tou(r, s) && !r.katastasi).length : '';
   const [t1, t2, twra] = navTitlos();
-  let h = `<div class="seg">${[['imera', 'Ημέρα'], ['evdomada', 'Εβδομάδα'], ['minas', 'Μήνας']].map(([k, l]) =>
+  const tameia = e.idioktitis ? XR.filter(x => x.tameio && x.syn !== e.syn) : (XR.find(x => x.syn === e.syn) || e).tameio ? [e] : [];
+  let h = `<div class="tools">${tameia.map(x => `<button onclick="anoixeTameio(${e.idioktitis ? `'${esc(x.syn)}'` : ''})">💶 Ταμείο${e.idioktitis ? ' ' + esc(AITIATIKI[x.syn] || x.onoma) : ''}</button>`).join('')}
+    <button onclick="neoExodo(true)">📷 Παραστατικό</button></div>`;
+  h += `<div class="seg">${[['imera', 'Ημέρα'], ['evdomada', 'Εβδομάδα'], ['minas', 'Μήνας']].map(([k, l]) =>
       `<button class="${MODE === k ? 'on' : ''}" onclick="mode('${k}')">${l}</button>`).join('')}</div>
     <div class="dn"><button onclick="allaxeMera(-1)" aria-label="Προηγούμενο">‹</button>
     <div class="d">${esc(t1)}<small>${esc(t2)}</small></div>
@@ -481,7 +508,10 @@ function anoixeKartela(id) {
   history.pushState({k: 1}, ''); view = {name: 'kartela'}; render(); scrollTo(0, 0);
 }
 function piso() { if (history.state && history.state.k) history.back(); else { view = {name: 'home'}; render(); } }
-addEventListener('popstate', () => { if (view.name === 'kartela' || view.name === 'fortosi') { view = {name: 'home'}; render(); } });
+addEventListener('popstate', () => {
+  if (view.name === 'exodo') { view = {name: EXODO_APO}; render(); if (EXODO_APO === 'tameio' && !TM) fortoseTameio(); return; }
+  if (['kartela', 'fortosi', 'tameio'].includes(view.name)) { view = {name: 'home'}; render(); }
+});
 addEventListener('resize', () => { if (view.name === 'home' || view.name === 'kartela') { if (wide() && view.name === 'kartela') view = {name: 'home'}; render(); } });
 
 // ------------------------------------------------------------- φόρτωση οχήματος (βήμα 2, 23/10/2026)
@@ -605,6 +635,146 @@ async function kataxorisiOk() {
   } catch (e) { b.disabled = false; b.textContent = '✓ Καταχώρηση'; $('#err').textContent = e.message; }
 }
 
+// ------------------------------------------------------------- ταμείο τεχνικού + έξοδα + φωτογραφία παραστατικού (βήμα 3)
+// Ταμείο ΜΟΝΟ για όσους ορίζει ο server (Βαγγέλης) · μόνο μετρητά · σούμα ανά ημέρα + σύνολο μέχρι την «Ολοκλήρωση»
+// (μόνο ο ιδιοκτήτης) · έξοδα με φωτογραφία → φάκελος Προμηθευτών · ο ιδιοκτήτης: σκέτη φωτογραφία παραστατικού.
+let TM = null, TSYN = null, TSEL = null, TX = null, EXODO_APO = 'home';   // ταμείο · ποιου · επιλεγμένη μέρα · νέο έξοδο (φόρμα)
+const ETIKETA_EIDOUS = {'ΚΑΥΣΙΜΑ': 'Καύσιμα', 'ΔΙΟΔΙΑ / PARKING': 'Διόδια / Parking', 'ΥΛΙΚΑ': 'Υλικά', 'ΑΛΛΟ': 'Άλλο'};
+const eur = x => (Math.round(x * 100) / 100).toLocaleString('el-GR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
+const MERES_S = ['Κυρ', 'Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ'];
+const imeraS = s => { const x = new Date(s + 'T12:00:00'); return MERES_S[x.getDay()] + ' ' + s.slice(8, 10) + '/' + s.slice(5, 7); };
+async function anoixeTameio(syn) {
+  TM = null; TSYN = syn || null; TSEL = null;
+  history.pushState({k: 1}, ''); view = {name: 'tameio'}; render(); scrollTo(0, 0);
+  await fortoseTameio();
+}
+async function fortoseTameio() {
+  try {
+    const r = await api('tameio', TSYN ? {syn: TSYN} : {});
+    if (!r.ok) throw new Error(r.error);
+    TM = r.tameio; TSYN = TM.syn;
+  } catch (e) { TM = {error: e.message}; }
+  render();
+}
+function meresTameiou() {
+  const M = {};
+  const pare = d => M[d] || (M[d] = {mera: d, eis: [], ex: []});
+  TM.eisprakseis.forEach(x => pare(x.mera).eis.push(x));
+  TM.exoda.forEach(x => pare(x.mera).ex.push(x));
+  let run = 0;
+  return Object.values(M).sort((a, b) => a.mera < b.mera ? -1 : 1).map(m => {
+    m.se = m.eis.reduce((a, x) => a + x.poso, 0); m.sx = m.ex.reduce((a, x) => a + x.poso, 0);
+    m.soum = m.se - m.sx; run += m.soum; m.run = run; return m;
+  });
+}
+V.tameio = () => {
+  const idiok = SESS.egw.idioktitis;
+  let h = `<div class="kh"><div class="tp"><button class="back" onclick="piso()" aria-label="Πίσω">‹</button>
+    <small>ΤΑΜΕΙΟ · ΜΟΝΟ ΜΕΤΡΗΤΑ</small></div><h2>💶 ${esc(TM && TM.onoma || '')}</h2>
+    <div class="ad">${TM && TM.apo ? (TM.apo_arxi ? 'Από την αρχή του ταμείου · ' : 'Από την τελευταία παράδοση · ') + esc(TM.apo.slice(8, 10) + '/' + TM.apo.slice(5, 7) + (TM.apo_arxi ? '' : ' ' + TM.apo.slice(11, 16))) : ''}</div></div>`;
+  if (!TM) return h + '<div class="spin"></div>';
+  if (TM.error) return h + `<div class="empty">${esc(TM.error)}<br><br><button class="btn sec" onclick="fortoseTameio()">Ξανά</button></div>`;
+  h += `<div class="tiles"><div><small>ΕΙΣΠΡΑΞΕΙΣ</small><b>${eur(TM.synolo_eis)}</b></div><div><small>ΕΞΟΔΑ</small><b>${eur(TM.synolo_ex)}</b></div>
+    <div class="ys"><small>${idiok ? 'ΣΟΥ ΠΑΡΑΔΙΔΕΙ' : 'ΥΠΟΛΟΙΠΟ ΣΤΑ ΧΕΡΙΑ'}</small><b>${eur(TM.ypoloipo)}</b></div></div>
+    <div class="opn">⏳ Αθροίζεται κάθε μέρα μέχρι την «Ολοκλήρωση — τα παρέλαβα»</div>`;
+  if (!idiok) h += `<button class="go" style="width:100%;border:0" onclick="neoExodo()">📷 Νέο έξοδο</button>`;
+  const M = meresTameiou();
+  if (!M.length) h += '<div class="empty">Δεν υπάρχουν ακόμα εισπράξεις ή έξοδα.</div>';
+  else {
+    if (!TSEL || !M.find(m => m.mera === TSEL)) TSEL = M[M.length - 1].mera;
+    h += `<div class="cd"><div class="dh2"><i>ΗΜΕΡΑ</i><span>ΕΙΣΠΡ.</span><span>ΕΞΟΔΑ</span><span>ΣΟΥΜΑ</span><span>ΣΥΝΟΛΟ</span></div>
+      ${M.map(m => `<button class="dy2${m.mera === TSEL ? ' sel' : ''}" onclick="TSEL='${m.mera}';render()"><i>${imeraS(m.mera)}</i>
+      <span class="g">${eur(m.se)}</span><span class="n">${m.sx ? '−' + eur(m.sx) : '—'}</span><b>${eur(m.soum)}</b><b class="rn">${eur(m.run)}</b></button>`).join('')}</div>`;
+    const m = M.find(x => x.mera === TSEL);
+    h += `<div class="cd"><div class="lb">${esc(imera(m.mera))} — ΑΝΑΛΥΤΙΚΑ</div>
+      ${m.eis.map(x => `<div class="yl2"><span>${esc(x.pelatis)}<small>${esc(x.kod)} · μετρητά · από την Εντολή</small></span><i class="g">${eur(x.poso)}</i></div>`).join('')}
+      ${m.ex.map(x => `<div class="yl2"><span>${x.foto ? '📷 ' : ''}${esc(x.eidos)}<small>${esc([x.och, x.sxolio].filter(Boolean).join(' · '))}</small></span><i class="n">−${eur(x.poso)}</i>
+        ${!idiok ? `<button class="xx" onclick="sviseExodo('${esc(x.id)}')" aria-label="Ακύρωση">✕</button>` : ''}</div>`).join('')}
+      <div class="sm2"><span>Σούμα ημέρας</span><span>${eur(m.soum)}</span></div></div>`;
+  }
+  if (TM.teleftaia) h += `<div class="upd">Τελευταία παράδοση: ${esc(TM.teleftaia.pote.slice(8, 10) + '/' + TM.teleftaia.pote.slice(5, 7) + ' ' + TM.teleftaia.pote.slice(11, 16))} · ${eur(TM.teleftaia.poso)}</div>`;
+  if (idiok) h += `<button class="okb" onclick="oloklirosi()">✓ Ολοκλήρωση — τα παρέλαβα (${eur(TM.ypoloipo)})</button>`;
+  return h;
+};
+function oloklirosi() {
+  openModal(`<h3 style="margin:0 0 6px">Παραλαβή χρημάτων</h3><div class="amt"><small>ΠΑΡΑΔΙΔΕΙ Ο ${esc(TM.onoma.toUpperCase())}</small><b>${eur(TM.ypoloipo)}</b>
+    <p>${TM.eisprakseis.length} εισπράξεις · ${TM.exoda.length} έξοδα</p></div>
+    <div class="nt">Μετά την Ολοκλήρωση το ταμείο του ξεκινά από το μηδέν. Η παραλαβή μένει γραμμένη.</div>
+    <div class="err" id="err"></div><button class="okb" id="ob" onclick="oloklirosiOk()">✓ Ολοκλήρωση — τα παρέλαβα</button><button class="lnk" onclick="closeModal()">Άκυρο</button>`);
+}
+async function oloklirosiOk() {
+  const b = $('#ob'); b.disabled = true; b.textContent = 'Καταγραφή…';
+  try {
+    const r = await api('oloklirosi', {syn: TM.syn, ypoloipo: TM.ypoloipo});
+    if (r.allaxe) { TM = r.tameio; closeModal(); render(); toast('Μπήκε κάτι καινούριο στο μεταξύ — δες το ποσό και πάτα ξανά', true); return; }
+    if (!r.ok) throw new Error(r.error);
+    TM = r.tameio; TSEL = null; closeModal(); render(); toast('✓ Καταγράφηκε η παραλαβή');
+  } catch (e) { b.disabled = false; b.textContent = '✓ Ολοκλήρωση — τα παρέλαβα'; $('#err').textContent = e.message; }
+}
+async function sviseExodo(id) {
+  openModal(`<h3 style="margin:0 0 8px">Ακύρωση εξόδου;</h3><div class="sm" style="color:var(--muted);font-weight:700">Μόνο αν μπήκε κατά λάθος. Βγαίνει από το ταμείο.</div>
+    <div style="margin-top:14px"><button class="btn" style="background:var(--bad);color:#fff" onclick="sviseExodoOk('${esc(id)}')">Ακύρωση εξόδου</button></div><button class="lnk" onclick="closeModal()">Πίσω</button>`);
+}
+async function sviseExodoOk(id) {
+  try { const r = await api('akyrosi_exodou', {id}); if (!r.ok) throw new Error(r.error); TM = r.tameio; closeModal(); render(); toast('✓ Ακυρώθηκε'); }
+  catch (e) { toast(e.message, true); }
+}
+// ---- νέο έξοδο / φωτογραφία παραστατικού (ίδια οθόνη· ο ιδιοκτήτης: μόνο φωτογραφία)
+function neoExodo(monoFoto) {
+  const ox = []; (D && D.rantevou || []).filter(r => synList(r).includes(SESS.egw.syn)).forEach(r => { if (r.och && !ox.includes(r.och)) ox.push(r.och); });
+  TX = {mono: !!monoFoto, fotos: [], poso: '', eidos: '', och: ox[0] || '', oximata: ox.length ? ox : ['ΙΥΗ 6295', 'ΙΟΗ 7404'], sxolio: ''};
+  EXODO_APO = view.name === 'tameio' ? 'tameio' : 'home';
+  history.pushState({k: 1}, ''); view = {name: 'exodo'}; render(); scrollTo(0, 0);
+}
+V.exodo = () => {
+  const x = TX, eidi = (TM && TM.eidi) || ['ΚΑΥΣΙΜΑ', 'ΔΙΟΔΙΑ / PARKING', 'ΥΛΙΚΑ', 'ΑΛΛΟ'];
+  let h = `<div class="kh"><div class="tp"><button class="back" onclick="piso()" aria-label="Πίσω">‹</button><small>${x.mono ? 'ΠΑΡΑΣΤΑΤΙΚΟ → ΠΡΟΜΗΘΕΥΤΕΣ' : 'ΝΕΟ ΕΞΟΔΟ · ΜΕΤΡΗΤΑ'}</small></div>
+    <h2>${x.mono ? '📷 Φωτογραφία παραστατικού' : '📷 Νέο έξοδο'}</h2><div class="ad">${x.mono ? 'Πηγαίνει κατευθείαν στον φάκελο «1 ΝΕΑ ΠΡΟΣ ΚΑΤΑΧΩΡΗΣΗ» των Προμηθευτών.' : 'Η φωτογραφία πηγαίνει στους Προμηθευτές· το ποσό μπαίνει αμέσως στο ταμείο σας.'}</div></div>`;
+  // ένα παραστατικό μπορεί να έχει πολλές σελίδες → ενώνονται σε ΕΝΑ PDF πριν μπουν στον φάκελο των Προμηθευτών
+  h += x.fotos.length ? `<div class="pgs">${x.fotos.map((f, i) => `<div class="pg"><img src="${f}" alt=""><b>σελ. ${i + 1}</b>
+      <button onclick="TX.fotos.splice(${i},1);render()" aria-label="Σβήσιμο σελίδας">✕</button></div>`).join('')}
+      ${x.fotos.length < 8 ? `<label class="pg add"><span>＋<br>Άλλη σελίδα</span><input type="file" accept="image/*" capture="environment" onchange="fotoEpilogi(this)" hidden></label>` : ''}</div>
+      ${x.fotos.length > 1 ? '<div class="nt">Οι ' + x.fotos.length + ' σελίδες θα μπουν ως ΕΝΑ παραστατικό (ένα PDF).</div>' : ''}`
+    : `<label class="camf2"><span>📷<br>Πατήστε για φωτογραφία</span>
+       <input type="file" accept="image/*" capture="environment" onchange="fotoEpilogi(this)" hidden></label>`;
+  if (!x.mono) {
+    h += `<label class="fl">Ποσό (€)</label><input class="fi" id="xposo" inputmode="decimal" value="${esc(x.poso)}" oninput="TX.poso=this.value" placeholder="π.χ. 50,00">
+      <label class="fl">Τι είναι</label><div class="chips">${eidi.map(e => `<button class="${x.eidos === e ? 'on' : ''}" onclick="TX.eidos='${esc(e)}';render()">${esc(ETIKETA_EIDOUS[e] || e)}</button>`).join('')}</div>
+      <label class="fl">Όχημα</label><div class="chips">${x.oximata.map(o => `<button class="${x.och === o ? 'on' : ''}" onclick="TX.och='${esc(o)}';render()">${esc(o)}</button>`).join('')}</div>`;
+  }
+  h += `<label class="fl">Σημείωση (προαιρετικά)</label><input class="fi" id="xsx" value="${esc(x.sxolio)}" oninput="TX.sxolio=this.value" maxlength="200">
+    <div class="err" id="err"></div><button class="go" style="width:100%;border:0" id="xb" onclick="apothikefsiExodou()">✓ ${x.mono ? 'Αποστολή στους Προμηθευτές' : 'Αποθήκευση'}</button>`;
+  return h;
+};
+function fotoEpilogi(inp) {
+  const f = inp.files && inp.files[0]; if (!f) return;
+  const img = new Image(), url = URL.createObjectURL(f);
+  img.onload = () => {                                   // συμπίεση: η μεγάλη πλευρά έως 1600 px (όπως στο QRecord)
+    const k = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+    c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    TX.fotos.push(c.toDataURL('image/jpeg', 0.82)); URL.revokeObjectURL(url); render();
+  };
+  img.src = url;
+}
+async function apothikefsiExodou() {
+  const x = TX, err = $('#err'), b = $('#xb');
+  const poso = Number(String(x.poso).replace(',', '.'));
+  if (!x.fotos.length && x.mono) return err.textContent = 'Βγάλτε πρώτα φωτογραφία.';
+  if (!x.mono && !(poso > 0)) return err.textContent = 'Γράψτε το ποσό.';
+  if (!x.mono && !x.eidos) return err.textContent = 'Διαλέξτε τι είναι.';
+  b.disabled = true; b.textContent = 'Αποστολή…';
+  const batch = 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  try {
+    const r = x.mono ? await api('parastatiko', {batch, fotos: x.fotos, sxolio: x.sxolio})
+                     : await api('exodo', {batch, poso, eidos: x.eidos, och: x.och, sxolio: x.sxolio, fotos: x.fotos});
+    if (!r.ok) throw new Error(r.error);
+    if (r.tameio) TM = r.tameio;
+    TX = null; toast(x.mono ? '✓ Στάλθηκε — θα είναι στον φάκελο με το επόμενο Sync' : '✓ Το έξοδο μπήκε στο ταμείο');
+    if (history.state && history.state.k) history.back(); else { view = {name: EXODO_APO}; render(); }
+  } catch (e) { b.disabled = false; b.textContent = x.mono ? '✓ Αποστολή στους Προμηθευτές' : '✓ Αποθήκευση'; err.textContent = e.message; }
+}
+
 // ------------------------------------------------------------- αλλαγή PIN
 function allagiPin() {
   openModal(`<h3 style="margin:0 0 6px">🔑 Αλλαγή PIN</h3>
@@ -646,7 +816,8 @@ async function doInstall() {
 
 // ------------------------------------------------------------- σχεδίαση
 function render() {
-  if ((view.name === 'home' || view.name === 'kartela' || view.name === 'fortosi') && !SESS) view = {name: 'pin'};
+  if (['home', 'kartela', 'fortosi', 'tameio', 'exodo'].includes(view.name) && !SESS) view = {name: 'pin'};
+  if (view.name === 'exodo' && !TX) view = {name: 'home'};
   const two = view.name === 'home' && wide() && D && D.rantevou;
   $('#app').className = 'wrap' + (two ? ' two' : '');
   $('#app').innerHTML = (V[view.name] || V.load)();
