@@ -41,6 +41,20 @@ button,input{font:inherit;color:inherit} button{cursor:pointer}
 .chips button{border:0;border-radius:20px;padding:8px 13px;background:var(--key);color:var(--muted);font-weight:800;font-size:14px}
 .chips button.on{background:var(--navy);color:#fff}
 .rte{text-decoration:none;display:flex;gap:8px;justify-content:center;align-items:center;width:100%;margin-top:10px;border:1.5px solid #B9DCE8;background:var(--surface);color:var(--blue);border-radius:13px;min-height:46px;font-weight:800;font-size:15px}
+/* Ημέρα | Εβδομάδα | Μήνας */
+.seg{display:flex;background:var(--key);border-radius:13px;padding:4px;margin-top:12px}
+.seg button{flex:1;border:0;background:none;border-radius:10px;min-height:38px;font-weight:800;font-size:14.5px;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px rgba(30,45,65,.12)}
+.dh{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;margin-top:16px;padding:6px 4px;border:0;border-bottom:2px solid var(--line);background:none;font-weight:800;font-size:15px;color:var(--ink);text-align:left}
+.dh i{font-style:normal;font-size:12.5px;color:var(--muted);white-space:nowrap} .dh.to{border-bottom-color:var(--accent)} .dh.to>span{color:var(--blue)}
+.st.mz{color:#5B3FA0;background:#ECE6F8}
+.mg{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:12px}
+.mg>b{text-align:center;font-size:12px;color:var(--muted);padding:2px 0} .mg>b.we{opacity:.6}
+.mg button{position:relative;aspect-ratio:1/1;border:1.5px solid var(--line);background:var(--surface);border-radius:11px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:800}
+.mg button span{font-size:14px} .mg button i{font-style:normal;font-size:11.5px;background:var(--navy);color:#fff;border-radius:9px;min-width:20px;padding:1px 6px}
+.mg button u{position:absolute;top:2px;right:3px;text-decoration:none;font-size:11px}
+.mg button.we{background:transparent} .mg button.ek{opacity:.25} .mg button.to{border-color:var(--accent);border-width:2.5px}
+.mg button.ex span{color:var(--blue)} .mg button.mz{background:#F4F0FC}
 /* λίστα */
 .ri{display:flex;gap:11px;align-items:center;width:100%;text-align:left;margin-top:9px;background:var(--surface);border:2px solid transparent;border-radius:15px;padding:11px 12px;box-shadow:0 3px 10px rgba(30,45,65,.06)}
 .ri.sel{border-color:var(--accent)}
@@ -131,6 +145,7 @@ const wide = () => matchMedia('(min-width:900px)').matches;
 // συνεδρία: μένει στη συσκευή μέχρι να λήξει (12 ώρες) ή να πατηθεί «Έξοδος»
 let SESS = LS.get('srv_sess', null);       // {s, egw:{onoma,syn,idioktitis}}
 let XR = [], D = null, DAY = simera(), FILTRO = null, SEL = null, view = {name: 'load'}, fortosi = null;
+let MODE = LS.get('srv_mode', 'imera');   // imera | evdomada | minas
 
 async function api(action, extra) {
   const body = JSON.stringify(Object.assign({action}, SESS && {s: SESS.s}, extra || {}));
@@ -226,12 +241,13 @@ async function pinOk() {
 // ------------------------------------------------------------- ραντεβού
 async function fortose(siopila) {
   if (fortosi) return fortosi;
+  const [apo, eos] = evros();
   if (!siopila) { D = null; render(); }
   fortosi = (async () => {
     try {
-      const r = await api('rantevou', {d: DAY});
+      const r = await api('rantevou', {d: apo, eos});
       if (!r.ok) throw new Error(r.error);
-      D = Object.assign(r, {day: DAY, pote: new Date()});
+      D = Object.assign(r, {day: DAY, apo, eos, pote: new Date()});
       SESS.egw = r.egw; LS.set('srv_sess', SESS);
       if (!FILTRO) FILTRO = r.egw.syn;
       if (SEL && !D.rantevou.find(x => x.id === SEL)) SEL = null;
@@ -240,25 +256,49 @@ async function fortose(siopila) {
   })();
   return fortosi;
 }
+// ------------------------------------------------------------- Ημέρα | Εβδομάδα | Μήνας
+const MHNES = ['Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος','Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
+const prosthese = (s, n) => { const x = new Date(s + 'T12:00:00'); x.setDate(x.getDate() + n); return iso(x); };
+const deftera = s => { const x = new Date(s + 'T12:00:00'); return prosthese(s, -((x.getDay() + 6) % 7)); };
+const dm = s => s.slice(8, 10) + '/' + s.slice(5, 7);
+function evros() {
+  if (MODE === 'evdomada') { const d = deftera(DAY); return [d, prosthese(d, 6)]; }
+  if (MODE === 'minas') { const a = DAY.slice(0, 8) + '01', x = new Date(a + 'T12:00:00'); x.setMonth(x.getMonth() + 1); x.setDate(0); return [a, iso(x)]; }
+  return [DAY, DAY];
+}
+function mode(m) { MODE = m; LS.set('srv_mode', m); SEL = null; fortose(); }
+function allaxeMera(n) {
+  if (n === 0) DAY = simera();
+  else if (MODE === 'evdomada') DAY = prosthese(deftera(DAY), 7 * n);
+  else if (MODE === 'minas') { const x = new Date(DAY.slice(0, 8) + '01T12:00:00'); x.setMonth(x.getMonth() + n); DAY = iso(x); }
+  else DAY = prosthese(DAY, n);
+  SEL = null; fortose();
+}
+function filtro(s) { FILTRO = s; render(); }
+function pigaineMera(d) { DAY = d; MODE = 'imera'; LS.set('srv_mode', MODE); SEL = null; fortose(); }
 function orata() {
   if (!D || !D.rantevou) return [];
   if (FILTRO === 'OLOI' && SESS.egw.idioktitis) return D.rantevou;
   return D.rantevou.filter(r => synList(r).includes(FILTRO));
 }
+// κοινό ραντεβού = με πάνω από έναν (π.χ. «ΑΡΧΙΜΗΔΗΣ ΒΑΓΓΕΛΗΣ»)
+const koino = r => synList(r).length > 1;
+function alloi(r) { return synList(r).filter(s => s !== FILTRO).map(s => AITIATIKI[s] || s).join(', '); }
 function ypotitlos(r) {
   const meta = [r.periohi, r.och];
   const syn = synList(r);
   if (FILTRO === 'OLOI') meta.push(syn.map(s => (XR.find(x => x.syn === s) || {onoma: s}).onoma || s).join(' & '));
-  else { const alloi = syn.filter(s => s !== FILTRO); if (alloi.length) meta.push('μαζί με ' + alloi.map(s => AITIATIKI[s] || s).join(', ')); }
+  else if (koino(r)) meta.push('μαζί με ' + alloi(r));
   return meta.filter(Boolean).join(' · ');
 }
 function grammi(r) {
   const off = r.katastasi === 'akyrosi' || r.katastasi === 'anavoli';
   const st = r.katastasi === 'akyrosi' ? '<span class="st ak">ΑΚΥΡΩΘΗΚΕ</span>' : r.katastasi === 'anavoli' ? '<span class="st an">ΑΝΑΒΟΛΗ</span>' : '';
+  const mz = koino(r) && FILTRO !== 'OLOI' ? '<span class="st mz">👥 ΜΑΖΙ</span>' : '';
   const tags = String(r.typ || '').split(',').map(t => t.trim()).filter(Boolean).map(t => `<em>${esc(t)}</em>`).join('');
   return `<button class="ri${off ? ' off' : ''}${SEL === r.id ? ' sel' : ''}" onclick="anoixeKartela('${esc(r.id)}')">
     <span class="tm">${esc(r.ora)}</span><span class="bd"><b>${esc(r.pelatis || r.kod)}</b><small>${esc(ypotitlos(r))}</small>
-    <span class="tg">${st}${tags}</span></span><span class="ch">›</span></button>`;
+    <span class="tg">${st}${mz}${tags}</span></span><span class="ch">›</span></button>`;
 }
 function diadromiUrl(list) {
   // σήμερα: μόνο όσα δεν έχουν τελειώσει ακόμα (από εκεί που είσαι, στα επόμενα)
@@ -278,29 +318,79 @@ function header() {
     <div class="who"><b>${esc(e.onoma)}</b><small>${D && D.pote ? 'ενημέρωση ' + D.pote.toTimeString().slice(0, 5) : ''}</small></div>
     <button class="ib" onclick="fortose(true)" aria-label="Ανανέωση">⟳</button></div>`;
 }
+function navTitlos() {
+  const [apo] = evros();
+  if (MODE === 'evdomada') {
+    const tora = deftera(simera());
+    const sx = apo === tora ? 'Αυτή η εβδομάδα' : apo === prosthese(tora, 7) ? 'Επόμενη εβδομάδα' : apo === prosthese(tora, -7) ? 'Προηγούμενη εβδομάδα' : 'Εβδομάδα';
+    return [sx, dm(apo) + ' – ' + dm(prosthese(apo, 4)), apo === tora];
+  }
+  if (MODE === 'minas') {
+    const tora = apo.slice(0, 7) === simera().slice(0, 7);
+    return [MHNES[Number(apo.slice(5, 7)) - 1] + ' ' + apo.slice(0, 4), tora ? 'αυτός ο μήνας' : '', tora];
+  }
+  return [DAY === simera() ? 'Σήμερα' : imera(DAY), DAY === simera() ? imera(DAY) : (DAY > simera() ? 'μελλοντική' : 'περασμένη'), DAY === simera()];
+}
 function lista() {
   const e = SESS.egw;
   const tabs = XR.map(x => x.syn).filter((s, i, a) => a.indexOf(s) === i);
   if (!tabs.includes(e.syn)) tabs.unshift(e.syn);
-  const metra = s => D && D.rantevou ? D.rantevou.filter(r => synList(r).includes(s)).length : '';
-  let h = `<div class="dn"><button onclick="allaxeMera(-1)" aria-label="Προηγούμενη">‹</button>
-    <div class="d">${DAY === simera() ? 'Σήμερα' : imera(DAY)}<small>${DAY === simera() ? imera(DAY) : (DAY > simera() ? 'μελλοντική' : 'περασμένη')}</small></div>
-    ${DAY !== simera() ? '<button class="td" onclick="allaxeMera(0)">Σήμερα</button>' : ''}
-    <button onclick="allaxeMera(1)" aria-label="Επόμενη">›</button></div>`;
+  const metra = s => D && D.rantevou ? D.rantevou.filter(r => synList(r).includes(s) && !r.katastasi).length : '';
+  const [t1, t2, twra] = navTitlos();
+  let h = `<div class="seg">${[['imera', 'Ημέρα'], ['evdomada', 'Εβδομάδα'], ['minas', 'Μήνας']].map(([k, l]) =>
+      `<button class="${MODE === k ? 'on' : ''}" onclick="mode('${k}')">${l}</button>`).join('')}</div>
+    <div class="dn"><button onclick="allaxeMera(-1)" aria-label="Προηγούμενο">‹</button>
+    <div class="d">${esc(t1)}<small>${esc(t2)}</small></div>
+    ${!twra ? '<button class="td" onclick="allaxeMera(0)">Σήμερα</button>' : ''}
+    <button onclick="allaxeMera(1)" aria-label="Επόμενο">›</button></div>`;
   h += `<div class="chips">${tabs.map(s => `<button class="${FILTRO === s ? 'on' : ''}" onclick="filtro('${esc(s)}')">${esc((XR.find(x => x.syn === s) || {onoma: s}).onoma)}${D && D.rantevou ? ' · ' + metra(s) : ''}</button>`).join('')}
-    ${e.idioktitis ? `<button class="${FILTRO === 'OLOI' ? 'on' : ''}" onclick="filtro('OLOI')">Και οι δύο${D && D.rantevou ? ' · ' + D.rantevou.length : ''}</button>` : ''}</div>`;
+    ${e.idioktitis ? `<button class="${FILTRO === 'OLOI' ? 'on' : ''}" onclick="filtro('OLOI')">Και οι δύο${D && D.rantevou ? ' · ' + D.rantevou.filter(r => !r.katastasi).length : ''}</button>` : ''}</div>`;
   if (!D) return h + '<div class="spin"></div>';
   if (D.error) return h + `<div class="empty">${esc(D.error)}<br><br><button class="btn sec" onclick="fortose()">Ξανά</button></div>`;
   const list = orata();
+  if (MODE === 'evdomada') return h + evdomada(list);
+  if (MODE === 'minas') return h + minas(list);
   const url = diadromiUrl(list);
   if (url) h += `<a class="rte" href="${esc(url)}" target="_blank" rel="noopener">🗺 Διαδρομή ημέρας · Google Maps</a>`;
   h += list.length ? list.map(grammi).join('') : '<div class="empty">Δεν υπάρχουν ραντεβού.</div>';
   return h;
 }
+// Εβδομάδα: Δευτέρα–Παρασκευή πάντα· Σάββατο/Κυριακή ΜΟΝΟ αν έχουν ραντεβού (ο Βαγγέλης δεν δουλεύει Σάββατο)
+function evdomada(list) {
+  const d0 = deftera(DAY);
+  let h = '';
+  for (let i = 0; i < 7; i++) {
+    const d = prosthese(d0, i), mesa = list.filter(r => r.mera === d);
+    if (i >= 5 && !mesa.length) continue;
+    const energa = mesa.filter(r => !r.katastasi);
+    const mazi = FILTRO !== 'OLOI' && energa.some(koino);
+    h += `<button class="dh${d === simera() ? ' to' : ''}" onclick="pigaineMera('${d}')"><span>${imera(d)}${d === simera() ? ' · σήμερα' : ''}</span>
+      <i>${mazi ? '<span class="st mz">👥 ΜΑΖΙ</span> ' : ''}${energa.length ? energa.length + ' ραντεβού' : 'κανένα'}</i></button>`;
+    h += mesa.map(grammi).join('');
+  }
+  return h;
+}
+// Μήνας: πλέγμα με το ΠΛΗΘΟΣ ραντεβού ανά μέρα (όχι ποσά)· 👥 = μέρα που δουλεύουν μαζί· πάτημα = η μέρα
+function minas(list) {
+  const [apo, eos] = evros();
+  const ana = {}, mazi = {};
+  list.forEach(r => { if (!r.katastasi) { ana[r.mera] = (ana[r.mera] || 0) + 1; if (koino(r)) mazi[r.mera] = true; } });
+  let h = '<div class="mg">' + ['Δ', 'Τ', 'Τ', 'Π', 'Π', 'Σ', 'Κ'].map((x, i) => `<b class="${i >= 5 ? 'we' : ''}">${x}</b>`).join('');
+  let d = deftera(apo);
+  const telos = prosthese(deftera(eos), 6);
+  for (; d <= telos; d = prosthese(d, 1)) {
+    const ektos = d < apo || d > eos, n = ana[d] || 0, we = [0, 6].includes(new Date(d + 'T12:00:00').getDay());
+    const mz = !ektos && mazi[d] && FILTRO !== 'OLOI';
+    h += `<button class="${ektos ? 'ek' : ''}${we ? ' we' : ''}${d === simera() ? ' to' : ''}${n ? ' ex' : ''}${mz ? ' mz' : ''}" ${ektos ? 'disabled' : `onclick="pigaineMera('${d}')"`}>
+      <span>${Number(d.slice(8, 10))}</span>${n && !ektos ? `<i>${n}</i>` : ''}${mz ? '<u>👥</u>' : ''}</button>`;
+  }
+  const yparxoun = Object.keys(ana).length;
+  return h + `</div><div class="upd">${yparxoun ? 'Ο αριθμός = πόσα ραντεβού έχει η μέρα' + (FILTRO !== 'OLOI' ? ' · 👥 = μαζί' : '') + '. Πατήστε μια μέρα για τα ραντεβού της.' : 'Δεν υπάρχουν ραντεβού αυτόν τον μήνα.'}</div>`;
+}
 V.home = () => {
   if (wide() && D && D.rantevou) {
     const r = SEL && D.rantevou.find(x => x.id === SEL);
-    return header() + `<div class="pane">${lista()}${foot()}</div><div class="pane">${r ? kartela(r) : '<div class="empty" style="margin-top:60px">Πατήστε ένα ραντεβού για να δείτε την καρτέλα.</div>'}</div>`;
+    return header() + `<div class="pane">${lista()}${foot()}</div><div class="pane">${r ? kartela(r) : '<div class="empty" style="margin-top:60px">${MODE === 'minas' ? 'Πατήστε μια μέρα για τα ραντεβού της.' : 'Πατήστε ένα ραντεβού για να δείτε την καρτέλα.'}</div>'}</div>`;
   }
   return header() + lista() + foot();
 };
@@ -308,12 +398,6 @@ function foot() {
   return installBox() + `<div class="foot"><button class="btn sec" onclick="allagiPin()">🔑 Αλλαγή PIN</button>
     <button class="btn sec" onclick="exodos()">Έξοδος</button></div>`;
 }
-function allaxeMera(n) {
-  if (n === 0) DAY = simera();
-  else { const x = new Date(DAY + 'T12:00:00'); x.setDate(x.getDate() + n); DAY = iso(x); }
-  SEL = null; fortose();
-}
-function filtro(s) { FILTRO = s; render(); }
 
 // ------------------------------------------------------------- καρτέλα
 function dieuthinsi(r) { return (r.topothesia || r.diey_ef || r.diey || '').trim(); }
