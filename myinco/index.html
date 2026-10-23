@@ -176,7 +176,9 @@ function kleidoma() { SESS = null; D = null; SS.del(KS); closeModal(); view = {n
 function energi() { return SESS && Date.now() - SESS.last < LOCK_MIN * 60000; }
 ['click', 'touchstart', 'keydown'].forEach(ev => addEventListener(ev, agigma, {passive: true}));
 setInterval(() => { if (SESS && !energi()) kleidoma(); }, 15000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden && SESS && !energi()) kleidoma(); });
+// κάθε λεπτό: αν το PIN άλλαξε/σβήστηκε από άλλο κινητό ή από το γραφείο, η σύνδεση κόβεται κι εδώ (το api() κλειδώνει μόνο του)
+setInterval(() => { if (SESS && !document.hidden) api('elegxos').catch(() => {}); }, 60000);
+document.addEventListener('visibilitychange', () => { if (document.hidden || !SESS) return; if (!energi()) kleidoma(); else api('elegxos').catch(() => {}); });
 
 // ------------------------------------------------------------- εκκίνηση
 async function start() {
@@ -387,7 +389,8 @@ async function allagiPinOk() {
   const po = $('#po').value, p1 = $('#p1').value, p2 = $('#p2').value, err = $('#err');
   if (!/^\d{4,8}$/.test(p1)) return err.textContent = 'Το PIN θέλει 4 έως 8 ψηφία.';
   if (p1 !== p2) return err.textContent = 'Τα δύο PIN δεν είναι ίδια.';
-  try { const r = await api('allagi_pin', {pin: po, neo: p1}); if (!r.ok) return err.textContent = r.error; closeModal(); toast('✓ Το PIN άλλαξε'); }
+  try { const r = await api('allagi_pin', {pin: po, neo: p1}); if (!r.ok) return err.textContent = r.error;
+    SESS.s = r.s; agigma(); closeModal(); toast('✓ Το PIN άλλαξε — τα άλλα κινητά σας αποσυνδέθηκαν'); }
   catch (e) { err.textContent = e.message; }
 }
 function prosthiki() {
