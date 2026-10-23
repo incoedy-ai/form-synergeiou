@@ -259,7 +259,7 @@ V.pin = () => { PIN = ''; return header() + `<div class="pinv"><h2>Γράψτε 
   ${keypad()}<button class="lnk" onclick="go('prosklisi')">Έχω κωδικό πρόσκλησης</button></div>`; };
 
 V.protos = () => header() + `<div class="pinv"><h2>Καλώς ήρθατε στο ${MI}</h2>
-  <p>Είστε ο πρώτος υπεύθυνος. Γράψτε το όνομά σας και επιλέξτε το δικό σας PIN.</p></div>
+  <p>Θα είστε ο διαχειριστής: εσείς προσθέτετε και τους άλλους υπεύθυνους. Γράψτε το όνομά σας και επιλέξτε το δικό σας PIN.</p></div>
   <label class="fl">Όνομα</label><input class="fi" id="on" autocomplete="name" maxlength="60">
   <label class="fl">Email (για τις ενημερώσεις — προαιρετικό)</label><input class="fi" id="em" type="email" autocomplete="email" maxlength="120">
   <label class="fl">PIN (4 έως 8 ψηφία)</label><input class="fi" id="p1" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password">
@@ -529,10 +529,10 @@ V.rythmiseis = () => {
     ${SYXN.map(([k, l]) => `<button class="opt ${e.syxnotita === k ? 'on' : ''}" onclick="syxn('${k}')"><i></i>${l}</button>`).join('')}
     <label class="fl">Email</label><input class="fi" id="em" type="email" value="${esc(e.email)}" maxlength="120">
     <div style="margin-top:10px"><button class="btn sec" onclick="apothEmail()">Αποθήκευση email</button></div></div>
-    <div class="cd"><div class="lb">PIN</div><div class="sm">Συνδεδεμένος/η: ${esc(e.onoma)}${e.kyrios ? ' · κύριος υπεύθυνος' : ''}</div>
+    <div class="cd"><div class="lb">PIN</div><div class="sm">Συνδεδεμένος/η: ${esc(e.onoma)}${e.kyrios ? ' · διαχειριστής' : ''}</div>
     <div style="margin-top:10px"><button class="btn sec" onclick="allagiPin()">🔑 Αλλαγή PIN</button></div></div>`;
   if (e.kyrios) {
-    h += `<div class="cd"><div class="lb">ΥΠΕΥΘΥΝΟΙ</div>` + D.ypeythynoi.map(y => `<div class="row2"><div class="tx"><b>${esc(y.onoma)}${y.kyrios ? ' · κύριος' : ''}</b>
+    h += `<div class="cd"><div class="lb">ΥΠΕΥΘΥΝΟΙ</div>` + D.ypeythynoi.map(y => `<div class="row2"><div class="tx"><b>${esc(y.onoma)}${y.kyrios ? ' · διαχειριστής' : ''}</b>
       <small>${y.exei_pin ? (y.teleftaia ? 'τελευταία είσοδος ' + esc(y.teleftaia.slice(0, 16)) : 'ενεργός') : 'κωδικός πρόσκλησης: <b>' + esc(y.prosklisi) + '</b> (λήγει ' + esc(ddmm(y.lixi)) + ')'}</small></div>
       ${y.id !== e.id ? `<button class="btn sec small" onclick="afairesi('${y.id}','${esc(y.onoma)}')">Αφαίρεση</button>` : ''}</div>`).join('') +
       `<div style="margin-top:10px"><button class="btn cy" onclick="prosthiki()">+ Προσθήκη υπευθύνου</button></div>
