@@ -412,7 +412,7 @@ function minas(list) {
       <span>${Number(d.slice(8, 10))}</span>${n && !ektos ? `<i class="${mz || (FILTRO === 'OLOI' && mazi[d]) ? 'c9' : chipXroma(FILTRO)}">${n}</i>` : ''}${mz ? '<u>👥</u>' : ''}</button>`;
   }
   const yparxoun = Object.keys(ana).length;
-  return h + `</div><div class="upd">${yparxoun ? 'Ο αριθμός = πόσα ραντεβού έχει η μέρα' + (FILTRO !== 'OLOI' && !monosTou(FILTRO) ? ' · 👥 = μαζί' : '') + '. Πατήστε μια μέρα για τα ραντεβού της.' : 'Δεν υπάρχουν ραντεβού αυτόν τον μήνα.'}</div>`;
+  return h + `</div><div class="upd">${yparxoun ? 'Ο αριθμός = πόσα ραντεβού έχει η μέρα' + (FILTRO !== 'OLOI' && !monosTou(FILTRO) && Object.keys(mazi).length ? ' · 👥 = μαζί' : '') + '. Πατήστε μια μέρα για τα ραντεβού της.' : 'Δεν υπάρχουν ραντεβού αυτόν τον μήνα.'}</div>`;
 }
 V.home = () => {
   if (wide() && D && D.rantevou) {
