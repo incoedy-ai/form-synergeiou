@@ -182,6 +182,7 @@ input.fi{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--li
 @keyframes sp{to{transform:rotate(360deg)}}
 /* τάμπλετ: λίστα αριστερά, καρτέλα δεξιά */
 @media (min-width:900px){
+  .wrap.mid{max-width:920px}
   .wrap.two{max-width:1200px;display:grid;grid-template-columns:minmax(360px,42%) 1fr;gap:0 22px;align-items:start}
   .wrap.two .hd{grid-column:1/-1}
   .wrap.two .pane{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto;padding-bottom:20px}
@@ -885,7 +886,8 @@ function render() {
   if (['home', 'kartela', 'fortosi', 'tameio', 'exodo'].includes(view.name) && !SESS) view = {name: 'pin'};
   if (view.name === 'exodo' && !TX) view = {name: 'home'};
   const two = view.name === 'home' && wide() && D && D.rantevou;
-  $('#app').className = 'wrap' + (two ? ' two' : '');
+  const mid = ['fortosi', 'tameio', 'exodo'].includes(view.name);       // στο τάμπλετ: φαρδύτερα (όχι στενή λωρίδα)
+  $('#app').className = 'wrap' + (two ? ' two' : '') + (mid ? ' mid' : '');
   $('#app').innerHTML = (V[view.name] || V.load)();
 }
 function openModal(html) { closeModal(); const bg = document.createElement('div'); bg.className = 'mbg'; bg.id = 'mbg';
