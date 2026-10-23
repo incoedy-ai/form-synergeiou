@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>My InCo</title>
+<meta name="description" content="My InCo · όλα τα έγγραφα και οι καταγραφές της επιχείρησής σας από την InCo">
+<meta name="theme-color" content="#2D3A4D">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="My InCo">
+<!-- My InCo — εφαρμογή κινητού του υπευθύνου (23/10/2026). Server: myinco/apps_script/Code.gs (όλα POST).
+     Αποφάσεις χρήστη: κάθετο λογότυπο · ΔΙΚΟ PIN κάθε υπεύθυνος · τμήματα ανά ΥΠΗΡΕΣΙΑ με το σήμα τους
+     (Pest Control = γενικό InCo · Water Safety = Hotelier · «Επιχειρήσεις Υγειονομικού Ενδιαφέροντος» ΟΛΟΚΛΗΡΟ) ·
+     σήμα ΕΙΔΟΥΣ πελάτη στην κεφαλίδα (σκάφος/ξενοδοχείο-Airbnb/ΚΥΕ) · αχνά μόνο όσα ταιριάζουν, με
+     «Ζητήστε πληροφορίες / πρόταση» · ξανακλείδωμα σε 5' · ενημέρωση ημερήσια/εβδομαδιαία/μηνιαία ανά υπεύθυνο. -->
+<style>
+:root{--bg:#EEF6F9;--surface:#fff;--ink:#2D3A4D;--muted:#5B6B80;--line:#DCE8EE;--accent:#2DAFCE;--blue:#287B9B;--navy:#2D3A4D;
+  --ok:#17875A;--ok-bg:#E2F4EB;--bad:#C93030;--bad-bg:#FCE6E6;--key:#EAF2F6;--live:#E3F3F8}
+@media (prefers-color-scheme:dark){:root{--bg:#18212D;--surface:#212C3A;--ink:#EEF3F7;--muted:#A9B8C8;--line:#2F3D4E;
+  --accent:#65C7D7;--blue:#65C7D7;--ok:#4CC38A;--ok-bg:#163428;--bad:#FF7070;--bad-bg:#3D1E22;--key:#2A3747;--live:#20384A}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+button,input{font:inherit;color:inherit} button{cursor:pointer}
+.wrap{max-width:560px;margin:0 auto;padding:0 14px calc(28px + env(safe-area-inset-bottom))}
+.plate{background:#fff;border-radius:12px;display:grid;place-items:center}
+/* κεφαλίδα: κάθετο λογότυπο · όνομα · σήμα είδους πελάτη */
+.hd{display:flex;align-items:center;gap:12px;padding:calc(12px + env(safe-area-inset-top)) 2px 12px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.hd .mi{flex:none;height:64px;padding:4px 6px}
+.hd .mi img{height:56px;display:block}
+.hd .who{flex:1;min-width:0}
+.hd .who b{display:block;font-size:15px;font-weight:800;line-height:1.25}
+.hd .who small{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-top:2px}
+.hd .bd{flex:none;width:54px;height:64px;padding:4px}
+.hd .bd img{max-width:100%;max-height:56px}
+.hd .back{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:12px;height:44px;min-width:44px;font-size:22px}
+.hi{padding:10px 4px 2px;font-size:14px;font-weight:700;color:var(--muted)}
+.t{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:2px solid transparent;border-radius:18px;padding:11px 12px;margin-top:10px;box-shadow:0 4px 14px rgba(30,45,65,.07)}
+.t .lg{flex:none;width:62px;height:70px;padding:4px}
+.t .lg img{max-width:100%;max-height:62px}
+.t .lg.fo{background:var(--key);color:var(--blue);font-size:28px}
+.t h5{margin:0;font-size:16.5px;font-weight:800;line-height:1.25}
+.t p{margin:3px 0 0;font-size:13px;font-weight:700;color:var(--muted)}
+.t .ch{margin-left:auto;flex:none;font-size:26px;color:#9DB0C0}
+.t.ax{background:transparent;box-shadow:none;border:2px dashed #B9CBD6}
+.t.ax .lg,.t.ax h5,.t.ax p{opacity:.45}
+.t.ax .zp{margin-left:auto;flex:none;font-size:11px;font-weight:800;color:var(--blue);text-align:right;line-height:1.25}
+.sep{margin:20px 6px 0;font-size:11px;font-weight:800;letter-spacing:1.4px;color:#8EA0B3}
+.lnk{display:block;margin:16px auto 0;background:none;border:0;color:var(--blue);font-weight:800;font-size:15px}
+/* τμήμα */
+.sh{display:flex;gap:12px;align-items:center;color:#fff;border-radius:0 0 22px 22px;margin:0 -14px 4px;padding:calc(14px + env(safe-area-inset-top)) 16px 16px}
+.sh .pl{flex:none;width:66px;height:76px;padding:5px} .sh .pl img{max-width:100%;max-height:66px}
+.sh b{display:block;font-size:19px;font-weight:800;line-height:1.2} .sh small{display:block;font-size:12.5px;font-weight:700;opacity:.85;margin-top:3px}
+.sh .back{flex:none;border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:12px;height:44px;min-width:44px;font-size:22px}
+.cd{background:var(--surface);border-radius:16px;padding:13px 15px;margin-top:12px;box-shadow:0 4px 14px rgba(30,45,65,.07)}
+.lb{font-size:11.5px;font-weight:800;letter-spacing:1.3px;color:var(--blue)}
+.bg{font-size:19px;font-weight:800;margin-top:4px}
+.sm{font-size:13px;font-weight:700;color:var(--muted);margin-top:3px}
+.tlx{display:flex;gap:6px;margin-top:10px} .tlx i{flex:1;height:10px;border-radius:6px;background:var(--line);display:block}
+.tlx i.d{background:var(--ok)} .tlx i.n{background:var(--accent)}
+.f{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1.5px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left}
+.f:first-of-type{border-top:0}
+.f .ic{flex:none;width:54px;height:28px;border-radius:7px;display:grid;place-items:center;font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--blue);background:var(--live)}
+.f .tx{flex:1;min-width:0} .f b{display:block;font-size:14.5px;font-weight:800} .f small{display:block;font-size:12px;font-weight:700;color:var(--muted)}
+.f .ch{flex:none;color:#9DB0C0;font-size:22px}
+.btn{border:0;border-radius:14px;min-height:52px;padding:0 18px;font-weight:800;font-size:16.5px;background:var(--ink);color:var(--bg);width:100%}
+.btn.cy{background:var(--accent);color:#2D3A4D} .btn.sec{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn.small{min-height:42px;font-size:14.5px;width:auto} .btn:disabled{opacity:.45}
+.empty{padding:16px 4px;color:var(--muted);font-size:14px;font-weight:600;text-align:center}
+/* PIN */
+.pinv{text-align:center;padding-top:6px}
+.pinv h2{margin:18px 0 4px;font-size:21px} .pinv p{margin:0;color:var(--muted);font-weight:600;font-size:14.5px}
+.dots{display:flex;justify-content:center;gap:16px;margin:22px 0 6px;min-height:22px}
+.dots i{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--ink);display:block} .dots i.f{background:var(--ink)}
+.err{color:var(--bad);font-weight:700;min-height:22px;font-size:14px;margin-top:6px}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:10px}
+.keys button{height:60px;border:0;border-radius:14px;background:var(--surface);font-size:24px;font-weight:700;box-shadow:0 2px 6px rgba(30,45,65,.08)}
+.keys button:active{transform:scale(.97)} .keys .ok{background:var(--accent);color:#2D3A4D}
+label.fl{display:block;font-size:13.5px;color:var(--muted);margin:14px 0 6px;font-weight:700;text-align:left}
+input.fi{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:10px 12px;font-size:17px}
+/* φύλλο από κάτω */
+.mbg{position:fixed;inset:0;z-index:30;background:rgba(10,16,24,.5);display:flex;align-items:flex-end;justify-content:center}
+.mod{background:var(--surface);width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.mod .mh{display:flex;gap:12px;align-items:center}
+.mod .mh .pl{flex:none;width:62px;height:72px;padding:4px} .mod .mh .pl img{max-width:100%;max-height:64px}
+.mod .mh b{font-size:17px;font-weight:800;line-height:1.25} .mod .mh small{display:block;font-size:12.5px;color:var(--muted);font-weight:700}
+.mod ul{margin:14px 0 0;padding-left:20px;font-weight:700;font-size:14.5px;line-height:1.55}
+.qrc{margin-top:14px;display:flex;gap:12px;align-items:center;border:2px solid var(--accent);border-radius:16px;padding:10px 12px}
+.qrc img{flex:none;width:52px;height:52px;border-radius:12px} .qrc b{display:block;font-size:16px} .qrc small{display:block;font-size:12.5px;color:var(--muted);font-weight:700}
+.nt{margin-top:8px;text-align:center;font-size:12.5px;color:var(--muted);font-weight:700}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:700;max-width:calc(100% - 32px)}
+.toast.bad{background:var(--bad);color:#fff}
+.install{margin-top:16px;padding:14px;border-radius:16px;border:2px dashed var(--blue);background:var(--surface);display:flex;flex-direction:column;gap:10px;font-size:14.5px}
+.install b{color:var(--blue)}
+.foot{display:flex;gap:8px;margin-top:22px}
+.foot .btn{flex:1}
+.row2{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1.5px solid var(--line)} .row2:first-child{border-top:0}
+.row2 .tx{flex:1;min-width:0} .row2 b{display:block;font-size:15px} .row2 small{display:block;font-size:12.5px;color:var(--muted);font-weight:700}
+.opt{display:flex;align-items:center;gap:12px;padding:13px;border:1.5px solid var(--line);border-radius:14px;margin-top:8px;background:var(--surface);width:100%;text-align:left;font-weight:700}
+.opt i{width:22px;height:22px;border-radius:50%;border:2.5px solid var(--muted);flex:none;display:block} .opt.on{border-color:var(--ink)} .opt.on i{border:7px solid var(--ink)}
+.code{font-size:34px;font-weight:800;letter-spacing:.25em;text-align:center;margin:14px 0 4px;font-variant-numeric:tabular-nums}
+.spin{margin:60px auto;width:38px;height:38px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.center{text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="spin"></div></div>
+<script>
+'use strict';
+const API = 'https://script.google.com/macros/s/AKfycby4Rzp8F7Xic29ynWjMkIZRHIYciQ49YqWHQR0A6dO4DvH-9FhAP6ROsl6BObeQEZfz/exec';
+const LOCK_MIN = 5;
+const TM = {
+  PC:  {titlos: 'Pest Control', logo: 'pc.png', xroma: '#2D3A4D', axno: 'απεντόμωση · μυοκτονία',
+        lista: ['Απεντόμωση και μυοκτονία με πρόγραμμα επισκέψεων', 'Ζωντανοί πίνακες καταγραφών', 'Πιστοποιητικό σε κάθε εφαρμογή']},
+  WS:  {titlos: 'Water Safety', logo: 'ws.png', xroma: '#287B9B', axno: 'Legionella · νερό',
+        lista: ['Δειγματοληψίες Legionella', 'Αποτελέσματα εργαστηρίου', 'Μελέτη αξιολόγησης κινδύνου']},
+  EYE: {titlos: 'Επιχειρήσεις Υγειονομικού Ενδιαφέροντος', logo: 'eye.png', xroma: '#2D3A4D', axno: 'QRecord · χωρίς χαρτιά',
+        lista: ['Συμβουλευτικές υπηρεσίες', 'Εκπαίδευση προσωπικού (ΕΦΕΤ)']}
+};
+const EIDOS_SIMA = {'ΣΚΑΦΟΣ': 'yachting.png', 'ΞΕΝΟΔΟΧΕΙΟ': 'ws.png', 'RBNB': 'ws.png', 'ΚΥΕ': 'eye.png'};
+const MERES = ['Κυριακή','Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο'];
+const SYXN = [['ΗΜΕΡΗΣΙΑ', 'Κάθε μέρα'], ['ΕΒΔΟΜΑΔΙΑΙΑ', 'Μία φορά την εβδομάδα'], ['ΜΗΝΙΑΙΑ', 'Μία φορά τον μήνα']];
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
+};
+const SS = {
+  get(k) { try { return JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) { return null; } },
+  set(k, v) { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) { } },
+  del(k) { try { sessionStorage.removeItem(k); } catch (e) { } }
+};
+const imera = d => { if (!d) return ''; const x = new Date(d + 'T12:00:00'); return MERES[x.getDay()] + ' ' + d.slice(8, 10) + '/' + d.slice(5, 7) + '/' + d.slice(0, 4); };
+const ddmm = d => d ? d.slice(8, 10) + '/' + d.slice(5, 7) : '';
+
+// ------------------------------------------------------------- ποιο κατάστημα (από το QR)
+// Το p/k μένουν και στον σύνδεσμο: στο iPhone το εικονίδιο της οθόνης έχει ΑΛΛΗ αποθήκη από το Safari.
+const Q = new URLSearchParams(location.search);
+let P = Q.get('p') || LS.get('mi_p', ''), K = Q.get('k') || LS.get('mi_k', '');
+if (Q.get('p') && Q.get('k')) { LS.set('mi_p', P); LS.set('mi_k', K); }
+if (P && K && !Q.get('p')) history.replaceState(null, '', location.pathname + '?p=' + encodeURIComponent(P) + '&k=' + encodeURIComponent(K));
+const KS = 'mi_s_' + P;
+
+let INFO = null, D = null, SESS = null, view = {name: 'load'};
+
+async function api(action, extra) {
+  const body = JSON.stringify(Object.assign({action, p: P, k: K}, SESS && {s: SESS.s}, extra || {}));
+  let last;
+  for (let i = 0; i < 3; i++) {
+    try {
+      const r = await fetch(API, {method: 'POST', body, headers: {'Content-Type': 'text/plain;charset=utf-8'}});
+      const j = await r.json();
+      if (j && j.session) { kleidoma(); throw new Error(j.error); }
+      return j;
+    } catch (e) { last = e; if (String(e.message || '').includes('σύνδεση έληξε')) throw e; await new Promise(r => setTimeout(r, 900 * (i + 1))); }
+  }
+  throw new Error(navigator.onLine === false ? 'Χρειάζεται σύνδεση στο ίντερνετ.' : 'Δεν απαντά ο server — δοκιμάστε ξανά.');
+}
+function toast(msg, bad) {
+  const t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 3200);
+}
+
+// ------------------------------------------------------------- συνεδρία & ξανακλείδωμα
+function agigma() { if (SESS) { SESS.last = Date.now(); SS.set(KS, SESS); } }
+function kleidoma() { SESS = null; D = null; SS.del(KS); closeModal(); view = {name: 'pin'}; render(); }
+function energi() { return SESS && Date.now() - SESS.last < LOCK_MIN * 60000; }
+['click', 'touchstart', 'keydown'].forEach(ev => addEventListener(ev, agigma, {passive: true}));
+setInterval(() => { if (SESS && !energi()) kleidoma(); }, 15000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && SESS && !energi()) kleidoma(); });
+
+// ------------------------------------------------------------- εκκίνηση
+async function start() {
+  if (!P || !K) { view = {name: 'msg', t: 'Σκανάρετε το QR του My InCo', m: 'Το QR είναι στο έντυπο που σας στείλαμε με email και μέσα στον φάκελό σας.'}; return render(); }
+  try { INFO = await api('info'); }
+  catch (e) { view = {name: 'msg', t: 'Δεν υπάρχει σύνδεση', m: e.message, retry: true}; return render(); }
+  if (!INFO.ok) { view = {name: 'msg', t: INFO.mplok ? 'Η πρόσβαση έχει κλείσει' : 'Άκυρο QR', m: INFO.error}; return render(); }
+  const s = SS.get(KS);
+  if (s && Date.now() - s.last < LOCK_MIN * 60000) {
+    SESS = s;
+    try { D = await api('dedomena'); if (D.ok) { view = {name: 'home'}; return render(); } } catch (e) { }
+    SESS = null;
+  }
+  view = {name: INFO.exei_ypeythyno ? 'pin' : 'protos'};
+  render();
+}
+function syndethike(r) {
+  if (!r.ok) return false;
+  SESS = {s: r.s, last: Date.now()}; SS.set(KS, SESS);
+  D = r; view = {name: 'home'}; render();
+  return true;
+}
+
+// ------------------------------------------------------------- κεφαλίδα
+function header(withBack) {
+  const k = (D && D.katastima) || INFO || {};
+  const onoma = k.eponymia || '';
+  const sub = [k.diakritikos && k.diakritikos !== onoma ? k.diakritikos : '', k.periohi].filter(Boolean).join(' · ');
+  const sima = EIDOS_SIMA[(k.eidos || '').toUpperCase()];
+  return `<div class="hd">${withBack ? '<button class="back" onclick="go(\'home\')" aria-label="Πίσω">‹</button>' : ''}
+    <span class="plate mi"><img src="katheto.png" alt="My InCo"></span>
+    <div class="who"><b>${esc(onoma)}</b><small>${esc(sub)}</small></div>
+    ${sima ? `<span class="plate bd"><img src="${sima}" alt=""></span>` : ''}</div>`;
+}
+
+// ------------------------------------------------------------- οθόνες
+const V = {};
+V.load = () => '<div class="spin"></div>';
+V.msg = () => `<div class="hd"><span class="plate mi"><img src="katheto.png" alt="My InCo"></span></div>
+  <div class="pinv"><h2>${esc(view.t)}</h2><p>${esc(view.m || '')}</p>
+  ${view.retry ? '<div style="margin-top:20px"><button class="btn" onclick="location.reload()">Ξανά</button></div>' : ''}</div>`;
+
+let PIN = '';
+function keypad(okLabel) {
+  return `<div class="keys">${[1,2,3,4,5,6,7,8,9].map(n => `<button onclick="kp('${n}')">${n}</button>`).join('')}
+    <button onclick="kp('del')" aria-label="Σβήσιμο">⌫</button><button onclick="kp('0')">0</button>
+    <button class="ok" onclick="kp('ok')">${okLabel || '✓'}</button></div>`;
+}
+function dots() { return Array.from({length: Math.max(4, PIN.length)}, (_, i) => `<i class="${i < PIN.length ? 'f' : ''}"></i>`).join(''); }
+function kp(c) {
+  const err = $('#err'); if (err) err.textContent = '';
+  if (c === 'del') PIN = PIN.slice(0, -1);
+  else if (c === 'ok') return pinOk();
+  else if (PIN.length < 8) PIN += c;
+  $('#dots').innerHTML = dots();
+}
+async function pinOk() {
+  if (PIN.length < 4) { $('#err').textContent = 'Το PIN έχει 4 έως 8 ψηφία.'; return; }
+  $('#err').textContent = 'Έλεγχος…';
+  try {
+    const r = await api('syndesi', {pin: PIN});
+    PIN = '';
+    if (!syndethike(r)) { $('#dots').innerHTML = dots(); $('#err').textContent = r.error === 'λάθος PIN' ? 'Λάθος PIN' : r.error; }
+  } catch (e) { $('#err').textContent = e.message; }
+}
+V.pin = () => { PIN = ''; return header() + `<div class="pinv"><h2>Γράψτε το PIN σας</h2><p>μόνο για τους υπεύθυνους της επιχείρησης</p>
+  <div class="dots" id="dots">${dots()}</div><div class="err" id="err">${INFO && INFO.kleidomeno ? 'Πολλές λάθος προσπάθειες — δοκιμάστε σε 15 λεπτά.' : ''}</div>
+  ${keypad()}<button class="lnk" onclick="go('prosklisi')">Έχω κωδικό πρόσκλησης</button></div>`; };
+
+V.protos = () => header() + `<div class="pinv"><h2>Καλώς ήρθατε στο My InCo</h2>
+  <p>Είστε ο πρώτος υπεύθυνος. Γράψτε το όνομά σας και επιλέξτε το δικό σας PIN.</p></div>
+  <label class="fl">Όνομα</label><input class="fi" id="on" autocomplete="name" maxlength="60">
+  <label class="fl">Email (για τις ενημερώσεις — προαιρετικό)</label><input class="fi" id="em" type="email" autocomplete="email" maxlength="120">
+  <label class="fl">PIN (4 έως 8 ψηφία)</label><input class="fi" id="p1" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password">
+  <label class="fl">Ξανά το PIN</label><input class="fi" id="p2" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password">
+  <div class="err" id="err"></div><button class="btn cy" onclick="protos()">Συνέχεια</button>
+  <p class="nt">Το PIN το ξέρετε μόνο εσείς — ούτε η InCo δεν το βλέπει. Αργότερα μπορείτε να προσθέσετε και άλλους υπεύθυνους.</p>`;
+async function protos() {
+  const on = $('#on').value.trim(), p1 = $('#p1').value, p2 = $('#p2').value, err = $('#err');
+  if (!on) return err.textContent = 'Γράψτε το όνομά σας.';
+  if (!/^\d{4,8}$/.test(p1)) return err.textContent = 'Το PIN θέλει 4 έως 8 ψηφία.';
+  if (p1 !== p2) return err.textContent = 'Τα δύο PIN δεν είναι ίδια.';
+  err.textContent = 'Αποθήκευση…';
+  try { const r = await api('protos', {onoma: on, email: $('#em').value.trim(), pin: p1}); if (!syndethike(r)) err.textContent = r.error; }
+  catch (e) { err.textContent = e.message; }
+}
+
+V.prosklisi = () => header() + `<div class="pinv"><h2>Κωδικός πρόσκλησης</h2>
+  <p>Τον 6ψήφιο κωδικό σάς τον έδωσε ο υπεύθυνος της επιχείρησης ή η InCo. Μετά επιλέγετε το δικό σας PIN.</p></div>
+  <label class="fl">Κωδικός πρόσκλησης</label><input class="fi" id="kd" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+  <label class="fl">Νέο PIN (4 έως 8 ψηφία)</label><input class="fi" id="p1" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password">
+  <label class="fl">Ξανά το PIN</label><input class="fi" id="p2" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password">
+  <div class="err" id="err"></div><button class="btn cy" onclick="prosklisi()">Συνέχεια</button>
+  <button class="lnk" onclick="go('pin')">Πίσω στο PIN</button>`;
+async function prosklisi() {
+  const kd = $('#kd').value.replace(/\D/g, ''), p1 = $('#p1').value, p2 = $('#p2').value, err = $('#err');
+  if (kd.length !== 6) return err.textContent = 'Ο κωδικός έχει 6 ψηφία.';
+  if (!/^\d{4,8}$/.test(p1)) return err.textContent = 'Το PIN θέλει 4 έως 8 ψηφία.';
+  if (p1 !== p2) return err.textContent = 'Τα δύο PIN δεν είναι ίδια.';
+  err.textContent = 'Έλεγχος…';
+  try { const r = await api('prosklisi', {kodikos: kd, pin: p1}); if (!syndethike(r)) err.textContent = r.error; }
+  catch (e) { err.textContent = e.message; }
+}
+
+// ------------------------------------------------------------- αρχική
+function ypotitlos(t) {
+  if (t === 'PC') return D.programma.epomeni ? 'Επόμενη επίσκεψη ' + ddmm(D.programma.epomeni) : 'Πρόγραμμα, καταγραφές, έγγραφα';
+  if (t === 'WS') return 'Δειγματοληψίες, αποτελέσματα, κατόψεις';
+  return 'QRecord, έγγραφα συμβουλευτικής';
+}
+V.home = () => {
+  const d = new Date();
+  let h = header() + `<div class="hi">${MERES[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} · ${esc(D.ego.onoma)}</div>`;
+  h += D.tmimata.map(t => `<button class="t" onclick="go('tmima','${t}')"><span class="plate lg"><img src="${TM[t].logo}" alt=""></span>
+      <div><h5>${esc(TM[t].titlos)}</h5><p>${esc(ypotitlos(t))}</p></div><span class="ch">›</span></button>`).join('');
+  if (D.fakelos) h += `<button class="t" onclick="anoixe('${esc(D.fakelos)}')"><span class="plate lg fo">📁</span>
+      <div><h5>Όλα τα έγγραφα</h5><p>${D.tmimata.length > 1 ? 'όλων των τμημάτων' : 'πιστοποιητικά, εκθέσεις, άδειες'}</p></div><span class="ch">›</span></button>`;
+  if (!D.tmimata.length && !D.fakelos) h += '<div class="empty">Δεν υπάρχουν ακόμα έγγραφα.</div>';
+  if (D.axna.length) {
+    h += '<div class="sep">ΜΠΟΡΕΙΤΕ ΝΑ ΠΡΟΣΘΕΣΕΤΕ</div>' + D.axna.map(t => `<button class="t ax" onclick="axno('${t}')">
+      <span class="plate lg"><img src="${TM[t].logo}" alt=""></span><div><h5>${esc(TM[t].titlos)}</h5><p>${esc(TM[t].axno)}</p></div>
+      <span class="zp">Ζητήστε<br>πληροφορίες /<br>πρόταση</span></button>`).join('');
+  }
+  h += `<button class="lnk" onclick="tiEinai()">Τι είναι το My InCo;</button>` + installBox() +
+    `<div class="foot"><button class="btn sec small" onclick="go('rythmiseis')">⚙ Ρυθμίσεις</button>
+     <button class="btn sec small" onclick="kleidoma()">🔒 Κλείδωμα</button></div>`;
+  return h;
+};
+function tiEinai() {
+  const k = D.katastima;
+  anoixe('../my_inco.html?' + new URLSearchParams({pelatis: k.eponymia, kod: k.kod, periohi: k.periohi, ypok: k.ypok ? '1' : ''}));
+}
+function anoixe(u) { if (!window.open(u, '_blank')) location.href = u; }
+
+// ------------------------------------------------------------- τμήμα
+V.tmima = () => {
+  const t = view.arg, k = D.katastima;
+  let h = `<div class="sh" style="background:${TM[t].xroma}"><button class="back" onclick="go('home')" aria-label="Πίσω">‹</button>
+    <span class="plate pl"><img src="${TM[t].logo}" alt=""></span><div><b>${esc(TM[t].titlos)}</b><small>${esc(k.eponymia)}${k.periohi ? ' · ' + esc(k.periohi) : ''}</small></div></div>`;
+  if (t === 'PC' && D.programma.synolo) {
+    const pr = D.programma;
+    h += pr.epomeni ? `<div class="cd"><div class="lb">ΕΠΟΜΕΝΗ ΕΠΙΣΚΕΨΗ</div><div class="bg">${imera(pr.epomeni)}</div></div>` : '';
+    h += `<div class="cd"><div class="lb">ΠΡΟΓΡΑΜΜΑ ΤΡΕΧΟΝΤΟΣ ΚΥΚΛΟΥ</div><div class="sm">${pr.eginan} από ${pr.synolo} επισκέψεις έγιναν</div>
+      <div class="tlx">${Array.from({length: pr.synolo}, (_, i) => `<i class="${i < pr.eginan ? 'd' : i === pr.eginan ? 'n' : ''}"></i>`).join('')}</div></div>`;
+  }
+  const z = D.zontana.filter(x => x.t === t);
+  if (z.length) h += `<div class="cd"><div class="lb">ΖΩΝΤΑΝΟΙ ΠΙΝΑΚΕΣ</div>` + z.map(x => `<button class="f" onclick="anoixe('${esc(x.u)}')">
+      <span class="ic">LIVE</span><span class="tx"><b>${esc(x.n)}</b><small>${esc(x.k || 'ενημερώνεται μόνο του')}</small></span><span class="ch">›</span></button>`).join('') + '</div>';
+  if (D.fakelos) h += `<div class="cd"><div class="lb">ΕΓΓΡΑΦΑ</div><button class="f" onclick="anoixe('${esc(D.fakelos)}')">
+      <span class="ic" style="color:var(--bad);background:var(--bad-bg)">PDF</span><span class="tx"><b>Φάκελος εγγράφων</b>
+      <small>πιστοποιητικά, εκθέσεις, δελτία, άδειες</small></span><span class="ch">›</span></button></div>`;
+  return h;
+};
+
+// ------------------------------------------------------------- αχνό → παρουσίαση + «Ζητήστε πληροφορίες / πρόταση»
+function axno(t) {
+  const qr = t === 'EYE' ? `<div class="qrc"><img src="qrecord.png" alt=""><div><b>QRecord</b><small>Θερμοκρασίες ψυγείων και καθαρισμοί από το κινητό — χωρίς χαρτιά</small></div></div>` : '';
+  openModal(`<div class="mh"><span class="plate pl"><img src="${TM[t].logo}" alt=""></span><div><b>${esc(TM[t].titlos)}</b><small>από την InCo</small></div></div>
+    ${qr}<ul>${TM[t].lista.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <div style="margin-top:16px"><button class="btn cy" id="zb" onclick="zitise('${t}')">Ζητήστε πληροφορίες / πρόταση</button></div>
+    <div class="nt">Θα σας καλέσουμε εμείς · χωρίς δέσμευση</div>
+    <button class="lnk" onclick="closeModal()">Κλείσιμο</button>`);
+}
+async function zitise(t) {
+  const b = $('#zb'); b.disabled = true; b.textContent = 'Αποστολή…';
+  try {
+    const r = await api('aitima', {tmima: t});
+    if (!r.ok) throw new Error(r.error);
+    closeModal(); toast('✓ Το αίτημα στάλθηκε — θα σας καλέσουμε');
+  } catch (e) { b.disabled = false; b.textContent = 'Ζητήστε πληροφορίες / πρόταση'; toast(e.message, true); }
+}
+
+// ------------------------------------------------------------- ρυθμίσεις
+V.rythmiseis = () => {
+  const e = D.ego;
+  let h = header(true) + `<div class="cd"><div class="lb">ΕΝΗΜΕΡΩΣΗ ΜΕ EMAIL</div>
+    <div class="sm">Σύνοψη και νέα έγγραφα. Ό,τι βγει εκτός ορίου έρχεται πάντα αμέσως.</div>
+    ${SYXN.map(([k, l]) => `<button class="opt ${e.syxnotita === k ? 'on' : ''}" onclick="syxn('${k}')"><i></i>${l}</button>`).join('')}
+    <label class="fl">Email</label><input class="fi" id="em" type="email" value="${esc(e.email)}" maxlength="120">
+    <div style="margin-top:10px"><button class="btn sec" onclick="apothEmail()">Αποθήκευση email</button></div></div>
+    <div class="cd"><div class="lb">PIN</div><div class="sm">Συνδεδεμένος/η: ${esc(e.onoma)}${e.kyrios ? ' · κύριος υπεύθυνος' : ''}</div>
+    <div style="margin-top:10px"><button class="btn sec" onclick="allagiPin()">🔑 Αλλαγή PIN</button></div></div>`;
+  if (e.kyrios) {
+    h += `<div class="cd"><div class="lb">ΥΠΕΥΘΥΝΟΙ</div>` + D.ypeythynoi.map(y => `<div class="row2"><div class="tx"><b>${esc(y.onoma)}${y.kyrios ? ' · κύριος' : ''}</b>
+      <small>${y.exei_pin ? (y.teleftaia ? 'τελευταία είσοδος ' + esc(y.teleftaia.slice(0, 16)) : 'ενεργός') : 'κωδικός πρόσκλησης: <b>' + esc(y.prosklisi) + '</b> (λήγει ' + esc(ddmm(y.lixi)) + ')'}</small></div>
+      ${y.id !== e.id ? `<button class="btn sec small" onclick="afairesi('${y.id}','${esc(y.onoma)}')">Αφαίρεση</button>` : ''}</div>`).join('') +
+      `<div style="margin-top:10px"><button class="btn cy" onclick="prosthiki()">+ Προσθήκη υπευθύνου</button></div>
+      <div class="nt">Ο καθένας μπαίνει με το δικό του PIN. Αν κάποιος φύγει, τον αφαιρείτε — οι άλλοι δεν επηρεάζονται.</div></div>`;
+  }
+  return h;
+};
+async function syxn(k) {
+  try { const r = await api('rythmisi', {syxnotita: k}); if (!r.ok) throw new Error(r.error); D = r; render(); toast('✓ Αποθηκεύτηκε'); }
+  catch (e) { toast(e.message, true); }
+}
+async function apothEmail() {
+  try { const r = await api('rythmisi', {email: $('#em').value.trim()}); if (!r.ok) throw new Error(r.error); D = r; render(); toast('✓ Αποθηκεύτηκε'); }
+  catch (e) { toast(e.message, true); }
+}
+function allagiPin() {
+  openModal(`<h3 style="margin:0 0 6px">🔑 Αλλαγή PIN</h3>
+    <label class="fl">Τωρινό PIN</label><input class="fi" id="po" type="password" inputmode="numeric" maxlength="8">
+    <label class="fl">Νέο PIN (4 έως 8 ψηφία)</label><input class="fi" id="p1" type="password" inputmode="numeric" maxlength="8">
+    <label class="fl">Ξανά το νέο</label><input class="fi" id="p2" type="password" inputmode="numeric" maxlength="8">
+    <div class="err" id="err"></div><button class="btn cy" onclick="allagiPinOk()">Αλλαγή</button><button class="lnk" onclick="closeModal()">Άκυρο</button>`);
+}
+async function allagiPinOk() {
+  const po = $('#po').value, p1 = $('#p1').value, p2 = $('#p2').value, err = $('#err');
+  if (!/^\d{4,8}$/.test(p1)) return err.textContent = 'Το PIN θέλει 4 έως 8 ψηφία.';
+  if (p1 !== p2) return err.textContent = 'Τα δύο PIN δεν είναι ίδια.';
+  try { const r = await api('allagi_pin', {pin: po, neo: p1}); if (!r.ok) return err.textContent = r.error; closeModal(); toast('✓ Το PIN άλλαξε'); }
+  catch (e) { err.textContent = e.message; }
+}
+function prosthiki() {
+  openModal(`<h3 style="margin:0 0 6px">Προσθήκη υπευθύνου</h3><div class="sm">Θα πάρετε έναν 6ψήφιο κωδικό. Τον δίνετε στον νέο υπεύθυνο:
+    σκανάρει το ίδιο QR, πατά «Έχω κωδικό πρόσκλησης» και φτιάχνει το δικό του PIN.</div>
+    <label class="fl">Όνομα</label><input class="fi" id="on" maxlength="60">
+    <label class="fl">Email (προαιρετικό)</label><input class="fi" id="em2" type="email" maxlength="120">
+    <div class="err" id="err"></div><button class="btn cy" onclick="prosthikiOk()">Δημιουργία κωδικού</button><button class="lnk" onclick="closeModal()">Άκυρο</button>`);
+}
+async function prosthikiOk() {
+  const on = $('#on').value.trim(), err = $('#err');
+  if (!on) return err.textContent = 'Γράψτε το όνομα.';
+  try {
+    const r = await api('prosthiki', {onoma: on, email: $('#em2').value.trim()});
+    if (!r.ok) return err.textContent = r.error;
+    D = r; render();
+    openModal(`<h3 style="margin:0">Κωδικός για ${esc(r.neos.onoma)}</h3><div class="code">${esc(r.neos.kodikos)}</div>
+      <div class="nt">Ισχύει 7 μέρες. Δίνεται μία φορά — μην τον στείλετε σε κανέναν άλλο.</div>
+      <div style="margin-top:14px"><button class="btn" onclick="closeModal()">Εντάξει</button></div>`);
+  } catch (e) { err.textContent = e.message; }
+}
+async function afairesi(id, onoma) {
+  openModal(`<h3 style="margin:0 0 8px">Αφαίρεση ${esc(onoma)};</h3><div class="sm">Δεν θα μπορεί πια να μπει στο My InCo. Οι άλλοι υπεύθυνοι δεν επηρεάζονται.</div>
+    <div style="margin-top:16px"><button class="btn" style="background:var(--bad);color:#fff" onclick="afairesiOk('${id}')">Αφαίρεση</button></div>
+    <button class="lnk" onclick="closeModal()">Άκυρο</button>`);
+}
+async function afairesiOk(id) {
+  try { const r = await api('afairesi', {id}); if (!r.ok) throw new Error(r.error); D = r; closeModal(); render(); toast('✓ Αφαιρέθηκε'); }
+  catch (e) { toast(e.message, true); }
+}
+
+// ------------------------------------------------------------- εγκατάσταση στο κινητό (όπως στο QRecord)
+let installEvt = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if (view.name === 'home') render(); });
+addEventListener('appinstalled', () => { installEvt = null; LS.set('mi_installed', true); if (view.name === 'home') render(); });
+const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function installBox() {
+  if (standalone() || LS.get('mi_installed', false)) return '';
+  if (installEvt) return `<div class="install"><div><b>Βάλτε το My InCo στο κινητό</b><br>Ένα εικονίδιο στην οθόνη σας — όλα τα έγγραφα με ένα άγγιγμα.</div>
+    <button class="btn" style="background:var(--blue);color:#fff" onclick="doInstall()">📲 Εγκατάσταση στο κινητό</button></div>`;
+  if (isIOS()) return `<div class="install"><div><b>Βάλτε το My InCo στο iPhone</b><br>Ένα εικονίδιο στην οθόνη σας — όλα τα έγγραφα με ένα άγγιγμα.</div>
+    <div>1. Πατήστε <b>Κοινοποίηση</b> (το τετράγωνο με το βέλος ⬆) κάτω στο Safari.<br>2. Επιλέξτε <b>«Προσθήκη στην οθόνη Αφετηρίας»</b>.</div></div>`;
+  return '';
+}
+async function doInstall() {
+  if (!installEvt) return;
+  installEvt.prompt();
+  const r = await installEvt.userChoice.catch(() => null);
+  installEvt = null;
+  if (r && r.outcome === 'accepted') { LS.set('mi_installed', true); toast('✓ Το My InCo μπήκε στην οθόνη σας'); }
+  render();
+}
+
+// ------------------------------------------------------------- πλοήγηση
+function go(name, arg) { view = {name, arg}; render(); scrollTo(0, 0); }
+function render() {
+  if (['home', 'tmima', 'rythmiseis'].includes(view.name) && !D) view = {name: 'pin'};
+  $('#app').innerHTML = (V[view.name] || V.load)();
+}
+function openModal(html) { closeModal(); const bg = document.createElement('div'); bg.className = 'mbg'; bg.id = 'mbg';
+  bg.innerHTML = `<div class="mod" role="dialog" aria-modal="true">${html}</div>`; bg.addEventListener('click', e => { if (e.target === bg) closeModal(); });
+  document.body.appendChild(bg); }
+function closeModal() { const m = $('#mbg'); if (m) m.remove(); }
+addEventListener('popstate', () => { if (view.name !== 'home' && D) { view = {name: 'home'}; render(); } });
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+start();
+</script>
+</body>
+</html>
