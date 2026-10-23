@@ -366,7 +366,7 @@ async function allagiPinOk() {
   const po = $('#po').value, p1 = $('#p1').value, p2 = $('#p2').value, err = $('#err');
   if (!/^\d{4,8}$/.test(p1)) return err.textContent = 'Το PIN θέλει 4 έως 8 ψηφία.';
   if (p1 !== p2) return err.textContent = 'Τα δύο PIN δεν είναι ίδια.';
-  try { const r = await api('allagi_pin', {pin: po, neo: p1}); if (!r.ok) return err.textContent = r.error; closeModal(); toast('✓ Το PIN άλλαξε'); }
+  try { const r = await api('allagi_pin', {pin: po, neo: p1}); if (!r.ok) return err.textContent = r.error; if (r.s) { SESS.s = r.s; LS.set('srv_sess', SESS); } closeModal(); toast('✓ Το PIN άλλαξε'); }
   catch (e) { err.textContent = e.message; }
 }
 
