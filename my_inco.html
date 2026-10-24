@@ -58,6 +58,10 @@
         text-align:center;color:var(--muted);font-size:12px;line-height:1.7;}
   .foot a{color:var(--blue);text-decoration:none;}
 
+  /* γλώσσα ΕΛ | EN (24/10/2026): ένα αρχείο, δύο γλώσσες */
+  .lg2{display:inline-flex;border:1.5px solid rgba(255,255,255,.35);border-radius:9px;overflow:hidden;margin-top:8px}
+  .lg2 button{border:0;background:none;color:#cfe3ec;font:800 13px/1 inherit;padding:8px 12px;min-width:44px;cursor:pointer}
+  .lg2 button.on{background:#fff;color:var(--navy)}
   @media (max-width:560px){
     .head{padding:18px}.head h1{font-size:19px}.head .who{margin-left:0;text-align:left}
     th,td{padding:8px 6px;font-size:13px}
@@ -69,39 +73,48 @@
   <div class="head">
     <div>
       <span class="mark"><img src="myinco_katheto.png" alt="My InCo"></span>
-      <div class="sub" style="margin-top:7px">Ο φάκελός σας για τον υγειονομικό έλεγχο</div>
+      <div class="sub" style="margin-top:7px" data-en="Your folder for health inspections">Ο φάκελός σας για τον υγειονομικό έλεγχο</div>
     </div>
-    <div class="who" id="who"></div>
+    <div class="who"><div id="who"></div><div class="lg2" id="lg2"><button data-g="el" aria-label="Ελληνικά">ΕΛ</button><button data-g="en" aria-label="English">EN</button></div></div>
   </div>
 
-  <p class="lead">Το My InCo είναι ο <b>προσωπικός σας φάκελος</b>: εδώ βρίσκετε μόνοι σας,
+  <p class="lead" data-en="My InCo is your <b>personal folder</b>: here you can find on your own,
+  whenever you need them, all the documents and records about our cooperation.
+  No need to call us and no need to keep binders.">Το My InCo είναι ο <b>προσωπικός σας φάκελος</b>: εδώ βρίσκετε μόνοι σας,
   όποτε τα χρειαστείτε, όλα τα έγγραφα και τις καταγραφές που αφορούν τη συνεργασία μας.
   Δεν χρειάζεται να μας τηλεφωνήσετε και δεν χρειάζεται να κρατάτε ντοσιέ.</p>
 
   <div class="card">
-    <h2><span class="dot"></span>Τι υπάρχει σε κάθε υποφάκελο</h2>
+    <h2 data-en='<span class="dot"></span>What is in each subfolder'><span class="dot"></span>Τι υπάρχει σε κάθε υποφάκελο</h2>
     <table>
-      <thead><tr><th>Υποφάκελος</th><th>Τι θα βρείτε μέσα</th></tr></thead>
+      <thead><tr><th data-en="Subfolder">Υποφάκελος</th><th data-en="What you will find">Τι θα βρείτε μέσα</th></tr></thead>
       <tbody>
-        <tr><td class="f">01. ΕΙΣΕΡΧΟΜΕΝΑ<br>ΕΓΓΡΑΦΑ</td>
-            <td>Πιστοποιητικά εφαρμογών, εκθέσεις αυτοψίας, η πρόταση συνεργασίας,
+        <tr><td class="f" data-en="01. ΕΙΣΕΡΧΟΜΕΝΑ<br>ΕΓΓΡΑΦΑ<br><small>(incoming documents)</small>">01. ΕΙΣΕΡΧΟΜΕΝΑ<br>ΕΓΓΡΑΦΑ</td>
+            <td data-en="Treatment certificates, inspection reports, the cooperation proposal,
+                our company's pest control licence and your visit schedule.">Πιστοποιητικά εφαρμογών, εκθέσεις αυτοψίας, η πρόταση συνεργασίας,
                 η άδεια καταπολέμησης της εταιρείας μας και το πρόγραμμα των επισκέψεών σας.</td></tr>
-        <tr><td class="f">02. ΑΠΕΝΤΟΜΩΣΗ</td>
-            <td>Άδειες και δελτία δεδομένων ασφαλείας (MSDS) των σκευασμάτων,
+        <tr><td class="f" data-en="02. ΑΠΕΝΤΟΜΩΣΗ<br><small>(insect control)</small>">02. ΑΠΕΝΤΟΜΩΣΗ</td>
+            <td data-en="Licences and safety data sheets (MSDS) of the products,
+                the map of the trap positions, and the report of every visit.">Άδειες και δελτία δεδομένων ασφαλείας (MSDS) των σκευασμάτων,
                 η αποτύπωση των θέσεων των παγίδων, και τα δελτία κάθε επίσκεψης.</td></tr>
-        <tr><td class="f">03. ΜΥΟΚΤΟΝΙΑ</td>
-            <td>Άδειες και MSDS των τρωκτικοκτόνων, η κάτοψη με τους δολωματικούς
+        <tr><td class="f" data-en="03. ΜΥΟΚΤΟΝΙΑ<br><small>(rodent control)</small>">03. ΜΥΟΚΤΟΝΙΑ</td>
+            <td data-en="Licences and MSDS of the rodenticides, the floor plan with the bait
+                stations and monitoring points, and the report of every visit.">Άδειες και MSDS των τρωκτικοκτόνων, η κάτοψη με τους δολωματικούς
                 σταθμούς και τα σημεία ελέγχου, και τα δελτία κάθε επίσκεψης.</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="card">
-    <h2><span class="dot"></span>Δύο είδη περιεχομένου</h2>
+    <h2 data-en='<span class="dot"></span>Two kinds of content'><span class="dot"></span>Δύο είδη περιεχομένου</h2>
     <ul>
-      <li><b>Έγγραφα (PDF).</b> Παγωμένα τη στιγμή που εκδόθηκαν — πιστοποιητικά,
+      <li data-en="<b>Documents (PDF).</b> Fixed at the moment they were issued — certificates,
+          reports, visit reports, licences. You can download, print and forward them."><b>Έγγραφα (PDF).</b> Παγωμένα τη στιγμή που εκδόθηκαν — πιστοποιητικά,
           εκθέσεις, δελτία επισκέψεων, άδειες. Τα κατεβάζετε, τα τυπώνετε, τα προωθείτε.</li>
-      <li><b>Πίνακες διαρκούς ενημέρωσης καταγραφών.</b> Δεν είναι αρχεία αλλά σελίδες:
+      <li data-en="<b>Continuously updated record tables.</b> These are pages, not files:
+          you open them and always see the latest picture — rodent control, electric
+          insect traps, pheromone traps, visit schedule.
+          You can recognise them by the <b>(live data)</b> label in the name."><b>Πίνακες διαρκούς ενημέρωσης καταγραφών.</b> Δεν είναι αρχεία αλλά σελίδες:
           τις ανοίγετε και βλέπετε πάντα την τελευταία εικόνα — μυοκτονία, ηλεκτρικές
           εντομοπαγίδες, φερομονικές παγίδες, πρόγραμμα επισκέψεων.
           Τις αναγνωρίζετε από την ένδειξη <b>(live data)</b> στο όνομα.</li>
@@ -109,29 +122,35 @@
   </div>
 
   <div class="card">
-    <h2><span class="dot"></span>Ενημερώνεται μόνος του</h2>
+    <h2 data-en='<span class="dot"></span>It updates itself'><span class="dot"></span>Ενημερώνεται μόνος του</h2>
     <ul>
-      <li>Κάθε έγγραφο που σας στέλνουμε με email <b>μπαίνει αυτόματα</b> στον φάκελό σας.
+      <li data-en="Every document we email you <b>is added automatically</b> to your folder.
+          You don't need to do anything — and it is not lost if you delete the email.">Κάθε έγγραφο που σας στέλνουμε με email <b>μπαίνει αυτόματα</b> στον φάκελό σας.
           Δεν χρειάζεται να κάνετε τίποτα — και δεν χάνεται αν σβήσετε το email.</li>
-      <li>Μετά από κάθε επίσκεψη, το <b>δελτίο</b> με ό,τι μετρήθηκε μπαίνει μόνο του,
+      <li data-en="After every visit, the <b>report</b> with everything that was checked is added automatically,
+          signed and stamped by the responsible scientist.">Μετά από κάθε επίσκεψη, το <b>δελτίο</b> με ό,τι μετρήθηκε μπαίνει μόνο του,
           υπογεγραμμένο και σφραγισμένο από τον υπεύθυνο επιστήμονα.</li>
-      <li>Οι πίνακες καταγραφών ανανεώνονται <b>την ίδια μέρα</b> της επίσκεψης.</li>
+      <li data-en="The record tables are updated <b>on the same day</b> as the visit.">Οι πίνακες καταγραφών ανανεώνονται <b>την ίδια μέρα</b> της επίσκεψης.</li>
     </ul>
   </div>
 
   <div class="card">
-    <h2><span class="dot"></span>Σε έλεγχο</h2>
-    <p style="margin:0">Ανοίγετε τον φάκελο και τα έχετε όλα μαζί: <b>ποιος</b> ήρθε,
+    <h2 data-en='<span class="dot"></span>During an inspection'><span class="dot"></span>Σε έλεγχο</h2>
+    <p style="margin:0" data-en="Open the folder and you have everything together: <b>who</b> came,
+    <b>when</b>, <b>what was checked</b>, <b>what was used</b> and <b>under which licence</b>.
+    The visit reports show the monitoring between treatments;
+    the certificates prove the treatments themselves.">Ανοίγετε τον φάκελο και τα έχετε όλα μαζί: <b>ποιος</b> ήρθε,
     <b>πότε</b>, <b>τι μέτρησε</b>, <b>τι χρησιμοποίησε</b> και <b>με ποια άδεια</b>.
     Τα δελτία επισκέψεων δείχνουν την παρακολούθηση ανάμεσα στις εφαρμογές·
     τα πιστοποιητικά αποδεικνύουν τις ίδιες τις εφαρμογές.</p>
-    <div class="note">Ο φάκελος είναι <b>δικός σας για ανάγνωση</b>. Δεν χρειάζεται να
+    <div class="note" data-en="The folder is <b>yours to read</b>. You don't need to
+    add or delete anything — we put the documents there and they stay there.">Ο φάκελος είναι <b>δικός σας για ανάγνωση</b>. Δεν χρειάζεται να
     προσθέσετε ή να διαγράψετε τίποτα — τα βάζουμε εμείς και μένουν εκεί.</div>
   </div>
 
   <div class="foot">
-    Για οτιδήποτε χρειαστείτε, είμαστε εδώ.<br>
-    <b>InCo</b> · Δελφών 140, Γλυφάδα 165 61 · 210.96.44.310 ·
+    <span data-en="Whatever you need, we are here.">Για οτιδήποτε χρειαστείτε, είμαστε εδώ.</span><br>
+    <b>InCo</b> · <span data-en="140 Delfon St, Glyfada 165 61, Greece">Δελφών 140, Γλυφάδα 165 61</span> · <span data-en="+30 210 96 44 310">210.96.44.310</span> ·
     <a href="mailto:sales@in-co.gr">sales@in-co.gr</a> ·
     <a href="https://www.in-co.gr">www.in-co.gr</a>
   </div>
@@ -159,5 +178,31 @@
   var line = [kod, epon].filter(Boolean).join(' · ').replace(/[<>&]/g, '');
   document.getElementById('who').innerHTML = '<b>' + line + '</b>';
   document.title = 'My InCo — ' + line;
+})();
+
+/* 24/10/2026 — ΕΝΑ αρχείο, δύο γλώσσες (απόφαση χρήστη: «μην είναι δύο αρχεία»).
+   Κάθε κείμενο έχει τα ελληνικά μέσα του και τα αγγλικά στο data-en.
+   Γλώσσα: ?lang=en|el → αλλιώς ό,τι διάλεξε στην εφαρμογή My InCo (ίδιο mi_lang, ίδιος ιστότοπος)
+   → αλλιώς η γλώσσα του κινητού/υπολογιστή. */
+(function () {
+  var q = new URLSearchParams(location.search).get('lang'), mem = null;
+  try { mem = JSON.parse(localStorage.getItem('mi_lang') || 'null'); } catch (e) { }
+  var nodes = document.querySelectorAll('[data-en]');
+  for (var i = 0; i < nodes.length; i++) nodes[i].setAttribute('data-el', nodes[i].innerHTML);
+  var titleEl = document.title;
+  function set(g) {
+    for (var i = 0; i < nodes.length; i++) nodes[i].innerHTML = nodes[i].getAttribute(g === 'en' ? 'data-en' : 'data-el');
+    document.documentElement.lang = g;
+    var b = document.querySelectorAll('#lg2 button');
+    for (var j = 0; j < b.length; j++) b[j].className = b[j].getAttribute('data-g') === g ? 'on' : '';
+    if (titleEl === 'Τι είναι το My InCo') document.title = g === 'en' ? 'What is My InCo' : titleEl;   // με πελάτη: μένει «My InCo — Α438 · …»
+  }
+  var g = q === 'en' || q === 'el' ? q : (mem || (/^el/i.test(navigator.language || '') ? 'el' : 'en'));
+  set(g);
+  document.getElementById('lg2').addEventListener('click', function (e) {
+    var t = e.target.getAttribute('data-g'); if (!t) return;
+    try { localStorage.setItem('mi_lang', JSON.stringify(t)); } catch (x) { }
+    set(t);
+  });
 })();
 </script>

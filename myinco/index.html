@@ -391,7 +391,7 @@ V.home = () => {
 };
 function tiEinai() {
   const k = D.katastima;
-  anoixe('../my_inco.html?' + new URLSearchParams({pelatis: k.eponymia, kod: k.kod, periohi: k.periohi, ypok: k.ypok ? '1' : ''}));
+  anoixe('../my_inco.html?' + new URLSearchParams({pelatis: k.eponymia, kod: k.kod, periohi: k.periohi, ypok: k.ypok ? '1' : '', lang: LANG}));
 }
 function anoixe(u) { if (!window.open(u, '_blank')) location.href = u; }
 
