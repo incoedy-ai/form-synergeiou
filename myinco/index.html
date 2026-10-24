@@ -187,7 +187,9 @@ function glossa(g) {
   TM.EYE.lista = [L('Συμβουλευτικές υπηρεσίες', 'Consulting services'), L('Εκπαίδευση προσωπικού (ΕΦΕΤ)', 'Staff training (EFET)')];
   SYXN = [['ΗΜΕΡΗΣΙΑ', L('Κάθε μέρα', 'Every day')], ['ΕΒΔΟΜΑΔΙΑΙΑ', L('Μία φορά την εβδομάδα', 'Once a week')], ['ΜΗΝΙΑΙΑ', L('Μία φορά τον μήνα', 'Once a month')]];
 }
-function allagiGlossas(g) { if (g === LANG) return; glossa(g); closeModal(); render(); }
+function allagiGlossas(g) { if (g === LANG) return; glossa(g); closeModal(); render(); glossaServer(); }
+// η γλώσσα πάει και στον server: σε αυτή έρχονται τα email ενημέρωσης του υπευθύνου (24/10)
+function glossaServer() { if (SESS && D && D.ego && D.ego.glossa !== LANG) api('rythmisi', {glossa: LANG}).then(r => { if (r.ok && D) D.ego.glossa = LANG; }).catch(() => {}); }
 // το κουμπάκι ΕΛ / EN (πάνω δεξιά στις οθόνες εισόδου, και στις Ρυθμίσεις)
 const glossaBtn = () => `<div class="lg2">${[['el', 'ΕΛ'], ['en', 'EN']].map(([g, t]) =>
   `<button class="${LANG === g ? 'on' : ''}" onclick="allagiGlossas('${g}')" aria-label="${g === 'el' ? 'Ελληνικά' : 'English'}">${t}</button>`).join('')}</div>`;
@@ -269,7 +271,7 @@ async function start() {
 function syndethike(r) {
   if (!r.ok) return false;
   SESS = {s: r.s, last: Date.now()}; SS.set(KS, SESS);
-  D = r; view = {name: 'home'}; render();
+  D = r; view = {name: 'home'}; render(); glossaServer();
   return true;
 }
 
