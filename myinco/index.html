@@ -117,6 +117,11 @@ input.fi{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--li
 .act .btn{min-height:50px;font-size:15px}
 /* «My InCo» μέσα σε κείμενο = η ΛΕΞΗ-ΛΟΓΟΤΥΠΟ, ποτέ γράμματα (κανόνας χρήστη· λευκή πλακέτα για το σκοτεινό θέμα) */
 .miw{height:1.05em;width:auto;vertical-align:-.24em;background:#fff;padding:1px 5px;border-radius:5px}
+/* γλώσσα ΕΛ / EN */
+.lg2{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);flex:none}
+.lg2 button{border:0;background:none;padding:7px 11px;font-size:13px;font-weight:800;color:var(--muted);min-width:44px;min-height:38px}
+.lg2 button.on{background:var(--ink);color:var(--bg)}
+.lgr{display:flex;justify-content:flex-end;margin-top:10px}
 </style>
 </head>
 <body>
@@ -126,24 +131,78 @@ input.fi{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--li
 const API = 'https://script.google.com/macros/s/AKfycby4Rzp8F7Xic29ynWjMkIZRHIYciQ49YqWHQR0A6dO4DvH-9FhAP6ROsl6BObeQEZfz/exec';
 const LOCK_MIN = 5;
 const MI = '<img class="miw" src="word.png" alt="My InCo">';
-const TM = {
-  PC:  {titlos: 'Pest Control', logo: 'pc.png', xroma: '#2D3A4D', axno: 'απεντόμωση · μυοκτονία',
-        lista: ['Απεντόμωση και μυοκτονία με πρόγραμμα επισκέψεων', 'Ζωντανοί πίνακες καταγραφών', 'Πιστοποιητικό σε κάθε εφαρμογή']},
-  WS:  {titlos: 'Water Safety', logo: 'ws.png', xroma: '#287B9B', axno: 'Legionella · νερό',
-        lista: ['Δειγματοληψίες Legionella', 'Αποτελέσματα εργαστηρίου', 'Μελέτη αξιολόγησης κινδύνου']},
-  EYE: {titlos: 'Επιχειρήσεις Υγειονομικού Ενδιαφέροντος', logo: 'eye.png', xroma: '#2D3A4D', axno: 'QRecord · χωρίς χαρτιά',
-        lista: ['Συμβουλευτικές υπηρεσίες', 'Εκπαίδευση προσωπικού (ΕΦΕΤ)']}
-};
-const EIDOS_SIMA = {'ΣΚΑΦΟΣ': 'yachting.png', 'ΞΕΝΟΔΟΧΕΙΟ': 'ws.png', 'RBNB': 'ws.png', 'ΚΥΕ': 'eye.png'};
-const MERES = ['Κυριακή','Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο'];
-const SYXN = [['ΗΜΕΡΗΣΙΑ', 'Κάθε μέρα'], ['ΕΒΔΟΜΑΔΙΑΙΑ', 'Μία φορά την εβδομάδα'], ['ΜΗΝΙΑΙΑ', 'Μία φορά τον μήνα']];
-
-const $ = (s, el = document) => el.querySelector(s);
-const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
 };
+
+// ------------------------------------------------------------- γλώσσα (24/10/2026, ζήτησε ο χρήστης): ελληνικά / English
+// Ανά συσκευή (localStorage). Πρώτη φορά: η γλώσσα του κινητού (ελληνικό κινητό → ελληνικά, αλλιώς English).
+// Μεταφράζονται τα κείμενα της εφαρμογής + οι σταθερές λέξεις που έρχονται από τον server (ομάδες, είδη, λάθη).
+// Ονόματα πελατών/εγγράφων μένουν όπως είναι.
+let LANG = LS.get('mi_lang', '') || (/^el/i.test(navigator.language || '') ? 'el' : 'en');
+const L = (el, en) => LANG === 'en' ? en : el;
+const EN = {
+  // ομάδες εγγράφων
+  'ΠΙΣΤΟΠΟΙΗΤΙΚΑ & ΕΚΘΕΣΕΙΣ': 'CERTIFICATES & REPORTS', 'ΔΕΛΤΙΑ ΕΠΙΣΚΕΨΕΩΝ': 'VISIT REPORTS', 'ΚΑΤΟΨΕΙΣ': 'FLOOR PLANS',
+  'ΑΔΕΙΕΣ & MSDS': 'LICENCES & MSDS', 'ΑΠΟΤΕΛΕΣΜΑΤΑ': 'RESULTS', 'ΔΕΙΓΜΑΤΟΛΗΨΙΕΣ': 'SAMPLINGS',
+  'ΚΑΤΟΨΕΙΣ — ΣΗΜΕΙΑ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ': 'FLOOR PLANS — SAMPLING POINTS', 'ΕΓΓΡΑΦΑ': 'DOCUMENTS', 'ΜΗΝΙΑΙΑ': 'MONTHLY',
+  'ΠΡΟΜΗΘΕΥΤΕΣ': 'SUPPLIERS', 'ΠΡΟΣΩΠΙΚΟ': 'STAFF',
+  // υπότιτλοι & ονόματα εγγράφων/πινάκων
+  'δελτίο επίσκεψης': 'visit report', 'κάτοψη': 'floor plan', 'άδεια σκευάσματος': 'product licence', 'άδεια εταιρείας': 'company licence',
+  'Ηλεκτρικές εντομοπαγίδες': 'Electric insect traps', 'Μυοκτονία': 'Rodent control', 'Φερομονικές παγίδες': 'Pheromone traps',
+  'Απεντόμωση': 'Insect control', 'Πρόγραμμα εφαρμογών': 'Treatment schedule',
+  // Water Safety
+  'Πόσιμο νερό': 'Drinking water', 'Κολυμβητική δεξαμενή': 'Swimming pool', 'Επιφάνειες': 'Surfaces',
+  // είδος πελάτη / περιοχή
+  'ΚΑΤΑΣΤΗΜΑ': 'BRANCH',
+  // λάθη του server
+  'το έγγραφο δεν βρέθηκε': 'Document not found.', 'λείπουν στοιχεία': 'Missing details.',
+  'υπάρχει ήδη υπεύθυνος — ζητήστε του κωδικό πρόσκλησης': 'There is already a manager — ask them for an invitation code.',
+  'γράψτε το όνομά σας': 'Please enter your name.', 'γράψτε το όνομα': 'Please enter the name.',
+  'το PIN θέλει 4 έως 8 ψηφία': 'The PIN needs 4 to 8 digits.',
+  'πολλές λάθος προσπάθειες — δοκιμάστε σε 15 λεπτά': 'Too many wrong attempts — try again in 15 minutes.',
+  'λάθος ή ληγμένος κωδικός πρόσκλησης': 'Wrong or expired invitation code.',
+  'αυτό το PIN το έχει άλλος υπεύθυνος — διαλέξτε άλλο': 'Another manager uses this PIN — choose a different one.',
+  'λάθος PIN': 'Wrong PIN', 'λάθος τωρινό PIN': 'Wrong current PIN.', 'άγνωστη συχνότητα': 'Unknown frequency.',
+  'μη έγκυρο email': 'Invalid email.', 'μόνο ο διαχειριστής προσθέτει υπεύθυνους': 'Only the administrator can add managers.',
+  'μόνο ο διαχειριστής': 'Administrator only.', 'δεν μπορείτε να αφαιρέσετε τον εαυτό σας': 'You cannot remove yourself.',
+  'δεν βρέθηκε': 'Not found.', 'άγνωστο τμήμα': 'Unknown service.', 'άκυρος σύνδεσμος': 'Invalid link.',
+  'η πρόσβαση έχει κλείσει — επικοινωνήστε με την InCo': 'Access has been closed — please contact InCo.',
+  'η σύνδεση έληξε — βάλτε ξανά το PIN': 'Your session expired — enter your PIN again.',
+  'άκυρο αίτημα': 'Invalid request.', 'άγνωστη ενέργεια': 'Unknown action.'
+};
+const tr = s => LANG === 'en' && s != null && EN[String(s).trim()] ? EN[String(s).trim()] : s;
+function glossa(g) {
+  LANG = g; LS.set('mi_lang', g); document.documentElement.lang = g;
+  MERES = g === 'en' ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'] : ['Κυριακή','Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο'];
+  TM.PC.axno = L('απεντόμωση · μυοκτονία', 'insect & rodent control');
+  TM.PC.lista = [L('Απεντόμωση και μυοκτονία με πρόγραμμα επισκέψεων', 'Insect and rodent control with a visit schedule'),
+                 L('Ζωντανοί πίνακες καταγραφών', 'Live record tables'), L('Πιστοποιητικό σε κάθε εφαρμογή', 'Certificate for every treatment')];
+  TM.WS.axno = L('Legionella · νερό', 'Legionella · water');
+  TM.WS.lista = [L('Δειγματοληψίες Legionella', 'Legionella sampling'), L('Αποτελέσματα εργαστηρίου', 'Laboratory results'),
+                 L('Μελέτη αξιολόγησης κινδύνου', 'Risk assessment study')];
+  TM.EYE.titlos = L('Επιχειρήσεις Υγειονομικού Ενδιαφέροντος', 'Food Safety & Hygiene');
+  TM.EYE.axno = L('QRecord · χωρίς χαρτιά', 'QRecord · paperless');
+  TM.EYE.lista = [L('Συμβουλευτικές υπηρεσίες', 'Consulting services'), L('Εκπαίδευση προσωπικού (ΕΦΕΤ)', 'Staff training (EFET)')];
+  SYXN = [['ΗΜΕΡΗΣΙΑ', L('Κάθε μέρα', 'Every day')], ['ΕΒΔΟΜΑΔΙΑΙΑ', L('Μία φορά την εβδομάδα', 'Once a week')], ['ΜΗΝΙΑΙΑ', L('Μία φορά τον μήνα', 'Once a month')]];
+}
+function allagiGlossas(g) { if (g === LANG) return; glossa(g); closeModal(); render(); }
+// το κουμπάκι ΕΛ / EN (πάνω δεξιά στις οθόνες εισόδου, και στις Ρυθμίσεις)
+const glossaBtn = () => `<div class="lg2">${[['el', 'ΕΛ'], ['en', 'EN']].map(([g, t]) =>
+  `<button class="${LANG === g ? 'on' : ''}" onclick="allagiGlossas('${g}')" aria-label="${g === 'el' ? 'Ελληνικά' : 'English'}">${t}</button>`).join('')}</div>`;
+
+const TM = {
+  PC:  {titlos: 'Pest Control', logo: 'pc.png', xroma: '#2D3A4D'},
+  WS:  {titlos: 'Water Safety', logo: 'ws.png', xroma: '#287B9B'},
+  EYE: {logo: 'eye.png', xroma: '#2D3A4D'}
+};
+const EIDOS_SIMA = {'ΣΚΑΦΟΣ': 'yachting.png', 'ΞΕΝΟΔΟΧΕΙΟ': 'ws.png', 'RBNB': 'ws.png', 'ΚΥΕ': 'eye.png'};
+let MERES, SYXN;
+glossa(LANG);
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const SS = {
   get(k) { try { return JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) { return null; } },
   set(k, v) { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) { } },
@@ -169,11 +228,13 @@ async function api(action, extra) {
     try {
       const r = await fetch(API, {method: 'POST', body, headers: {'Content-Type': 'text/plain;charset=utf-8'}});
       const j = await r.json();
-      if (j && j.session) { kleidoma(); throw new Error(j.error); }
+      if (j && j.error) j.error = tr(j.error);
+      if (j && j.session) { kleidoma(); const er = new Error(j.error); er.session = true; throw er; }
       return j;
-    } catch (e) { last = e; if (String(e.message || '').includes('σύνδεση έληξε')) throw e; await new Promise(r => setTimeout(r, 900 * (i + 1))); }
+    } catch (e) { last = e; if (e.session) throw e; await new Promise(r => setTimeout(r, 900 * (i + 1))); }
   }
-  throw new Error(navigator.onLine === false ? 'Χρειάζεται σύνδεση στο ίντερνετ.' : 'Δεν απαντά ο server — δοκιμάστε ξανά.');
+  throw new Error(navigator.onLine === false ? L('Χρειάζεται σύνδεση στο ίντερνετ.', 'An internet connection is needed.')
+    : L('Δεν απαντά ο server — δοκιμάστε ξανά.', 'The server is not responding — please try again.'));
 }
 function toast(msg, bad, html) {
   const t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); if (html) t.innerHTML = msg; else t.textContent = msg;
@@ -192,10 +253,10 @@ document.addEventListener('visibilitychange', () => { if (document.hidden || !SE
 
 // ------------------------------------------------------------- εκκίνηση
 async function start() {
-  if (!P || !K) { view = {name: 'msg', t: 'Σκανάρετε το QR του ' + MI, m: 'Το QR είναι στο έντυπο που σας στείλαμε με email και μέσα στον φάκελό σας.'}; return render(); }
+  if (!P || !K) { view = {name: 'msg', t: L('Σκανάρετε το QR του ', 'Scan the QR code of ') + MI, m: L('Το QR είναι στο έντυπο που σας στείλαμε με email και μέσα στον φάκελό σας.', 'The QR code is on the sheet we sent you by email and in your folder.')}; return render(); }
   try { INFO = await api('info'); }
-  catch (e) { view = {name: 'msg', t: 'Δεν υπάρχει σύνδεση', m: e.message, retry: true}; return render(); }
-  if (!INFO.ok) { view = {name: 'msg', t: INFO.mplok ? 'Η πρόσβαση έχει κλείσει' : 'Άκυρο QR', m: INFO.error}; return render(); }
+  catch (e) { view = {name: 'msg', t: L('Δεν υπάρχει σύνδεση', 'No connection'), m: e.message, retry: true}; return render(); }
+  if (!INFO.ok) { view = {name: 'msg', t: INFO.mplok ? L('Η πρόσβαση έχει κλείσει', 'Access has been closed') : L('Άκυρο QR', 'Invalid QR code'), m: INFO.error}; return render(); }
   const s = SS.get(KS);
   if (s && Date.now() - s.last < LOCK_MIN * 60000) {
     SESS = s;
@@ -218,7 +279,7 @@ function header(withBack) {
   const onoma = k.eponymia || '';
   const sub = [k.diakritikos && k.diakritikos !== onoma ? k.diakritikos : '', k.periohi].filter(Boolean).join(' · ');
   const sima = EIDOS_SIMA[(k.eidos || '').toUpperCase()];
-  return `<div class="hd">${withBack ? '<button class="back" onclick="go(\'home\')" aria-label="Πίσω">‹</button>' : ''}
+  return `<div class="hd">${withBack ? '<button class="back" onclick="go(\'home\')" aria-label="' + L('Πίσω', 'Back') + '">‹</button>' : ''}
     <span class="plate mi"><img src="katheto.png" alt="My InCo"></span>
     <div class="who"><b>${esc(onoma)}</b><small>${esc(sub)}</small></div>
     ${sima ? `<span class="plate bd"><img src="${sima}" alt=""></span>` : ''}</div>`;
@@ -228,13 +289,13 @@ function header(withBack) {
 const V = {};
 V.load = () => '<div class="spin"></div>';
 V.msg = () => `<div class="hd"><span class="plate mi"><img src="katheto.png" alt="My InCo"></span></div>
-  <div class="pinv"><h2>${view.t}</h2><p>${esc(view.m || '')}</p>
-  ${view.retry ? '<div style="margin-top:20px"><button class="btn" onclick="location.reload()">Ξανά</button></div>' : ''}</div>`;
+  <div class="lgr">${glossaBtn()}</div><div class="pinv"><h2>${view.t}</h2><p>${esc(view.m || '')}</p>
+  ${view.retry ? `<div style="margin-top:20px"><button class="btn" onclick="location.reload()">${L('Ξανά', 'Try again')}</button></div>` : ''}</div>`;
 
 let PIN = '';
 function keypad(okLabel) {
   return `<div class="keys">${[1,2,3,4,5,6,7,8,9].map(n => `<button onclick="kp('${n}')">${n}</button>`).join('')}
-    <button onclick="kp('del')" aria-label="Σβήσιμο">⌫</button><button onclick="kp('0')">0</button>
+    <button onclick="kp('del')" aria-label="${L('Σβήσιμο', 'Delete')}">⌫</button><button onclick="kp('0')">0</button>
     <button class="ok" onclick="kp('ok')">${okLabel || '✓'}</button></div>`;
 }
 function dots() { return Array.from({length: Math.max(4, PIN.length)}, (_, i) => `<i class="${i < PIN.length ? 'f' : ''}"></i>`).join(''); }
@@ -246,62 +307,65 @@ function kp(c) {
   $('#dots').innerHTML = dots();
 }
 async function pinOk() {
-  if (PIN.length < 4) { $('#err').textContent = 'Το PIN έχει 4 έως 8 ψηφία.'; return; }
-  $('#err').textContent = 'Έλεγχος…';
+  if (PIN.length < 4) { $('#err').textContent = L('Το PIN έχει 4 έως 8 ψηφία.', 'The PIN has 4 to 8 digits.'); return; }
+  $('#err').textContent = L('Έλεγχος…', 'Checking…');
   try {
     const r = await api('syndesi', {pin: PIN});
     PIN = '';
     if (!syndethike(r)) { $('#dots').innerHTML = dots(); $('#err').textContent = r.error === 'λάθος PIN' ? 'Λάθος PIN' : r.error; }
   } catch (e) { $('#err').textContent = e.message; }
 }
-V.pin = () => { PIN = ''; return header() + `<div class="pinv"><h2>Γράψτε το PIN σας</h2><p>μόνο για τους υπεύθυνους της επιχείρησης</p>
-  <div class="dots" id="dots">${dots()}</div><div class="err" id="err">${INFO && INFO.kleidomeno ? 'Πολλές λάθος προσπάθειες — δοκιμάστε σε 15 λεπτά.' : ''}</div>
-  ${keypad()}<button class="lnk" onclick="go('prosklisi')">Έχω κωδικό πρόσκλησης</button></div>`; };
+V.pin = () => { PIN = ''; return header() + `<div class="lgr">${glossaBtn()}</div><div class="pinv"><h2>${L('Γράψτε το PIN σας', 'Enter your PIN')}</h2><p>${L('μόνο για τους υπεύθυνους της επιχείρησης', 'for the business managers only')}</p>
+  <div class="dots" id="dots">${dots()}</div><div class="err" id="err">${INFO && INFO.kleidomeno ? L('Πολλές λάθος προσπάθειες — δοκιμάστε σε 15 λεπτά.', 'Too many wrong attempts — try again in 15 minutes.') : ''}</div>
+  ${keypad()}<button class="lnk" onclick="go('prosklisi')">${L('Έχω κωδικό πρόσκλησης', 'I have an invitation code')}</button></div>`; };
 
-V.protos = () => header() + `<div class="pinv"><h2>Καλώς ήρθατε στο ${MI}</h2>
-  <p>Θα είστε ο διαχειριστής: εσείς προσθέτετε και τους άλλους υπεύθυνους. Γράψτε το όνομά σας και επιλέξτε το δικό σας PIN.</p></div>
-  <label class="fl">Όνομα</label><input class="fi" id="on" autocomplete="name" maxlength="60">
-  <label class="fl">Email (για τις ενημερώσεις — προαιρετικό)</label><input class="fi" id="em" type="email" autocomplete="email" maxlength="120">
-  <label class="fl">PIN (4 έως 8 ψηφία)</label><input class="fi" id="p1" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password">
-  <label class="fl">Ξανά το PIN</label><input class="fi" id="p2" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password">
-  <div class="err" id="err"></div><button class="btn cy" onclick="protos()">Συνέχεια</button>
-  <p class="nt">Το PIN το ξέρετε μόνο εσείς — ούτε η InCo δεν το βλέπει. Αργότερα μπορείτε να προσθέσετε και άλλους υπεύθυνους.</p>`;
+V.protos = () => header() + `<div class="lgr">${glossaBtn()}</div><div class="pinv"><h2>${L('Καλώς ήρθατε στο ', 'Welcome to ')}${MI}</h2>
+  <p>${L('Θα είστε ο διαχειριστής: εσείς προσθέτετε και τους άλλους υπεύθυνους. Γράψτε το όνομά σας και επιλέξτε το δικό σας PIN.',
+         'You will be the administrator: you add the other managers. Enter your name and choose your own PIN.')}</p></div>
+  <label class="fl">${L('Όνομα', 'Name')}</label><input class="fi" id="on" autocomplete="name" maxlength="60">
+  <label class="fl">${L('Email (για τις ενημερώσεις — προαιρετικό)', 'Email (for updates — optional)')}</label><input class="fi" id="em" type="email" autocomplete="email" maxlength="120">
+  <label class="fl">${L('PIN (4 έως 8 ψηφία)', 'PIN (4 to 8 digits)')}</label><input class="fi" id="p1" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password">
+  <label class="fl">${L('Ξανά το PIN', 'PIN again')}</label><input class="fi" id="p2" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password">
+  <div class="err" id="err"></div><button class="btn cy" onclick="protos()">${L('Συνέχεια', 'Continue')}</button>
+  <p class="nt">${L('Το PIN το ξέρετε μόνο εσείς — ούτε η InCo δεν το βλέπει. Αργότερα μπορείτε να προσθέσετε και άλλους υπεύθυνους.',
+                    'Only you know your PIN — not even InCo can see it. You can add other managers later.')}</p>`;
 async function protos() {
   const on = $('#on').value.trim(), p1 = $('#p1').value, p2 = $('#p2').value, err = $('#err');
-  if (!on) return err.textContent = 'Γράψτε το όνομά σας.';
-  if (!/^\d{4,8}$/.test(p1)) return err.textContent = 'Το PIN θέλει 4 έως 8 ψηφία.';
-  if (p1 !== p2) return err.textContent = 'Τα δύο PIN δεν είναι ίδια.';
-  err.textContent = 'Αποθήκευση…';
+  if (!on) return err.textContent = L('Γράψτε το όνομά σας.', 'Please enter your name.');
+  if (!/^\d{4,8}$/.test(p1)) return err.textContent = T_PIN48();
+  if (p1 !== p2) return err.textContent = T_PINDIAF();
+  err.textContent = L('Αποθήκευση…', 'Saving…');
   try { const r = await api('protos', {onoma: on, email: $('#em').value.trim(), pin: p1}); if (!syndethike(r)) err.textContent = r.error; }
   catch (e) { err.textContent = e.message; }
 }
 
-V.prosklisi = () => header() + `<div class="pinv"><h2>Κωδικός πρόσκλησης</h2>
-  <p>Τον 6ψήφιο κωδικό σάς τον έδωσε ο υπεύθυνος της επιχείρησης ή η InCo. Μετά επιλέγετε το δικό σας PIN.</p></div>
-  <label class="fl">Κωδικός πρόσκλησης</label><input class="fi" id="kd" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
-  <label class="fl">Νέο PIN (4 έως 8 ψηφία)</label><input class="fi" id="p1" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password">
-  <label class="fl">Ξανά το PIN</label><input class="fi" id="p2" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password">
-  <div class="err" id="err"></div><button class="btn cy" onclick="prosklisi()">Συνέχεια</button>
-  <button class="lnk" onclick="go('pin')">Πίσω στο PIN</button>`;
+V.prosklisi = () => header() + `<div class="lgr">${glossaBtn()}</div><div class="pinv"><h2>${L('Κωδικός πρόσκλησης', 'Invitation code')}</h2>
+  <p>${L('Τον 6ψήφιο κωδικό σάς τον έδωσε ο υπεύθυνος της επιχείρησης ή η InCo. Μετά επιλέγετε το δικό σας PIN.',
+         'The 6-digit code was given to you by the business administrator or by InCo. Then you choose your own PIN.')}</p></div>
+  <label class="fl">${L('Κωδικός πρόσκλησης', 'Invitation code')}</label><input class="fi" id="kd" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+  <label class="fl">${L('Νέο PIN (4 έως 8 ψηφία)', 'New PIN (4 to 8 digits)')}</label><input class="fi" id="p1" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password">
+  <label class="fl">${L('Ξανά το PIN', 'PIN again')}</label><input class="fi" id="p2" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password">
+  <div class="err" id="err"></div><button class="btn cy" onclick="prosklisi()">${L('Συνέχεια', 'Continue')}</button>
+  <button class="lnk" onclick="go('pin')">${L('Πίσω στο PIN', 'Back to PIN')}</button>`;
 async function prosklisi() {
   const kd = $('#kd').value.replace(/\D/g, ''), p1 = $('#p1').value, p2 = $('#p2').value, err = $('#err');
-  if (kd.length !== 6) return err.textContent = 'Ο κωδικός έχει 6 ψηφία.';
-  if (!/^\d{4,8}$/.test(p1)) return err.textContent = 'Το PIN θέλει 4 έως 8 ψηφία.';
-  if (p1 !== p2) return err.textContent = 'Τα δύο PIN δεν είναι ίδια.';
-  err.textContent = 'Έλεγχος…';
+  if (kd.length !== 6) return err.textContent = L('Ο κωδικός έχει 6 ψηφία.', 'The code has 6 digits.');
+  if (!/^\d{4,8}$/.test(p1)) return err.textContent = T_PIN48();
+  if (p1 !== p2) return err.textContent = T_PINDIAF();
+  err.textContent = L('Έλεγχος…', 'Checking…');
   try { const r = await api('prosklisi', {kodikos: kd, pin: p1}); if (!syndethike(r)) err.textContent = r.error; }
   catch (e) { err.textContent = e.message; }
 }
 
 // ------------------------------------------------------------- αρχική
 function ypotitlos(t) {
-  if (t === 'PC') return D.programma.epomeni ? 'Επόμενη επίσκεψη ' + ddmm(D.programma.epomeni) : 'Πρόγραμμα, καταγραφές, έγγραφα';
+  if (t === 'PC') return D.programma.epomeni ? L('Επόμενη επίσκεψη ', 'Next visit ') + ddmm(D.programma.epomeni) : L('Πρόγραμμα, καταγραφές, έγγραφα', 'Schedule, records, documents');
   if (t === 'WS') { const w = D.ws || {}; const g = (w.gyroi || [])[0];
     if (g) { const yp = g.eidi.reduce((s, x) => s + x.yp, 0), ap = g.eidi.every(x => x.ap);
-      return (ap ? (yp ? yp + (yp === 1 ? ' υπέρβαση' : ' υπερβάσεις') : 'Αποτελέσματα εντός ορίων') : 'Αναμένονται αποτελέσματα') + (w.epomeni ? ' · επόμενη ' + ddmm(w.epomeni) : ''); }
-    return 'Δειγματοληψίες, αποτελέσματα, κατόψεις'; }
-  if (D.qrecord) { const x = QR_SIMERA; return x && x.kleisto && !x.egin ? 'QRecord: σήμερα κλειστά' : x ? `QRecord: σήμερα ${x.egin} από ${x.ola}` + (x.anoixtes ? ` · ${x.anoixtes} ανοιχτ` + (x.anoixtes === 1 ? 'ή απόκλιση' : 'ές αποκλίσεις') : '') : 'QRecord, έγγραφα συμβουλευτικής'; }
-  return 'Έγγραφα συμβουλευτικής';
+      return (ap ? (yp ? yperv(yp) : L('Αποτελέσματα εντός ορίων', 'Results within limits')) : L('Αναμένονται αποτελέσματα', 'Results pending')) + (w.epomeni ? L(' · επόμενη ', ' · next ') + ddmm(w.epomeni) : ''); }
+    return L('Δειγματοληψίες, αποτελέσματα, κατόψεις', 'Samplings, results, floor plans'); }
+  if (D.qrecord) { const x = QR_SIMERA; return x && x.kleisto && !x.egin ? L('QRecord: σήμερα κλειστά', 'QRecord: closed today') : x ? L(`QRecord: σήμερα ${x.egin} από ${x.ola}`, `QRecord: today ${x.egin} of ${x.ola}`) + (x.anoixtes ? ' · ' + anoixtes(x.anoixtes) : '') : L('QRecord, έγγραφα συμβουλευτικής', 'QRecord, consulting documents'); }
+  return L('Έγγραφα συμβουλευτικής', 'Consulting documents');
 }
 V.home = () => {
   if (D.qrecord && (!QR_SIMERA || Date.now() - QR_SIMERA.t > 120000)) qrSimera().then(() => { if (view.name === 'home') render(); }).catch(() => {});
@@ -311,18 +375,18 @@ V.home = () => {
       <div><h5>${esc(TM[t].titlos)}</h5><p>${esc(ypotitlos(t))}</p></div><span class="ch">›</span></button>`).join('');
   const nea = (D.arxeia || []).filter(a => a.neo).length;
   if ((D.arxeia || []).length) h += `<button class="t" onclick="go('ola')"><span class="plate lg fo">📁</span>
-      <div><h5>Όλα τα έγγραφα</h5><p>${(D.arxeia || []).length} έγγραφα${nea ? ' · <b style="color:var(--blue)">' + nea + ' νέα</b>' : ''}</p></div><span class="ch">›</span></button>`;
+      <div><h5>${L('Όλα τα έγγραφα', 'All documents')}</h5><p>${(D.arxeia || []).length} ${L('έγγραφα', 'documents')}${nea ? ' · <b style="color:var(--blue)">' + nea + L(' νέα', ' new') + '</b>' : ''}</p></div><span class="ch">›</span></button>`;
   else if (D.fakelos) h += `<button class="t" onclick="anoixe('${esc(D.fakelos)}')"><span class="plate lg fo">📁</span>
-      <div><h5>Όλα τα έγγραφα</h5><p>${D.tmimata.length > 1 ? 'όλων των τμημάτων' : 'πιστοποιητικά, εκθέσεις, άδειες'}</p></div><span class="ch">›</span></button>`;
-  if (!D.tmimata.length && !D.fakelos) h += '<div class="empty">Δεν υπάρχουν ακόμα έγγραφα.</div>';
+      <div><h5>${L('Όλα τα έγγραφα', 'All documents')}</h5><p>${D.tmimata.length > 1 ? L('όλων των τμημάτων', 'of all services') : L('πιστοποιητικά, εκθέσεις, άδειες', 'certificates, reports, licences')}</p></div><span class="ch">›</span></button>`;
+  if (!D.tmimata.length && !D.fakelos) h += `<div class="empty">${L('Δεν υπάρχουν ακόμα έγγραφα.', 'No documents yet.')}</div>`;
   if (D.axna.length) {
-    h += '<div class="sep">ΜΠΟΡΕΙΤΕ ΝΑ ΠΡΟΣΘΕΣΕΤΕ</div>' + D.axna.map(t => `<button class="t ax" onclick="axno('${t}')">
+    h += `<div class="sep">${L('ΜΠΟΡΕΙΤΕ ΝΑ ΠΡΟΣΘΕΣΕΤΕ', 'YOU CAN ADD')}</div>` + D.axna.map(t => `<button class="t ax" onclick="axno('${t}')">
       <span class="plate lg"><img src="${TM[t].logo}" alt=""></span><div><h5>${esc(TM[t].titlos)}</h5><p>${esc(TM[t].axno)}</p></div>
-      <span class="zp">Ζητήστε<br>πληροφορίες /<br>πρόταση</span></button>`).join('');
+      <span class="zp">${L('Ζητήστε<br>πληροφορίες /<br>πρόταση', 'Ask for<br>information /<br>a proposal')}</span></button>`).join('');
   }
-  h += `<button class="lnk" onclick="tiEinai()">Τι είναι το ${MI};</button>` + installBox() +
-    `<div class="foot"><button class="btn sec small" onclick="go('rythmiseis')">⚙ Ρυθμίσεις</button>
-     <button class="btn sec small" onclick="kleidoma()">🔒 Κλείδωμα</button></div>`;
+  h += `<button class="lnk" onclick="tiEinai()">${L('Τι είναι το ' + MI + ';', 'What is ' + MI + '?')}</button>` + installBox() +
+    `<div class="foot"><button class="btn sec small" onclick="go('rythmiseis')">⚙ ${L('Ρυθμίσεις', 'Settings')}</button>
+     <button class="btn sec small" onclick="kleidoma()">🔒 ${L('Κλείδωμα', 'Lock')}</button></div>`;
   return h;
 };
 function tiEinai() {
@@ -334,38 +398,38 @@ function anoixe(u) { if (!window.open(u, '_blank')) location.href = u; }
 // ------------------------------------------------------------- τμήμα
 V.tmima = () => {
   const t = view.arg, k = D.katastima;
-  let h = `<div class="sh" style="background:${TM[t].xroma}"><button class="back" onclick="go('home')" aria-label="Πίσω">‹</button>
+  let h = `<div class="sh" style="background:${TM[t].xroma}"><button class="back" onclick="go('home')" aria-label="${L('Πίσω', 'Back')}">‹</button>
     <span class="plate pl"><img src="${TM[t].logo}" alt=""></span><div><b>${esc(TM[t].titlos)}</b><small>${esc(k.eponymia)}${k.periohi ? ' · ' + esc(k.periohi) : ''}</small></div></div>`;
   if (t === 'PC' && D.programma.synolo) {
     const pr = D.programma;
-    h += pr.epomeni ? `<div class="cd"><div class="lb">ΕΠΟΜΕΝΗ ΕΠΙΣΚΕΨΗ</div><div class="bg">${imera(pr.epomeni)}</div></div>` : '';
-    h += `<div class="cd"><div class="lb">ΠΡΟΓΡΑΜΜΑ ΤΡΕΧΟΝΤΟΣ ΚΥΚΛΟΥ</div><div class="sm">${pr.eginan} από ${pr.synolo} επισκέψεις έγιναν</div>
+    h += pr.epomeni ? `<div class="cd"><div class="lb">${L('ΕΠΟΜΕΝΗ ΕΠΙΣΚΕΨΗ', 'NEXT VISIT')}</div><div class="bg">${imera(pr.epomeni)}</div></div>` : '';
+    h += `<div class="cd"><div class="lb">${L('ΠΡΟΓΡΑΜΜΑ ΤΡΕΧΟΝΤΟΣ ΚΥΚΛΟΥ', 'CURRENT CYCLE SCHEDULE')}</div><div class="sm">${L(`${pr.eginan} από ${pr.synolo} επισκέψεις έγιναν`, `${pr.eginan} of ${pr.synolo} visits done`)}</div>
       <div class="tlx">${Array.from({length: pr.synolo}, (_, i) => `<i class="${i < pr.eginan ? 'd' : i === pr.eginan ? 'n' : ''}"></i>`).join('')}</div></div>`;
   }
   if (t === 'WS' && D.ws && D.ws.gyroi) h += wsKartes(D.ws);
   if (t === 'EYE' && D.qrecord) { h += qrKarta(); setTimeout(qrFortose, 0); }
   const z = D.zontana.filter(x => x.t === t);
-  if (z.length) h += `<div class="cd"><div class="lb">ΖΩΝΤΑΝΟΙ ΠΙΝΑΚΕΣ</div>` + z.map(x => `<button class="f" onclick="anoixe('${esc(x.u)}')">
-      <span class="ic">LIVE</span><span class="tx"><b>${esc(x.n)}</b><small>${esc(x.k || 'ενημερώνεται μόνο του')}</small></span><span class="ch">›</span></button>`).join('') + '</div>';
+  if (z.length) h += `<div class="cd"><div class="lb">${L('ΖΩΝΤΑΝΟΙ ΠΙΝΑΚΕΣ', 'LIVE TABLES')}</div>` + z.map(x => `<button class="f" onclick="anoixe('${esc(x.u)}')">
+      <span class="ic">LIVE</span><span class="tx"><b>${esc(tr(x.n))}</b><small>${esc(x.k || L('ενημερώνεται μόνο του', 'updates automatically'))}</small></span><span class="ch">›</span></button>`).join('') + '</div>';
   h += eggrafaTmimatos(t);
   return h;
 };
 
 // ------------------------------------------------------------- Water Safety (βήμα 3): επόμενη + τελευταίος γύρος + ιστορικό
 function wsApotelesma(x) {
-  if (!x.ap) return '<em class="pe">αναμένονται</em>';
-  return x.yp ? `<em class="yp">${x.yp} ${x.yp === 1 ? 'υπέρβαση' : 'υπερβάσεις'}</em>` : '<em class="ok">εντός ορίων</em>';
+  if (!x.ap) return `<em class="pe">${L('αναμένονται', 'pending')}</em>`;
+  return x.yp ? `<em class="yp">${yperv(x.yp)}</em>` : `<em class="ok">${L('εντός ορίων', 'within limits')}</em>`;
 }
 function wsKartes(w) {
   let h = '';
-  if (w.epomeni) h += `<div class="cd"><div class="lb">ΕΠΟΜΕΝΗ ΔΕΙΓΜΑΤΟΛΗΨΙΑ</div><div class="bg">${imera(w.epomeni)}</div>
-    <div class="sm">${w.rantevou ? 'κλεισμένο ραντεβού' : 'προγραμματισμένη — θα σας καλέσουμε για ραντεβού'}</div></div>`;
+  if (w.epomeni) h += `<div class="cd"><div class="lb">${L('ΕΠΟΜΕΝΗ ΔΕΙΓΜΑΤΟΛΗΨΙΑ', 'NEXT SAMPLING')}</div><div class="bg">${imera(w.epomeni)}</div>
+    <div class="sm">${w.rantevou ? L('κλεισμένο ραντεβού', 'appointment booked') : L('προγραμματισμένη — θα σας καλέσουμε για ραντεβού', 'scheduled — we will call you to book an appointment')}</div></div>`;
   const [t, ...pal] = w.gyroi;
-  h += `<div class="cd"><div class="lb">ΤΕΛΕΥΤΑΙΑ ΔΕΙΓΜΑΤΟΛΗΨΙΑ · ${dmy(t.d)}</div>` + t.eidi.map(x => `<div class="wsr">
-    <span><b>${esc(x.e)}</b><small>${x.n} ${x.n === 1 ? 'δείγμα' : 'δείγματα'}</small></span>${wsApotelesma(x)}</div>`).join('') + '</div>';
-  if (pal.length) h += `<div class="cd"><div class="lb">ΙΣΤΟΡΙΚΟ</div>` + pal.map(g => `<div class="wsr"><span><b>${dmy(g.d)}</b>
-    <small>${esc(g.eidi.map(x => x.e).join(' · '))}</small></span>${(() => { const yp = g.eidi.reduce((s, x) => s + x.yp, 0);
-      return yp ? `<em class="yp">${yp} ${yp === 1 ? 'υπέρβαση' : 'υπερβάσεις'}</em>` : '<em class="ok">εντός ορίων</em>'; })()}</div>`).join('') + '</div>';
+  h += `<div class="cd"><div class="lb">${L('ΤΕΛΕΥΤΑΙΑ ΔΕΙΓΜΑΤΟΛΗΨΙΑ', 'LAST SAMPLING')} · ${dmy(t.d)}</div>` + t.eidi.map(x => `<div class="wsr">
+    <span><b>${esc(tr(x.e))}</b><small>${x.n} ${x.n === 1 ? L('δείγμα', 'sample') : L('δείγματα', 'samples')}</small></span>${wsApotelesma(x)}</div>`).join('') + '</div>';
+  if (pal.length) h += `<div class="cd"><div class="lb">${L('ΙΣΤΟΡΙΚΟ', 'HISTORY')}</div>` + pal.map(g => `<div class="wsr"><span><b>${dmy(g.d)}</b>
+    <small>${esc(g.eidi.map(x => tr(x.e)).join(' · '))}</small></span>${(() => { const yp = g.eidi.reduce((s, x) => s + x.yp, 0);
+      return yp ? `<em class="yp">${yperv(yp)}</em>` : `<em class="ok">${L('εντός ορίων', 'within limits')}</em>`; })()}</div>`).join('') + '</div>';
   return h;
 }
 
@@ -375,13 +439,14 @@ let QR_SIMERA = null;
 (() => { const c = SS.get('mi_qr_' + P); const d = new Date(); if (c && c.sim === d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')) QR_SIMERA = Object.assign(c, {t: 0}); })();          // {t, sim, apo, ektos, anoixtes, ws} — κρατιέται 2' για να μη ρωτάει σε κάθε οθόνη
 function qrKarta() {
   const q = D.qrecord, x = QR_SIMERA;
-  const st = x && x.kleisto && !x.egin ? `🔒 Σήμερα κλειστά · ${esc(x.kleisto)}` : x ? `Σήμερα ${x.egin} από ${x.ola} μετρήσεις · ${x.ektos ? `<span style="color:#FFD2D2;font-weight:800">${x.ektos} εκτός ορίου${x.anoixtes ? ' — ' + x.anoixtes + ' ανοιχτ' + (x.anoixtes === 1 ? 'ή' : 'ές') : ''}</span>` : '0 εκτός ορίου'}` : 'φόρτωση…';
+  const ekt = n => L(n + ' εκτός ορίου', n + ' out of limit');
+  const st = x && x.kleisto && !x.egin ? `🔒 ${L('Σήμερα κλειστά', 'Closed today')} · ${esc(x.kleisto)}` : x ? `${L(`Σήμερα ${x.egin} από ${x.ola} μετρήσεις`, `Today ${x.egin} of ${x.ola} readings`)} · ${x.ektos ? `<span style="color:#FFD2D2;font-weight:800">${ekt(x.ektos)}${x.anoixtes ? ' — ' + x.anoixtes + L(' ανοιχτ' + (x.anoixtes === 1 ? 'ή' : 'ές'), ' open') : ''}</span>` : ekt(0)}` : L('φόρτωση…', 'loading…');
   return `<div class="qrb"><span class="qi"><img src="qrecord.png" alt=""></span><div style="flex:1;min-width:0"><b>QRecord</b><small id="qrst">${st}</small></div></div>
-    <div class="cd"><div class="lb">ΑΡΧΕΙΑ ΤΕΚΜΗΡΙΩΣΗΣ</div>
+    <div class="cd"><div class="lb">${L('ΑΡΧΕΙΑ ΤΕΚΜΗΡΙΩΣΗΣ', 'RECORDS')}</div>
     <button class="f" onclick="anoixe('../qrecord/arxeio.html?' + new URLSearchParams({p: D.qrecord.p, v: D.qrecord.v}))"><span class="ic">LIVE</span>
-      <span class="tx"><b>Όλες οι καταγραφές</b><small>θερμοκρασίες, καθαρισμοί, ενέργειες — ανά μήνα</small></span><span class="ch">›</span></button>
+      <span class="tx"><b>${L('Όλες οι καταγραφές', 'All records')}</b><small>${L('θερμοκρασίες, καθαρισμοί, ενέργειες — ανά μήνα', 'temperatures, cleaning, actions — by month')}</small></span><span class="ch">›</span></button>
     ${q.tropos !== 'ΕΝΑ' && q.k ? `<button class="f" onclick="anoixe('../qrecord/?' + new URLSearchParams({p: D.qrecord.p, k: D.qrecord.k}))"><span class="ic" style="color:var(--navy)">QR</span>
-      <span class="tx"><b>Άνοιγμα QRecord</b><small>για καταγραφή από αυτό το κινητό</small></span><span class="ch">›</span></button>` : ''}</div>`;
+      <span class="tx"><b>${L('Άνοιγμα QRecord', 'Open QRecord')}</b><small>${L('για καταγραφή από αυτό το κινητό', 'to record from this phone')}</small></span><span class="ch">›</span></button>` : ''}</div>`;
 }
 async function qrSimera() {
   if (QR_SIMERA && Date.now() - QR_SIMERA.t < 120000) return QR_SIMERA;
@@ -413,7 +478,7 @@ async function qrSimera() {
 }
 async function qrFortose() {
   try { await qrSimera(); const el = $('#qrst'); if (el && view.name === 'tmima') { const tmp = document.createElement('div'); tmp.innerHTML = qrKarta(); el.innerHTML = $('#qrst', tmp).innerHTML; } }
-  catch (e) { const el = $('#qrst'); if (el) el.textContent = 'δεν φορτώθηκε η σημερινή εικόνα'; }
+  catch (e) { const el = $('#qrst'); if (el) el.textContent = L('δεν φορτώθηκε η σημερινή εικόνα', 'today\'s status could not be loaded'); }
 }
 
 // ------------------------------------------------------------- έγγραφα (βήμα 2): ένα-ένα, ανά ομάδα, με «ΝΕΟ»
@@ -425,27 +490,27 @@ const SEIRA_OMADON = {
 const dmy = d => d ? d.slice(8, 10) + '/' + d.slice(5, 7) + '/' + d.slice(0, 4) : '';
 const eikona = a => /^image\//.test(a.m || '');
 function grammiEggrafou(a) {
-  const ic = eikona(a) ? '<span class="ic" style="color:var(--ok);background:var(--ok-bg)">ΚΑΤΟΨΗ</span>'
+  const ic = eikona(a) ? `<span class="ic" style="color:var(--ok);background:var(--ok-bg)">${L('ΚΑΤΟΨΗ', 'PLAN')}</span>`
                        : '<span class="ic" style="color:var(--bad);background:var(--bad-bg)">PDF</span>';
-  const sub = [a.y, a.g === 'ΑΔΕΙΕΣ & MSDS' || a.g.indexOf('ΚΑΤΟΨ') === 0 ? '' : dmy(a.d)].filter(Boolean).join(' · ');
-  return `<button class="f" onclick="go('egg','${esc(a.id)}')">${ic}<span class="tx"><b>${esc(a.n)}</b><small>${esc(sub)}</small></span>
-    ${a.neo ? '<span class="neo">ΝΕΟ</span>' : '<span class="ch">›</span>'}</button>`;
+  const sub = [tr(a.y), a.g === 'ΑΔΕΙΕΣ & MSDS' || a.g.indexOf('ΚΑΤΟΨ') === 0 ? '' : dmy(a.d)].filter(Boolean).join(' · ');
+  return `<button class="f" onclick="go('egg','${esc(a.id)}')">${ic}<span class="tx"><b>${esc(tr(a.n))}</b><small>${esc(sub)}</small></span>
+    ${a.neo ? `<span class="neo">${L('ΝΕΟ', 'NEW')}</span>` : '<span class="ch">›</span>'}</button>`;
 }
 function eggrafaTmimatos(t) {
   const ola = (D.arxeia || []).filter(a => a.t === t);
-  if (!ola.length) return D.fakelos ? `<div class="cd"><div class="lb">ΕΓΓΡΑΦΑ</div><div class="empty">Τα έγγραφα ετοιμάζονται — σύντομα εδώ ένα-ένα.</div></div>` : '';
+  if (!ola.length) return D.fakelos ? `<div class="cd"><div class="lb">${L('ΕΓΓΡΑΦΑ', 'DOCUMENTS')}</div><div class="empty">${L('Τα έγγραφα ετοιμάζονται — σύντομα εδώ ένα-ένα.', 'Documents are being prepared — they will appear here soon.')}</div></div>` : '';
   const seira = SEIRA_OMADON[t] || [];
   const omades = [...new Set(ola.map(a => a.g))].sort((x, y) => ((seira.indexOf(x) + 1) || 99) - ((seira.indexOf(y) + 1) || 99) || x.localeCompare(y));
   return omades.map(g => {
     const l = ola.filter(a => a.g === g).sort((x, y) => (y.d || '').localeCompare(x.d || '') || x.n.localeCompare(y.n));
-    return `<div class="cd"><div class="lb">${esc(g)}</div>${l.map(grammiEggrafou).join('')}</div>`;
+    return `<div class="cd"><div class="lb">${esc(tr(g))}</div>${l.map(grammiEggrafou).join('')}</div>`;
   }).join('');
 }
 V.ola = () => {
-  let h = header(true) + `<div class="hi">Όλα τα έγγραφα</div>`;
+  let h = header(true) + `<div class="hi">${L('Όλα τα έγγραφα', 'All documents')}</div>`;
   h += D.tmimata.map(t => (D.arxeia || []).some(a => a.t === t)
     ? `<div class="sep" style="display:flex;align-items:center;gap:8px"><span class="plate" style="width:34px;height:38px;padding:2px"><img src="${TM[t].logo}" alt="" style="max-width:100%;max-height:34px"></span>${esc(TM[t].titlos.toUpperCase())}</div>` + eggrafaTmimatos(t) : '').join('');
-  if (!(D.arxeia || []).length) h += '<div class="empty">Τα έγγραφα ετοιμάζονται.</div>';
+  if (!(D.arxeia || []).length) h += `<div class="empty">${L('Τα έγγραφα ετοιμάζονται.', 'Documents are being prepared.')}</div>`;
   return h;
 };
 
@@ -458,12 +523,12 @@ async function pdfjs() {
   return PDFJS;
 }
 V.egg = () => {
-  const a = (D.arxeia || []).find(x => x.id === view.arg) || {n: 'Έγγραφο'};
+  const a = (D.arxeia || []).find(x => x.id === view.arg) || {n: L('Έγγραφο', 'Document')};
   setTimeout(() => provoli(view.arg), 0);
-  return `<div class="hd"><button class="back" onclick="view.apo ? go(view.apo.name, view.apo.arg) : go('home')" aria-label="Πίσω">‹</button>
-    <div class="who"><b>${esc(a.n)}</b><small>${esc([a.y, dmy(a.d)].filter(Boolean).join(' · '))}</small></div></div>
+  return `<div class="hd"><button class="back" onclick="view.apo ? go(view.apo.name, view.apo.arg) : go('home')" aria-label="${L('Πίσω', 'Back')}">‹</button>
+    <div class="who"><b>${esc(tr(a.n))}</b><small>${esc([tr(a.y), dmy(a.d)].filter(Boolean).join(' · '))}</small></div></div>
     <div id="pv"><div class="spin"></div></div><div style="height:84px"></div>
-    <div class="act"><button class="btn sec" id="b1" disabled>Κοινοποίηση / Εκτύπωση</button><button class="btn cy" id="b2" disabled>Αποθήκευση</button></div>`;
+    <div class="act"><button class="btn sec" id="b1" disabled>${L('Κοινοποίηση / Εκτύπωση', 'Share / Print')}</button><button class="btn cy" id="b2" disabled>${L('Αποθήκευση', 'Save')}</button></div>`;
 };
 async function provoli(id) {
   const pv = $('#pv');
@@ -496,99 +561,102 @@ async function provoli(id) {
     const b1 = $('#b1'), b2 = $('#b2');
     if (navigator.canShare && navigator.canShare({files: [file]})) {
       b1.disabled = false; b1.onclick = () => navigator.share({files: [file], title: e.arxeio}).catch(() => {});
-    } else { b1.textContent = 'Άνοιγμα / Εκτύπωση'; b1.disabled = false; b1.onclick = () => anoixe(url); }
+    } else { b1.textContent = L('Άνοιγμα / Εκτύπωση', 'Open / Print'); b1.disabled = false; b1.onclick = () => anoixe(url); }
     b2.disabled = false; b2.onclick = () => { const l = document.createElement('a'); l.href = url; l.download = e.arxeio; document.body.appendChild(l); l.click(); l.remove(); };
   } catch (err) {
-    pv.innerHTML = `<div class="empty">Δεν άνοιξε: ${esc(err.message)}</div>`;
+    pv.innerHTML = `<div class="empty">${L('Δεν άνοιξε', 'Could not open')}: ${esc(err.message)}</div>`;
   }
 }
 
 // ------------------------------------------------------------- αχνό → παρουσίαση + «Ζητήστε πληροφορίες / πρόταση»
 function axno(t) {
-  const qr = t === 'EYE' ? `<div class="qrc"><img src="qrecord.png" alt=""><div><b>QRecord</b><small>Θερμοκρασίες ψυγείων και καθαρισμοί από το κινητό — χωρίς χαρτιά</small></div></div>` : '';
-  openModal(`<div class="mh"><span class="plate pl"><img src="${TM[t].logo}" alt=""></span><div><b>${esc(TM[t].titlos)}</b><small>από την InCo</small></div></div>
+  const qr = t === 'EYE' ? `<div class="qrc"><img src="qrecord.png" alt=""><div><b>QRecord</b><small>${L('Θερμοκρασίες ψυγείων και καθαρισμοί από το κινητό — χωρίς χαρτιά', 'Fridge temperatures and cleaning from the phone — paperless')}</small></div></div>` : '';
+  openModal(`<div class="mh"><span class="plate pl"><img src="${TM[t].logo}" alt=""></span><div><b>${esc(TM[t].titlos)}</b><small>${L('από την InCo', 'by InCo')}</small></div></div>
     ${qr}<ul>${TM[t].lista.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
-    <div style="margin-top:16px"><button class="btn cy" id="zb" onclick="zitise('${t}')">Ζητήστε πληροφορίες / πρόταση</button></div>
-    <div class="nt">Θα σας καλέσουμε εμείς · χωρίς δέσμευση</div>
-    <button class="lnk" onclick="closeModal()">Κλείσιμο</button>`);
+    <div style="margin-top:16px"><button class="btn cy" id="zb" onclick="zitise('${t}')">${T_ZITISE()}</button></div>
+    <div class="nt">${L('Θα σας καλέσουμε εμείς · χωρίς δέσμευση', 'We will call you · no obligation')}</div>
+    <button class="lnk" onclick="closeModal()">${L('Κλείσιμο', 'Close')}</button>`);
 }
 async function zitise(t) {
-  const b = $('#zb'); b.disabled = true; b.textContent = 'Αποστολή…';
+  const b = $('#zb'); b.disabled = true; b.textContent = L('Αποστολή…', 'Sending…');
   try {
     const r = await api('aitima', {tmima: t});
     if (!r.ok) throw new Error(r.error);
-    closeModal(); toast('✓ Το αίτημα στάλθηκε — θα σας καλέσουμε');
-  } catch (e) { b.disabled = false; b.textContent = 'Ζητήστε πληροφορίες / πρόταση'; toast(e.message, true); }
+    closeModal(); toast(L('✓ Το αίτημα στάλθηκε — θα σας καλέσουμε', '✓ Request sent — we will call you'));
+  } catch (e) { b.disabled = false; b.textContent = T_ZITISE(); toast(e.message, true); }
 }
 
 // ------------------------------------------------------------- ρυθμίσεις
 V.rythmiseis = () => {
   const e = D.ego;
-  let h = header(true) + `<div class="cd"><div class="lb">ΕΝΗΜΕΡΩΣΗ ΜΕ EMAIL</div>
-    <div class="sm">Σύνοψη και νέα έγγραφα. Ό,τι βγει εκτός ορίου έρχεται πάντα αμέσως.</div>
+  let h = header(true) + `<div class="cd"><div class="lb">${L('ΓΛΩΣΣΑ', 'LANGUAGE')}</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:8px"><div class="sm" style="flex:1;margin:0">${L('Ελληνικά ή αγγλικά — μόνο για αυτό το κινητό.', 'Greek or English — for this phone only.')}</div>${glossaBtn()}</div></div>
+    <div class="cd"><div class="lb">${L('ΕΝΗΜΕΡΩΣΗ ΜΕ EMAIL', 'EMAIL UPDATES')}</div>
+    <div class="sm">${L('Σύνοψη και νέα έγγραφα. Ό,τι βγει εκτός ορίου έρχεται πάντα αμέσως.', 'Summary and new documents. Anything out of limit always arrives immediately.')}</div>
     ${SYXN.map(([k, l]) => `<button class="opt ${e.syxnotita === k ? 'on' : ''}" onclick="syxn('${k}')"><i></i>${l}</button>`).join('')}
     <label class="fl">Email</label><input class="fi" id="em" type="email" value="${esc(e.email)}" maxlength="120">
-    <div style="margin-top:10px"><button class="btn sec" onclick="apothEmail()">Αποθήκευση email</button></div></div>
-    <div class="cd"><div class="lb">PIN</div><div class="sm">Συνδεδεμένος/η: ${esc(e.onoma)}${e.kyrios ? ' · διαχειριστής' : ''}</div>
-    <div style="margin-top:10px"><button class="btn sec" onclick="allagiPin()">🔑 Αλλαγή PIN</button></div></div>`;
+    <div style="margin-top:10px"><button class="btn sec" onclick="apothEmail()">${L('Αποθήκευση email', 'Save email')}</button></div></div>
+    <div class="cd"><div class="lb">PIN</div><div class="sm">${L('Συνδεδεμένος/η', 'Signed in')}: ${esc(e.onoma)}${e.kyrios ? ' · ' + T_DIAX() : ''}</div>
+    <div style="margin-top:10px"><button class="btn sec" onclick="allagiPin()">🔑 ${L('Αλλαγή PIN', 'Change PIN')}</button></div></div>`;
   if (e.kyrios) {
-    h += `<div class="cd"><div class="lb">ΥΠΕΥΘΥΝΟΙ</div>` + D.ypeythynoi.map(y => `<div class="row2"><div class="tx"><b>${esc(y.onoma)}${y.kyrios ? ' · διαχειριστής' : ''}</b>
-      <small>${y.exei_pin ? (y.teleftaia ? 'τελευταία είσοδος ' + esc(y.teleftaia.slice(0, 16)) : 'ενεργός') : 'κωδικός πρόσκλησης: <b>' + esc(y.prosklisi) + '</b> (λήγει ' + esc(ddmm(y.lixi)) + ')'}</small></div>
-      ${y.id !== e.id ? `<button class="btn sec small" onclick="afairesi('${y.id}','${esc(y.onoma)}')">Αφαίρεση</button>` : ''}</div>`).join('') +
-      `<div style="margin-top:10px"><button class="btn cy" onclick="prosthiki()">+ Προσθήκη υπευθύνου</button></div>
-      <div class="nt">Ο καθένας μπαίνει με το δικό του PIN. Αν κάποιος φύγει, τον αφαιρείτε — οι άλλοι δεν επηρεάζονται.</div></div>`;
+    h += `<div class="cd"><div class="lb">${L('ΥΠΕΥΘΥΝΟΙ', 'MANAGERS')}</div>` + D.ypeythynoi.map(y => `<div class="row2"><div class="tx"><b>${esc(y.onoma)}${y.kyrios ? ' · ' + T_DIAX() : ''}</b>
+      <small>${y.exei_pin ? (y.teleftaia ? L('τελευταία είσοδος ', 'last sign-in ') + esc(y.teleftaia.slice(0, 16)) : L('ενεργός', 'active')) : L('κωδικός πρόσκλησης', 'invitation code') + ': <b>' + esc(y.prosklisi) + '</b> (' + L('λήγει ', 'expires ') + esc(ddmm(y.lixi)) + ')'}</small></div>
+      ${y.id !== e.id ? `<button class="btn sec small" onclick="afairesi('${y.id}','${esc(y.onoma)}')">${L('Αφαίρεση', 'Remove')}</button>` : ''}</div>`).join('') +
+      `<div style="margin-top:10px"><button class="btn cy" onclick="prosthiki()">+ ${L('Προσθήκη υπευθύνου', 'Add manager')}</button></div>
+      <div class="nt">${L('Ο καθένας μπαίνει με το δικό του PIN. Αν κάποιος φύγει, τον αφαιρείτε — οι άλλοι δεν επηρεάζονται.', 'Everyone signs in with their own PIN. If someone leaves, you remove them — the others are not affected.')}</div></div>`;
   }
   return h;
 };
 async function syxn(k) {
-  try { const r = await api('rythmisi', {syxnotita: k}); if (!r.ok) throw new Error(r.error); D = r; render(); toast('✓ Αποθηκεύτηκε'); }
+  try { const r = await api('rythmisi', {syxnotita: k}); if (!r.ok) throw new Error(r.error); D = r; render(); toast(T_OK()); }
   catch (e) { toast(e.message, true); }
 }
 async function apothEmail() {
-  try { const r = await api('rythmisi', {email: $('#em').value.trim()}); if (!r.ok) throw new Error(r.error); D = r; render(); toast('✓ Αποθηκεύτηκε'); }
+  try { const r = await api('rythmisi', {email: $('#em').value.trim()}); if (!r.ok) throw new Error(r.error); D = r; render(); toast(T_OK()); }
   catch (e) { toast(e.message, true); }
 }
 function allagiPin() {
-  openModal(`<h3 style="margin:0 0 6px">🔑 Αλλαγή PIN</h3>
-    <label class="fl">Τωρινό PIN</label><input class="fi" id="po" type="password" inputmode="numeric" maxlength="8">
-    <label class="fl">Νέο PIN (4 έως 8 ψηφία)</label><input class="fi" id="p1" type="password" inputmode="numeric" maxlength="8">
-    <label class="fl">Ξανά το νέο</label><input class="fi" id="p2" type="password" inputmode="numeric" maxlength="8">
-    <div class="err" id="err"></div><button class="btn cy" onclick="allagiPinOk()">Αλλαγή</button><button class="lnk" onclick="closeModal()">Άκυρο</button>`);
+  openModal(`<h3 style="margin:0 0 6px">🔑 ${L('Αλλαγή PIN', 'Change PIN')}</h3>
+    <label class="fl">${L('Τωρινό PIN', 'Current PIN')}</label><input class="fi" id="po" type="password" inputmode="numeric" maxlength="8">
+    <label class="fl">${L('Νέο PIN (4 έως 8 ψηφία)', 'New PIN (4 to 8 digits)')}</label><input class="fi" id="p1" type="password" inputmode="numeric" maxlength="8">
+    <label class="fl">${L('Ξανά το νέο', 'New PIN again')}</label><input class="fi" id="p2" type="password" inputmode="numeric" maxlength="8">
+    <div class="err" id="err"></div><button class="btn cy" onclick="allagiPinOk()">${L('Αλλαγή', 'Change')}</button><button class="lnk" onclick="closeModal()">${T_AKYRO()}</button>`);
 }
 async function allagiPinOk() {
   const po = $('#po').value, p1 = $('#p1').value, p2 = $('#p2').value, err = $('#err');
-  if (!/^\d{4,8}$/.test(p1)) return err.textContent = 'Το PIN θέλει 4 έως 8 ψηφία.';
-  if (p1 !== p2) return err.textContent = 'Τα δύο PIN δεν είναι ίδια.';
+  if (!/^\d{4,8}$/.test(p1)) return err.textContent = T_PIN48();
+  if (p1 !== p2) return err.textContent = T_PINDIAF();
   try { const r = await api('allagi_pin', {pin: po, neo: p1}); if (!r.ok) return err.textContent = r.error;
-    SESS.s = r.s; agigma(); closeModal(); toast('✓ Το PIN άλλαξε — τα άλλα κινητά σας αποσυνδέθηκαν'); }
+    SESS.s = r.s; agigma(); closeModal(); toast(L('✓ Το PIN άλλαξε — τα άλλα κινητά σας αποσυνδέθηκαν', '✓ PIN changed — your other phones were signed out')); }
   catch (e) { err.textContent = e.message; }
 }
 function prosthiki() {
-  openModal(`<h3 style="margin:0 0 6px">Προσθήκη υπευθύνου</h3><div class="sm">Θα πάρετε έναν 6ψήφιο κωδικό. Τον δίνετε στον νέο υπεύθυνο:
-    σκανάρει το ίδιο QR, πατά «Έχω κωδικό πρόσκλησης» και φτιάχνει το δικό του PIN.</div>
-    <label class="fl">Όνομα</label><input class="fi" id="on" maxlength="60">
-    <label class="fl">Email (προαιρετικό)</label><input class="fi" id="em2" type="email" maxlength="120">
-    <div class="err" id="err"></div><button class="btn cy" onclick="prosthikiOk()">Δημιουργία κωδικού</button><button class="lnk" onclick="closeModal()">Άκυρο</button>`);
+  openModal(`<h3 style="margin:0 0 6px">${L('Προσθήκη υπευθύνου', 'Add manager')}</h3><div class="sm">${L(`Θα πάρετε έναν 6ψήφιο κωδικό. Τον δίνετε στον νέο υπεύθυνο:
+    σκανάρει το ίδιο QR, πατά «Έχω κωδικό πρόσκλησης» και φτιάχνει το δικό του PIN.`, `You will get a 6-digit code. Give it to the new manager:
+    they scan the same QR code, tap “I have an invitation code” and create their own PIN.`)}</div>
+    <label class="fl">${L('Όνομα', 'Name')}</label><input class="fi" id="on" maxlength="60">
+    <label class="fl">${L('Email (προαιρετικό)', 'Email (optional)')}</label><input class="fi" id="em2" type="email" maxlength="120">
+    <div class="err" id="err"></div><button class="btn cy" onclick="prosthikiOk()">${L('Δημιουργία κωδικού', 'Create code')}</button><button class="lnk" onclick="closeModal()">${T_AKYRO()}</button>`);
 }
 async function prosthikiOk() {
   const on = $('#on').value.trim(), err = $('#err');
-  if (!on) return err.textContent = 'Γράψτε το όνομα.';
+  if (!on) return err.textContent = L('Γράψτε το όνομα.', 'Please enter the name.');
   try {
     const r = await api('prosthiki', {onoma: on, email: $('#em2').value.trim()});
     if (!r.ok) return err.textContent = r.error;
     D = r; render();
-    openModal(`<h3 style="margin:0">Κωδικός για ${esc(r.neos.onoma)}</h3><div class="code">${esc(r.neos.kodikos)}</div>
-      <div class="nt">Ισχύει 7 μέρες. Δίνεται μία φορά — μην τον στείλετε σε κανέναν άλλο.</div>
-      <div style="margin-top:14px"><button class="btn" onclick="closeModal()">Εντάξει</button></div>`);
+    openModal(`<h3 style="margin:0">${L('Κωδικός για ', 'Code for ')}${esc(r.neos.onoma)}</h3><div class="code">${esc(r.neos.kodikos)}</div>
+      <div class="nt">${L('Ισχύει 7 μέρες. Δίνεται μία φορά — μην τον στείλετε σε κανέναν άλλο.', 'Valid for 7 days. It can be used once — do not send it to anyone else.')}</div>
+      <div style="margin-top:14px"><button class="btn" onclick="closeModal()">OK</button></div>`);
   } catch (e) { err.textContent = e.message; }
 }
 async function afairesi(id, onoma) {
-  openModal(`<h3 style="margin:0 0 8px">Αφαίρεση ${esc(onoma)};</h3><div class="sm">Δεν θα μπορεί πια να μπει στο ${MI}. Οι άλλοι υπεύθυνοι δεν επηρεάζονται.</div>
-    <div style="margin-top:16px"><button class="btn" style="background:var(--bad);color:#fff" onclick="afairesiOk('${id}')">Αφαίρεση</button></div>
-    <button class="lnk" onclick="closeModal()">Άκυρο</button>`);
+  openModal(`<h3 style="margin:0 0 8px">${L('Αφαίρεση ' + esc(onoma) + ';', 'Remove ' + esc(onoma) + '?')}</h3><div class="sm">${L('Δεν θα μπορεί πια να μπει στο ' + MI + '. Οι άλλοι υπεύθυνοι δεν επηρεάζονται.', 'They will no longer be able to open ' + MI + '. The other managers are not affected.')}</div>
+    <div style="margin-top:16px"><button class="btn" style="background:var(--bad);color:#fff" onclick="afairesiOk('${id}')">${L('Αφαίρεση', 'Remove')}</button></div>
+    <button class="lnk" onclick="closeModal()">${T_AKYRO()}</button>`);
 }
 async function afairesiOk(id) {
-  try { const r = await api('afairesi', {id}); if (!r.ok) throw new Error(r.error); D = r; closeModal(); render(); toast('✓ Αφαιρέθηκε'); }
+  try { const r = await api('afairesi', {id}); if (!r.ok) throw new Error(r.error); D = r; closeModal(); render(); toast(L('✓ Αφαιρέθηκε', '✓ Removed')); }
   catch (e) { toast(e.message, true); }
 }
 
@@ -600,10 +668,12 @@ const standalone = () => matchMedia('(display-mode: standalone)').matches || nav
 const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 function installBox() {
   if (standalone() || LS.get('mi_installed', false)) return '';
-  if (installEvt) return `<div class="install"><div><b>Βάλτε το ${MI} στο κινητό</b><br>Ένα εικονίδιο στην οθόνη σας — όλα τα έγγραφα με ένα άγγιγμα.</div>
-    <button class="btn" style="background:var(--blue);color:#fff" onclick="doInstall()">📲 Εγκατάσταση στο κινητό</button></div>`;
-  if (isIOS()) return `<div class="install"><div><b>Βάλτε το ${MI} στο iPhone</b><br>Ένα εικονίδιο στην οθόνη σας — όλα τα έγγραφα με ένα άγγιγμα.</div>
-    <div>1. Πατήστε <b>Κοινοποίηση</b> (το τετράγωνο με το βέλος ⬆) κάτω στο Safari.<br>2. Επιλέξτε <b>«Προσθήκη στην οθόνη Αφετηρίας»</b>.</div></div>`;
+  const ena = L('Ένα εικονίδιο στην οθόνη σας — όλα τα έγγραφα με ένα άγγιγμα.', 'An icon on your home screen — all documents with one tap.');
+  if (installEvt) return `<div class="install"><div><b>${L('Βάλτε το ' + MI + ' στο κινητό', 'Add ' + MI + ' to your phone')}</b><br>${ena}</div>
+    <button class="btn" style="background:var(--blue);color:#fff" onclick="doInstall()">📲 ${L('Εγκατάσταση στο κινητό', 'Install on phone')}</button></div>`;
+  if (isIOS()) return `<div class="install"><div><b>${L('Βάλτε το ' + MI + ' στο iPhone', 'Add ' + MI + ' to your iPhone')}</b><br>${ena}</div>
+    <div>${L('1. Πατήστε <b>Κοινοποίηση</b> (το τετράγωνο με το βέλος ⬆) κάτω στο Safari.<br>2. Επιλέξτε <b>«Προσθήκη στην οθόνη Αφετηρίας»</b>.',
+             '1. Tap <b>Share</b> (the square with the arrow ⬆) at the bottom of Safari.<br>2. Choose <b>“Add to Home Screen”</b>.')}</div></div>`;
   return '';
 }
 async function doInstall() {
@@ -611,9 +681,19 @@ async function doInstall() {
   installEvt.prompt();
   const r = await installEvt.userChoice.catch(() => null);
   installEvt = null;
-  if (r && r.outcome === 'accepted') { LS.set('mi_installed', true); toast('✓ Το ' + MI + ' μπήκε στην οθόνη σας', false, true); }
+  if (r && r.outcome === 'accepted') { LS.set('mi_installed', true); toast(L('✓ Το ' + MI + ' μπήκε στην οθόνη σας', '✓ ' + MI + ' was added to your home screen'), false, true); }
   render();
 }
+
+// ------------------------------------------------------------- κοινά κείμενα στις δύο γλώσσες
+const T_PIN48 = () => L('Το PIN θέλει 4 έως 8 ψηφία.', 'The PIN needs 4 to 8 digits.');
+const T_PINDIAF = () => L('Τα δύο PIN δεν είναι ίδια.', 'The two PINs do not match.');
+const T_ZITISE = () => L('Ζητήστε πληροφορίες / πρόταση', 'Ask for information / a proposal');
+const T_DIAX = () => L('διαχειριστής', 'administrator');
+const T_AKYRO = () => L('Άκυρο', 'Cancel');
+const T_OK = () => L('✓ Αποθηκεύτηκε', '✓ Saved');
+const yperv = n => n + (LANG === 'en' ? (n === 1 ? ' exceedance' : ' exceedances') : (n === 1 ? ' υπέρβαση' : ' υπερβάσεις'));
+const anoixtes = n => LANG === 'en' ? n + (n === 1 ? ' open deviation' : ' open deviations') : n + ' ανοιχτ' + (n === 1 ? 'ή απόκλιση' : 'ές αποκλίσεις');
 
 // ------------------------------------------------------------- πλοήγηση
 function go(name, arg) { const apo = view.name !== 'egg' ? {name: view.name, arg: view.arg} : view.apo; view = {name, arg, apo}; render(); scrollTo(0, 0); }
