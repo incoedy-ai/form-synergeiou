@@ -104,7 +104,7 @@
   <div class="card">
     <h2><span class="dot"></span>Πρόγραμμα εφαρμογών <span class="unit">προγραμματισμός · εκτέλεση · κατάσταση</span></h2>
     <div style="overflow-x:auto"><table class="ptable">
-      <thead><tr><th>#</th><th>Μήνας</th><th>Είδος</th><th>Προγραμματισμός</th><th>Εκτέλεση</th><th>Κατάσταση</th><th>Τεχνικός</th><th>Δελτίο</th></tr></thead>
+      <thead><tr><th>#</th><th>Μήνας</th><th>Είδος</th><th>Προγραμματισμός</th><th>Εκτέλεση</th><th>Κατάσταση</th><th>Τεχνικός</th><th>Πιστοποιητικό</th></tr></thead>
       <tbody id="progbody"></tbody>
     </table></div>
   </div>
@@ -179,7 +179,8 @@ function renderAll(APPS, perYear, freqTxt){
     const plan=(!a.plan||a.plan==="—")?'<span class="mut">—</span>':a.plan;
     const ex=a.exec?a.exec:'<span class="mut">—</span>';
     const tech=a.tech?a.tech:'<span class="mut">—</span>';
-    const pdf=a.exec?'<a class="pdf" href="#" title="Υπογεγραμμένο δελτίο εφαρμογής" onclick="return false">📄</a>':'<span class="mut">—</span>';
+    // 24/10/2026: ανοίγει το ΠΙΣΤΟΠΟΙΗΤΙΚΟ της εφαρμογής (στήλη M του φύλλου, tools/pistopoiitika_programma.py)
+    const pdf=a.pist?`<a class="pdf" href="${encodeURI(a.pist)}" target="_blank" rel="noopener" title="Πιστοποιητικό εφαρμογών">📄</a>`:'<span class="mut">—</span>';
     const numTxt=(a.kind==="extra")?'<span class="mut">•</span>':(a.num||(i+1));
     return `<tr class="${a.st==='next'?'rnext':''}"><td class="num">${numTxt}</td><td class="mon">${a.m}</td><td>${KIND[a.kind]}</td><td>${plan}</td><td>${ex}</td><td>${STAT[a.st]}</td><td>${tech}</td><td>${pdf}</td></tr>`;
   }).join("");
@@ -199,7 +200,7 @@ function renderAll(APPS, perYear, freqTxt){
 
 // ── πραγματικά δεδομένα από το φύλλο «ΠΡΟΓΡΑΜΜΑ» ──
 // στήλες: 0 Timestamp,1 Κωδικός,2 Πελάτης,3 Αριθμός,4 Προγραμματισμός,
-//         5 Εκτέλεση,6 Κατάσταση,7 Είδος,8 Τεχνικός,9 Κύκλος,10 Εφ/έτος,11 Μήνες
+//         5 Εκτέλεση,6 Κατάσταση,7 Είδος,8 Τεχνικός,9 Κύκλος,10 Εφ/έτος,11 Μήνες,12 Πιστοποιητικό (σύνδεσμος)
 function buildReal(values){
   const rows=values.slice(1).filter(r=>r && (r[4]||r[5]));
   const today=new Date(); today.setHours(0,0,0,0);
@@ -217,6 +218,7 @@ function buildReal(values){
       plan: plan?fmtD(plan):"—",
       exec: ex?fmtD(ex):"",
       tech: r[8]||"",
+      pist: /^https:\/\//.test(String(r[12]||""))?String(r[12]):"",
       st: st,
       kind: isExtra?"extra":"prog",
       _sort: (base?base.getTime():0)
