@@ -435,7 +435,7 @@ function lista() {
   if (MODE === 'minas') return h + minas(list);
   const url = diadromiUrl(list);
   if (url) h += `<a class="rte" href="${esc(url)}" target="_blank" rel="noopener">🗺 Διαδρομή ημέρας · Google Maps</a>`;
-  if (rantevouMeras().some(r => r.och)) h += `<button class="rte" onclick="anoixeFortosi()">🚚 Φόρτωση οχήματος</button>`;
+  h += `<button class="rte" onclick="anoixeFortosi()">🚚 Φόρτωση οχήματος</button>`;     // 24/10: πάντα — φόρτωση οποιαδήποτε ώρα
   h += list.length ? list.map(grammi).join('') : '<div class="empty">Δεν υπάρχουν ραντεβού.</div>';
   return h;
 }
@@ -543,7 +543,7 @@ addEventListener('resize', () => { if (view.name === 'home' || view.name === 'ka
 // Χρειάζεται (υλικά των ραντεβού της ημέρας ΜΕ ΑΥΤΟ το όχημα, όποιος κι αν τα κάνει) · Έχει (απόθεμα από το ωριαίο
 // Sync + φορτώσεις που δεν πέρασαν ακόμα) · πρόταση = όσο λείπει, με +/− και τσεκ. Καταχώρηση → φύλλο (ΝΕΑ) → Sync →
 // ΑΠΟΘΕΜΑ_ΚΙΝΗΣΕΙΣ ως ΦΟΡΤΩΣΗ. Χωρίς ποσά/τιμές.
-let FD = null, FOX = null, FQ = {}, FCHK = {}, FEXTRA = [];
+let FD = null, FOX = null, FQ = {}, FCHK = {}, FEXTRA = [], FDAY = null, FR = null;   // FDAY: για ποια μέρα φορτώνει · FR: ραντεβού σήμερα…+7
 const YLIKO_RE = /^\((\d+)\)\s*(.*?)(?:\s+x\s*([\d.,]+))?\s*$/i;
 const vima = m => (String(m || '').toLowerCase().startsWith('τεμ') ? 1 : 10);
 // «ΟΝΟΜΑ (κωδικός)» — ο κωδικός μόνο αν δεν είναι ήδη μέσα στο όνομα (π.χ. «ZAGOR WAX BLOCK (175)»)
@@ -553,9 +553,20 @@ function rantevouMeras() {
   if (!D || !D.rantevou) return [];
   return D.rantevou.filter(r => r.mera === DAY && !r.katastasi);
 }
+// ραντεβού μιας μέρας για τη φόρτωση (από το FR, που έρχεται όταν ανοίγει η φόρτωση — όχι από τη μέρα της λίστας)
+function rantevouFort(m) { return ((FR && FR.length !== undefined) ? FR : (D && D.rantevou) || []).filter(r => r.mera === m && !r.katastasi); }
+// 24/10/2026 (χρήστης): «η φόρτωση μπορεί να γίνει οποιαδήποτε ώρα της ημέρας» → διαλέγει για ποια μέρα φορτώνει:
+// σήμερα · η επόμενη μέρα με ραντεβού (π.χ. το απόγευμα για αύριο) · η μέρα που κοιτούσε στη λίστα
+function meresFortosis() {
+  const s = simera(), m = [s];
+  const ep = (FR || []).filter(r => r.mera > s && !r.katastasi).map(r => r.mera).sort()[0];
+  if (ep) m.push(ep);
+  if (DAY > s && !m.includes(DAY)) m.push(DAY);
+  return m.sort();
+}
 function oximataMeras() {
   const ox = [];
-  rantevouMeras().forEach(r => { if (r.och && !ox.includes(r.och)) ox.push(r.och); });
+  rantevouFort(FDAY).forEach(r => { if (r.och && !ox.includes(r.och)) ox.push(r.och); });
   (FD && FD.apothema || []).forEach(a => { if (a.och && !ox.includes(a.och)) ox.push(a.och); });
   return ox;
 }
@@ -563,7 +574,7 @@ function fortosiGrammes() {
   const kat = {}; (FD.ylika || []).forEach(y => kat[y.kod] = y);
   const g = {};
   const pare = kod => g[kod] || (g[kod] = {kod, onoma: (kat[kod] || {}).onoma || '', monada: (kat[kod] || {}).monada || '', need: 0, xoris: 0, pelates: 0, have: 0});
-  rantevouMeras().filter(r => r.och === FOX).forEach(r => {
+  rantevouFort(FDAY).filter(r => r.och === FOX).forEach(r => {
     String(r.aparait || '').split('\n').forEach(l => {
       const m = l.trim().match(YLIKO_RE);
       if (!m) return;
@@ -581,18 +592,25 @@ function fortosiGrammes() {
     .sort((a, b) => (b.protasi > 0) - (a.protasi > 0) || a.onoma.localeCompare(b.onoma, 'el'));
 }
 async function anoixeFortosi() {
-  FD = null; FQ = {}; FCHK = {}; FEXTRA = [];
-  const mou = rantevouMeras().filter(r => synList(r).includes(SESS.egw.syn)).map(r => r.och).filter(Boolean);
-  FOX = mou[0] || (rantevouMeras()[0] || {}).och || null;
+  FD = null; FQ = {}; FCHK = {}; FEXTRA = []; FR = null;
+  FDAY = DAY > simera() ? DAY : simera();
+  dialexeOxMeras();
   history.pushState({k: 1}, ''); view = {name: 'fortosi'}; render(); scrollTo(0, 0);
   try {
-    const r = await api('fortosi_dedomena');
+    const eos = [prosthese(simera(), 7), FDAY].sort()[1];
+    const [r, rr] = await Promise.all([api('fortosi_dedomena'), api('rantevou', {d: simera(), eos}).catch(() => null)]);
     if (!r.ok) throw new Error(r.error);
-    FD = r; if (!FOX) FOX = oximataMeras()[0] || null;
+    FR = rr && rr.ok ? rr.rantevou : null;
+    FD = r; dialexeOxMeras(); if (!FOX) FOX = oximataMeras()[0] || null;
   } catch (e) { FD = {error: e.message}; }
   render();
 }
 function dialexeOx(o) { FOX = o; FQ = {}; FCHK = {}; FEXTRA = []; render(); }
+function dialexeOxMeras() {      // το όχημα των δικών του ραντεβού εκείνη τη μέρα (αλλιώς όποιο έχει ραντεβού, αλλιώς το ίδιο)
+  const L = rantevouFort(FDAY), mou = L.filter(r => synList(r).includes(SESS.egw.syn)).map(r => r.och).filter(Boolean);
+  FOX = mou[0] || (L.find(r => r.och) || {}).och || FOX || null;
+}
+function dialexeMeraFort(m) { FDAY = m; FQ = {}; FCHK = {}; dialexeOxMeras(); if (!FOX && FD) FOX = oximataMeras()[0] || null; render(); }
 function posotita(x) { return FQ[x.kod] !== undefined ? FQ[x.kod] : x.protasi; }
 function epilegmeno(x) { return FCHK[x.kod] !== undefined ? FCHK[x.kod] : x.protasi > 0; }
 function allaxe(kod, d) {
@@ -604,15 +622,17 @@ function grapsePos(kod, el) { const v = Math.max(0, Number(String(el.value).repl
 function tsek(kod) { const x = fortosiGrammes().find(y => y.kod === kod); FCHK[kod] = !epilegmeno(x); render(); }
 V.fortosi = () => {
   let h = `<div class="kh"><div class="tp"><button class="back" onclick="piso()" aria-label="Πίσω">‹</button>
-    <small>ΦΟΡΤΩΣΗ ΟΧΗΜΑΤΟΣ · ${esc(imera(DAY))}</small></div><h2>🚚 ${esc(FOX || 'Όχημα')}</h2>
-    <div class="ad">Τι χρειάζεται για τα ραντεβού της ημέρας, τι έχει ήδη το όχημα, και τι να φορτώσετε.</div></div>`;
+    <small>ΦΟΡΤΩΣΗ ΟΧΗΜΑΤΟΣ · για ${esc(imera(FDAY))}</small></div><h2>🚚 ${esc(FOX || 'Όχημα')}</h2>
+    <div class="ad">Φορτώνετε όποια ώρα θέλετε. Τι χρειάζεται για τα ραντεβού της μέρας που διαλέγετε, τι έχει ήδη το όχημα, και τι να φορτώσετε.</div></div>`;
+  const mf = meresFortosis();
+  if (mf.length > 1) h += `<div class="chips">${mf.map(m => `<button class="${m === FDAY ? 'on' : ''}" onclick="dialexeMeraFort('${m}')">${m === simera() ? 'Σήμερα' : 'Για ' + esc(imeraS(m))}</button>`).join('')}</div>`;
   if (!FD) return h + '<div class="spin"></div>';
   if (FD.error) return h + `<div class="empty">${esc(FD.error)}<br><br><button class="btn sec" onclick="anoixeFortosi()">Ξανά</button></div>`;
   const ox = oximataMeras();
   if (ox.length > 1) h += `<div class="chips">${ox.map(o => `<button class="${o === FOX ? 'on' : ''}" onclick="dialexeOx('${esc(o)}')">${esc(o)}</button>`).join('')}</div>`;
   const G = fortosiGrammes(), n = G.filter(x => epilegmeno(x) && posotita(x) > 0).length;
   h += `<div class="upd" style="text-align:left">Απόθεμα οχήματος: ${FD.apothema_pote ? 'ενημέρωση ' + esc(FD.apothema_pote.slice(8, 10) + '/' + FD.apothema_pote.slice(5, 7) + ' ' + FD.apothema_pote.slice(11, 16)) : 'δεν έχει ενημερωθεί ακόμα'}</div>`;
-  if (!G.length) h += '<div class="empty">Τα ραντεβού της ημέρας με αυτό το όχημα δεν έχουν υλικά.</div>';
+  if (!G.length) h += `<div class="empty">${rantevouFort(FDAY).some(r => r.och === FOX) ? 'Τα ραντεβού αυτής της μέρας με αυτό το όχημα δεν έχουν υλικά.' : 'Δεν υπάρχουν ραντεβού με αυτό το όχημα αυτή τη μέρα.'}<br>Μπορείτε να φορτώσετε με «＋ Άλλο υλικό».</div>`;
   h += G.map(x => {
     const ok = x.need > 0 && x.have >= x.need && !x.xoris, q = posotita(x), on = epilegmeno(x) && q > 0;
     const anag = x.need > 0 ? fmt(x.need, x.monada) + (x.xoris ? ' (+' + x.xoris + ' χωρίς ποσότητα)' : '') : (x.xoris ? 'χωρίς ποσότητα' : '—');
