@@ -925,5 +925,42 @@ document.addEventListener('visibilitychange', () => {
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 start();
 </script>
+<!-- >>> ΕΚΔΟΣΗ (tools/web_ekdosi.py) -->
+<style>
+#incoEkdosi{text-align:center;font:11px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  color:var(--muted,#8A97A6);opacity:.8;padding:16px 12px calc(16px + env(safe-area-inset-bottom))}
+#incoEkdosi a{color:#B8382C;font-weight:700;text-decoration:none}
+@media (prefers-color-scheme:dark){#incoEkdosi a{color:#FF9A8F}}
+body:has(.act) #incoEkdosi{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+</style>
+<div id="incoEkdosi"></div>
+<script>
+(function () {
+  var el = document.getElementById('incoEkdosi');
+  var t = new Date(document.lastModified);
+  if (!el || isNaN(t)) return;
+  function p(n) { return (n < 10 ? '0' : '') + n; }
+  function morfi(d) {
+    return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() + ' · ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  el.textContent = 'έκδ. ' + morfi(t);
+  var vrethike = false;
+  function elegxos() {
+    if (vrethike || !navigator.onLine || location.protocol.indexOf('http') !== 0) return;
+    fetch(location.href.split('#')[0], { method: 'HEAD', cache: 'no-store' }).then(function (r) {
+      var s = new Date(r.headers.get('Last-Modified') || '');
+      if (isNaN(s) || s - t < 60000) return;
+      vrethike = true;
+      el.innerHTML = '<a href="#">⚠ έκδ. ' + morfi(t) +
+        ' — υπάρχει νεότερη: πάτα για ανανέωση</a>';
+      el.firstChild.onclick = function (e) { e.preventDefault(); location.reload(); };
+    }).catch(function () {});
+  }
+  setTimeout(elegxos, 4000);
+  setInterval(elegxos, 30 * 60000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) elegxos(); });
+})();
+</script>
+<!-- <<< ΕΚΔΟΣΗ -->
 </body>
 </html>
