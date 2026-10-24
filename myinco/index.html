@@ -144,12 +144,12 @@ let LANG = LS.get('mi_lang', '') || (/^el/i.test(navigator.language || '') ? 'el
 const L = (el, en) => LANG === 'en' ? en : el;
 const EN = {
   // ομάδες εγγράφων
-  'ΠΙΣΤΟΠΟΙΗΤΙΚΑ & ΕΚΘΕΣΕΙΣ': 'CERTIFICATES & REPORTS', 'ΔΕΛΤΙΑ ΕΠΙΣΚΕΨΕΩΝ': 'VISIT REPORTS', 'ΚΑΤΟΨΕΙΣ': 'FLOOR PLANS',
+  'ΠΙΣΤΟΠΟΙΗΤΙΚΑ & ΕΚΘΕΣΕΙΣ': 'CERTIFICATES & REPORTS', 'ΕΝΤΥΠΑ ΜΥΟΚΤΟΝΙΑΣ & ΕΝΤΟΜΟΠΑΓΙΔΩΝ': 'RODENT & INSECT TRAP FORMS', 'ΚΑΤΟΨΕΙΣ': 'FLOOR PLANS',
   'ΑΔΕΙΕΣ & MSDS': 'LICENCES & MSDS', 'ΑΠΟΤΕΛΕΣΜΑΤΑ': 'RESULTS', 'ΔΕΙΓΜΑΤΟΛΗΨΙΕΣ': 'SAMPLINGS',
   'ΚΑΤΟΨΕΙΣ — ΣΗΜΕΙΑ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ': 'FLOOR PLANS — SAMPLING POINTS', 'ΕΓΓΡΑΦΑ': 'DOCUMENTS', 'ΜΗΝΙΑΙΑ': 'MONTHLY',
   'ΠΡΟΜΗΘΕΥΤΕΣ': 'SUPPLIERS', 'ΠΡΟΣΩΠΙΚΟ': 'STAFF',
   // υπότιτλοι & ονόματα εγγράφων/πινάκων
-  'δελτίο επίσκεψης': 'visit report', 'κάτοψη': 'floor plan', 'άδεια σκευάσματος': 'product licence', 'άδεια εταιρείας': 'company licence',
+  'έντυπο μυοκτονίας': 'rodent control form', 'έντυπο εντομοπαγίδων': 'insect trap form', 'κάτοψη': 'floor plan', 'άδεια σκευάσματος': 'product licence', 'άδεια εταιρείας': 'company licence',
   'Ηλεκτρικές εντομοπαγίδες': 'Electric insect traps', 'Μυοκτονία': 'Rodent control', 'Φερομονικές παγίδες': 'Pheromone traps',
   'Απεντόμωση': 'Insect control', 'Πρόγραμμα εφαρμογών': 'Treatment schedule',
   // Water Safety
@@ -485,7 +485,7 @@ async function qrFortose() {
 
 // ------------------------------------------------------------- έγγραφα (βήμα 2): ένα-ένα, ανά ομάδα, με «ΝΕΟ»
 const SEIRA_OMADON = {
-  PC: ['ΠΙΣΤΟΠΟΙΗΤΙΚΑ & ΕΚΘΕΣΕΙΣ', 'ΔΕΛΤΙΑ ΕΠΙΣΚΕΨΕΩΝ', 'ΚΑΤΟΨΕΙΣ', 'ΑΔΕΙΕΣ & MSDS'],
+  PC: ['ΠΙΣΤΟΠΟΙΗΤΙΚΑ & ΕΚΘΕΣΕΙΣ', 'ΕΝΤΥΠΑ ΜΥΟΚΤΟΝΙΑΣ & ΕΝΤΟΜΟΠΑΓΙΔΩΝ', 'ΚΑΤΟΨΕΙΣ', 'ΑΔΕΙΕΣ & MSDS'],
   WS: ['ΑΠΟΤΕΛΕΣΜΑΤΑ', 'ΔΕΙΓΜΑΤΟΛΗΨΙΕΣ', 'ΚΑΤΟΨΕΙΣ — ΣΗΜΕΙΑ ΔΕΙΓΜΑΤΟΛΗΨΙΑΣ', 'ΕΓΓΡΑΦΑ'],
   EYE: ['ΜΗΝΙΑΙΑ', 'ΠΡΟΜΗΘΕΥΤΕΣ', 'ΠΡΟΣΩΠΙΚΟ']
 };

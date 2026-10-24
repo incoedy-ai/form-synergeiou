@@ -276,8 +276,8 @@ function renderVisits(){
   let hv="<thead><tr><th class='stn'>Επίσκεψη</th>";DATES.forEach(d=>hv+=`<th>${d}</th>`);hv+="</tr></thead><tbody>";
   hv+="<tr><th>Τεχνικός</th>";TECH.forEach(t=>hv+=`<td><div class="vcell">${t}</div></td>`);hv+="</tr>";
   /* Ένα δελτίο ανά επίσκεψη — το ίδιο έγγραφο που αρχειοθετείται ως PDF. */
-  hv+="<tr><th>Δελτίο</th>";
-  DATES.forEach(d=>hv+=`<td><button class="btnDeltio" data-d="${d}">ΔΕΛΤΙΟ</button></td>`);
+  hv+="<tr><th>Έντυπο</th>";
+  DATES.forEach(d=>hv+=`<td><button class="btnDeltio" data-d="${d}">ΕΝΤΥΠΟ</button></td>`);
   hv+="</tr>";
   hv+="</tbody>";document.getElementById("tblV").innerHTML=hv;
   document.getElementById("tblV").querySelectorAll(".btnDeltio").forEach(b=>{

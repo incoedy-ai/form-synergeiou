@@ -13,6 +13,8 @@
 const DELTIO = (function () {
   const RIZA = new URL('.', document.currentScript.src).href;
   const ENTYPO = RIZA + 'deltio_episkepsis_print.html';
+  const EIDOS = { 'ΜΥΟ': 'ΕΝΤΥΠΟ ΜΥΟΚΤΟΝΙΑΣ', 'ΗΛΕ': 'ΕΝΤΥΠΟ ΗΛΕΚΤΡΙΚΩΝ ΕΝΤΟΜΟΠΑΓΙΔΩΝ',
+                  'ΦΕΡ': 'ΕΝΤΥΠΟ ΦΕΡΟΜΟΝΙΚΩΝ ΠΑΓΙΔΩΝ' };
 
   // Ο τεχνικός που διάλεξε το συνεργείο ΕΙΝΑΙ ο υπεύθυνος επιστήμονας.
   const EPISTIMONES = {
@@ -160,8 +162,8 @@ const DELTIO = (function () {
   function anoixe(cfg) {
     const w = window.open('', '_blank');          // ΣΥΓΧΡΟΝΑ, πριν το fetch
     if (!w) { alert('Ο browser εμπόδισε το άνοιγμα. Επίτρεψε τα αναδυόμενα παράθυρα.'); return; }
-    w.document.write('<!doctype html><meta charset="utf-8"><title>Δελτίο επίσκεψης</title>' +
-                     '<p style="font:14px system-ui;padding:24px">Ετοιμάζεται το δελτίο…</p>');
+    w.document.write('<!doctype html><meta charset="utf-8"><title>Έντυπο</title>' +
+                     '<p style="font:14px system-ui;padding:24px">Ετοιμάζεται το έντυπο…</p>');
     fetch(ENTYPO).then(r => r.text()).then(t => {
       const im = imerominia(cfg.d), kod = normKod(cfg.kod);
       const e = EPISTIMONES[String(cfg.texnikos || '').trim().toUpperCase()] ||
@@ -170,6 +172,8 @@ const DELTIO = (function () {
         '{{LOGO_IMG}}': '<img class="logo" src="' + RIZA + 'assets/logo_entoli.png" alt="InCo">',
         '{{YDATOGRAFIMA}}': '<img class="watermark" src="' + RIZA + 'watermark_icon.png" alt="">',
         '{{TITLOS}}': esc(cfg.titlos),
+        // 24/10/2026: «έντυπο μυοκτονίας λέγεται», όχι «δελτίο επίσκεψης» (χρήστης)
+        '{{EIDOS}}': EIDOS[cfg.prothema] || 'ΕΝΤΥΠΟ',
         '{{ARITHMOS}}': cfg.prothema + '-' + kod + '-' + im.arith,
         '{{IMEROMINIA}}': im.imera,
         '{{PELATIS}}': blokPelati(cfg.P, kod),
@@ -188,7 +192,7 @@ const DELTIO = (function () {
       w.document.title = cfg.prothema + '-' + kod + '-' + im.arith;
     }).catch(() => {
       w.document.body.innerHTML = '<p style="font:14px system-ui;padding:24px">' +
-        'Το δελτίο δεν φορτώθηκε. Δοκιμάστε ξανά.</p>';
+        'Το έντυπο δεν φορτώθηκε. Δοκιμάστε ξανά.</p>';
     });
   }
 
